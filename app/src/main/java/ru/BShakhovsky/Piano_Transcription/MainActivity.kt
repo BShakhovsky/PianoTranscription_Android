@@ -1,6 +1,7 @@
 @file:Suppress("PackageName")
 package ru.BShakhovsky.Piano_Transcription
 
+import android.opengl.GLSurfaceView
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +24,13 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
+
+        surfaceView.setEGLContextClientVersion(3)
+        PianoRenderer().also { render ->
+            surfaceView.setRenderer(render)
+            surfaceView.setOnTouchListener(PianoTouchListener(render))
+        }
+        surfaceView.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 
         MobileAds.initialize(this)
         with(AdRequest.Builder()){
