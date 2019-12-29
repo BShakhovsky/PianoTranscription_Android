@@ -12,8 +12,7 @@ class Render : GLSurfaceView.Renderer {
 
     private lateinit var model : Geometry
     private var x = 0f
-    private var y = 0f
-    private var z = 0f
+    private var yz = 0f
     private var width  = 0
     private var height = 0
     private val view           = FloatArray(16)
@@ -24,9 +23,8 @@ class Render : GLSurfaceView.Renderer {
         GLES31.glClearColor(70 / 255f, 130 / 255f, 180 / 255f, 1f)  // Steel blue
         GLES31.glEnable(GLES31.GL_DEPTH_TEST)
         model = Geometry()
-        x = model.whiteWid * 52 / 2
-        y = model.whiteLen * 5
-        z = model.whiteLen * 5
+        x  = model.whiteWid * 52 / 2
+        yz = model.whiteLen * 5
     }
     override fun onSurfaceChanged(unused: GL10?, newWidth: Int, newHeight: Int) {
         width = newWidth
@@ -58,12 +56,18 @@ class Render : GLSurfaceView.Renderer {
                 (xFar - yFar * (xNear - xFar) / (yNear - yFar))
             else (xFar - zFar * (xNear - xFar) / (zNear - zFar))
         }
-        x += worldX(xStart, yStart) - worldX(xEnd, yEnd)
+
+        x = 0f.coerceAtLeast((model.whiteWid * 52).coerceAtMost(x
+                + worldX(xStart, yStart) - worldX(xEnd, yEnd)))
+        calcViewProjection()
+    }
+    fun zoom(scale : Float) {
+        yz = model.whiteLen.coerceAtLeast((model.whiteWid * 52).coerceAtMost(yz / scale))
         calcViewProjection()
     }
     private fun calcViewProjection() {
-        Matrix.setLookAtM(view, 0, x, y, z,
-            x, 0f, 0f, 0f, 1f, 0f)
+        Matrix.setLookAtM(view, 0, x, yz, yz,
+            x, 0f, model.whiteLen / 2, 0f, 1f, 0f)
         Matrix.multiplyMM(viewProjection, 0, projection, 0, view, 0)
     }
 }
