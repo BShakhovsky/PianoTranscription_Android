@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
-class PianoGeometry {
+class Geometry {
 
     private val program = GLES31.glCreateProgram()
 
@@ -120,7 +120,7 @@ class PianoGeometry {
         GLES31.glEnableVertexAttribArray(pos)
     }
 
-    fun draw(mvp : FloatArray) {
+    fun draw(viewProjection : FloatArray) {
         GLES31.glGetUniformLocation(program, "mvp").also { mvpHandle -> for (note in 0..87) {
             fun drawKey(key: FloatBuffer, offset: Float) {
                 GLES31.glVertexAttribPointer(
@@ -130,7 +130,7 @@ class PianoGeometry {
                     if (key == blackCords) floatArrayOf(.15f, .15f, .15f, 1f)
                     else floatArrayOf(240 / 255f, 248 / 255f, 255 / 255f, 1f), 0)   // Alice blue
                 FloatArray(16).also {mvpOffset ->
-                    Matrix.translateM(mvpOffset, 0, mvp, 0, offset, 0f, 0f)
+                    Matrix.translateM(mvpOffset, 0, viewProjection, 0, offset, 0f, 0f)
                     GLES31.glUniformMatrix4fv(mvpHandle, 1, false, mvpOffset, 0)
                 }
                 GLES31.glDrawElements(

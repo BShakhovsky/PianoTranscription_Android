@@ -12,7 +12,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
-
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,12 +24,14 @@ class MainActivity : AppCompatActivity() {
                 .setAction("Action", null).show()
         }
 
-        surfaceView.setEGLContextClientVersion(3)
-        PianoRenderer().also { render ->
-            surfaceView.setRenderer(render)
-            surfaceView.setOnTouchListener(PianoTouchListener(render))
+        with (surfaceView) {
+            setEGLContextClientVersion(3)
+            Render().also {
+                setRenderer(it)
+                setOnTouchListener(Touch(it, context))
+            }
+            renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
         }
-        surfaceView.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
 
         MobileAds.initialize(this)
         with(AdRequest.Builder()){
