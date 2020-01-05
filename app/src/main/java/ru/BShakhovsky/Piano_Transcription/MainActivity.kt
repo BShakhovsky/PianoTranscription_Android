@@ -1,7 +1,6 @@
 @file:Suppress("PackageName")
 package ru.BShakhovsky.Piano_Transcription
 
-import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -28,9 +27,8 @@ class MainActivity : AppCompatActivity() {
             setEGLContextClientVersion(3)
             Render().also {
                 setRenderer(it)
-                setOnTouchListener(Touch(it, context))
+                setOnTouchListener(Touch(it))
             }
-            renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
         }
 
         MobileAds.initialize(this)

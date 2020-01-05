@@ -2,23 +2,26 @@
 package ru.BShakhovsky.Piano_Transcription
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.opengl.GLSurfaceView
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import androidx.core.view.GestureDetectorCompat
 
-class Touch(render : Render, context : Context) : View.OnTouchListener {
+class Touch(private val render : Render) : View.OnTouchListener {
 
-    private val zoom = ScaleGestureDetector(context, Zoom(render))
-    private val gesture = GestureDetectorCompat(context, Gesture(render))
+    private var zoom : ScaleGestureDetector? = null
+    private var gesture : GestureDetectorCompat? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        zoom.onTouchEvent(event)
-        gesture.onTouchEvent(event)
-        (v as GLSurfaceView).requestRender()
+        with (v as GLSurfaceView) {
+            if (zoom == null) zoom = ScaleGestureDetector(context, Zoom(render))
+            if (gesture == null) gesture = GestureDetectorCompat(context, Gesture(render))
+            zoom!!.onTouchEvent(event)
+            gesture!!.onTouchEvent(event)
+            requestRender()
+        }
         return true
     }
 }

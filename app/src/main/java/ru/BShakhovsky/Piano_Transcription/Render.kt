@@ -5,43 +5,56 @@ import android.opengl.GLES31
 import android.opengl.GLSurfaceView
 import android.opengl.GLU
 import android.opengl.Matrix
+import android.os.SystemClock
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class Render : GLSurfaceView.Renderer {
 
     private lateinit var model : Geometry
-    private var x = 0f
-    private var yz = 0f
+
+    private var x = Geometry.overallLen / 2
+    private var yz = Geometry.whiteLen
     private var width  = 0
     private var height = 0
+
+    private var zoomOut = true
+    private var zoomTime = 0L
+
     private val view           = FloatArray(16)
     private val projection     = FloatArray(16)
     private val viewProjection = FloatArray(16)
 
-    override fun onSurfaceCreated(unused: GL10?, config: EGLConfig?) {
-        GLES31.glClearColor(70 / 255f, 130 / 255f, 180 / 255f, 1f)  // Steel blue
-        GLES31.glEnable(GLES31.GL_DEPTH_TEST)
+    override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+        gl?.let { with (it) {
+            glClearColor(70 / 255f, 130 / 255f, 180 / 255f, 1f)  // Steel blue
+            glEnable(GLES31.GL_DEPTH_TEST)
+        } }
         model = Geometry()
-        x  = model.whiteWid * 52 / 2
-        yz = model.whiteLen * 5
     }
-    override fun onSurfaceChanged(unused: GL10?, newWidth: Int, newHeight: Int) {
+    override fun onSurfaceChanged(gl: GL10?, newWidth: Int, newHeight: Int) {
         width = newWidth
         height = newHeight
-        GLES31.glViewport(0, 0, width, height)
-        (width.toFloat() / height.toFloat()).also { ratio ->
-            Matrix.frustumM(projection, 0, -ratio, ratio,
-                -1f, 1f, 3f, model.whiteLen * 7)
+        gl?.glViewport(0, 0, width, height)
+        (height.toFloat() / width.toFloat()).also { ratio ->
+            Matrix.frustumM(projection, 0, -1f, 1f,
+                -ratio, ratio, 1f, Geometry.overallLen)
         }
         calcViewProjection()
     }
-    override fun onDrawFrame(unused: GL10?) {
-        GLES31.glClear(GLES31.GL_COLOR_BUFFER_BIT or GLES31.GL_DEPTH_BUFFER_BIT)
+    override fun onDrawFrame(gl: GL10?) {
+        gl?.glClear(GLES31.GL_COLOR_BUFFER_BIT or GLES31.GL_DEPTH_BUFFER_BIT)
+        if (zoomOut and (SystemClock.uptimeMillis() > zoomTime)) {
+            if (zoomTime != 0L) zoom(1 - .0006f * (SystemClock.uptimeMillis() - zoomTime))
+            zoomTime = SystemClock.uptimeMillis()
+        }
         model.draw(viewProjection)
     }
 
     fun move(xStart : Float, xEnd : Float, yStart : Float, yEnd : Float) {
+        if (((xStart < xEnd) and (winX(0f) > 0)) or
+            ((xStart > xEnd) and (winX(Geometry.overallLen) < width))) return
+
         fun worldX(xWin : Float, yWin : Float) : Float {
             fun worldCords(zDepth : Float) = floatArrayOf(0f, 0f, 0f, 0f).also { obj ->
                 GLU.gluUnProject(xWin, height - yWin, zDepth,
@@ -52,22 +65,41 @@ class Render : GLSurfaceView.Renderer {
             val (xNear, yNear, zNear) = worldCords(0f)
             val (xFar, yFar, zFar) = worldCords(1f)
 
-            return if (zFar - yFar * (zNear - zFar) / (yNear - yFar) > 0)
+            assert((yNear > 0) and (zNear > 0))
+            return if (yStart > height / 2) // (zFar - yFar * (zNear - zFar) / (yNear - yFar) > 0)
                 (xFar - yFar * (xNear - xFar) / (yNear - yFar))
             else (xFar - zFar * (xNear - xFar) / (zNear - zFar))
         }
-
-        x = 0f.coerceAtLeast((model.whiteWid * 52).coerceAtMost(x
+        x = 0f.coerceAtLeast(Geometry.overallLen.coerceAtMost(x
                 + worldX(xStart, yStart) - worldX(xEnd, yEnd)))
         calcViewProjection()
     }
     fun zoom(scale : Float) {
-        yz = model.whiteLen.coerceAtLeast((model.whiteWid * 52).coerceAtMost(yz / scale))
+        if (scale < 1) {
+            val xLeft = winX(0f)
+            val xRight = winX(Geometry.overallLen)
+            if ((xLeft > 0) and (xRight < width)) {
+                zoomOut = false
+                return
+            }
+            if (xLeft > 0) move(xLeft, 0f, height.toFloat(), height.toFloat())
+            if (xRight < width) move(xRight, width.toFloat(), height.toFloat(), height.toFloat())
+        }
+        yz = Geometry.whiteLen.coerceAtLeast(Geometry.overallLen.coerceAtMost(yz / scale))
         calcViewProjection()
+    }
+
+    private fun winX(worldX : Float) : Float {
+        floatArrayOf(0f, 0f, 0f).also {
+            GLU.gluProject(worldX, Geometry.whiteWid, Geometry.whiteLen,
+                view, 0, projection, 0,
+                intArrayOf(0, 0, width, height), 0, it, 0)
+            return it[0]
+        }
     }
     private fun calcViewProjection() {
         Matrix.setLookAtM(view, 0, x, yz, yz,
-            x, 0f, model.whiteLen / 2, 0f, 1f, 0f)
+            x, 0f, 0f, 0f, 1f, 0f)
         Matrix.multiplyMM(viewProjection, 0, projection, 0, view, 0)
     }
 }

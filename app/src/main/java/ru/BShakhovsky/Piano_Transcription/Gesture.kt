@@ -12,6 +12,10 @@ class Gesture(private val render : Render) : GestureDetector.SimpleOnGestureList
         return true
     }
 
+    override fun onLongPress(event: MotionEvent?) {
+        Log.d("Gestures", "Long Press: ${event?.x}, ${event?.y}")
+    }
+
     override fun onScroll(event1: MotionEvent?, event2: MotionEvent?,
                           distanceX: Float, distanceY: Float): Boolean {
         event2?.let {

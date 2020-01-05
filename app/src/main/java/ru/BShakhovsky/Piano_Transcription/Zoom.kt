@@ -9,9 +9,7 @@ class Zoom(private val render : Render) : ScaleGestureDetector.OnScaleGestureLis
     override fun onScaleEnd(p0: ScaleGestureDetector?) {}
 
     override fun onScale(detector: ScaleGestureDetector?): Boolean {
-        detector?.let {
-            render.zoom(0.1f.coerceAtLeast(detector.scaleFactor.coerceAtMost(5.0f)))
-        }
+        detector?.let { render.zoom(detector.scaleFactor) }
         return true
     }
 }

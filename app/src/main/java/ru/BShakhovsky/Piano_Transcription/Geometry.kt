@@ -11,8 +11,11 @@ class Geometry {
 
     private val program = GLES31.glCreateProgram()
 
-    val whiteLen = 145f
-    val whiteWid = 23f
+    companion object {
+        const val whiteLen = 145f
+        const val whiteWid = 23f
+        const val overallLen = whiteWid * 52
+    }
     private val whiteGap = .2f
     private val blackLen = 85f
     private val blackWid = 9
