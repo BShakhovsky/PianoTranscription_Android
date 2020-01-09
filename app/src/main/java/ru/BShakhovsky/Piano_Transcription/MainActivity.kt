@@ -10,6 +10,8 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import ru.BShakhovsky.Piano_Transcription.MainUI.Touch
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,16 +27,12 @@ class MainActivity : AppCompatActivity() {
 
         with (surfaceView) {
             setEGLContextClientVersion(3)
-            Render().also {
-                setRenderer(it)
-                setOnTouchListener(Touch(it))
-            }
+            Render(context).also { setRenderer(it); setOnTouchListener(Touch(it)) }
         }
 
         MobileAds.initialize(this)
-        with(AdRequest.Builder()){
-            if (BuildConfig.DEBUG) addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .addTestDevice("87FD000F52337DF09DBB9E6684B0B878")
+        with(AdRequest.Builder()){ if (BuildConfig.DEBUG)
+            addTestDevice(AdRequest.DEVICE_ID_EMULATOR).addTestDevice("87FD000F52337DF09DBB9E6684B0B878")
             adView.loadAd(build())
         }
     }
