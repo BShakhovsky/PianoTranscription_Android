@@ -4,15 +4,12 @@ package ru.BShakhovsky.Piano_Transcription.OpenGL.Shader
 import android.content.Context
 import android.opengl.GLES31
 import ru.BShakhovsky.Piano_Transcription.OpenGL.FrameBuffs
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Primitive
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Primitive
 
-class DepthShader(context: Context) : Shader(context, "VertexShadow", "PixelShadow") {
+class DepthShader(context: Context) : Shader(context, "Shadow") {
 
-    private val depthPos = attribute("pos")
     private val depthMVO = uniform  ("mvo")
-
-    init { GLES31.glEnableVertexAttribArray(depthPos) }
 
     fun prepare(frames: FrameBuffs, lightNo: Int) {
         frames.bindBuff(lightNo); frames.bindTexture(lightNo)
@@ -24,6 +21,6 @@ class DepthShader(context: Context) : Shader(context, "VertexShadow", "PixelShad
 
     fun draw(key: Primitive, offset: Float, lightOrtho: FloatArray) {
         translate(lightOrtho, depthMVO, offset)
-        key.draw(depthPos)
+        key.draw(pos)
     }
 }

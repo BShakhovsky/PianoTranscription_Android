@@ -25,8 +25,13 @@ class MainActivity : AppCompatActivity() {
                 .setAction("Action", null).show()
         }
 
-        with (surfaceView) {
+        with(surfaceView) {
             setEGLContextClientVersion(3)
+            /* https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglChooseConfig.xhtml
+                EGL implementors are strongly discouraged, but not proscribed,
+                from changing the selection algorithm used by eglChooseConfig.
+                Therefore, selections may change from release to release of the client-side library. */
+//            setEGLConfigChooser(EGLChooser(depth = 1, stencil = 1))
             Render(context).also { setRenderer(it); setOnTouchListener(Touch(it)) }
         }
 

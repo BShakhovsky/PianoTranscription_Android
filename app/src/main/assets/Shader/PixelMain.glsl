@@ -1,15 +1,17 @@
 precision mediump float;
 
 uniform vec4 color;
-uniform vec3 light0, light1, light2;
+uniform bool specular, shadow;
 uniform sampler2D depthBuff0, depthBuff1, depthBuff2;
 uniform float pixel;
 
-varying vec3 viewDir, normal;
+varying vec3 viewDir, normal, lightView0, lightView1, lightView2;
 varying vec4 shadowPos0, shadowPos1, shadowPos2;
 
 // From http://blog.shayanjaved.com/2011/03/13/shaders-android/
 float Shadow(const vec3 dir, const vec4 shadowPos, const sampler2D depths) {
+    if (!shadow) return 1.;
+
     float shadow = 0.;
     vec4 depthCord = (shadowPos / shadowPos.w + 1.) / 2.;
     for (float y = -1.5; y <= 1.5; y += 1.) for (float x = -1.5; x <= 1.5; x += 1.)
@@ -21,14 +23,11 @@ float Shadow(const vec3 dir, const vec4 shadowPos, const sampler2D depths) {
 }
 
 void main() {
-    vec3 normLight0 = normalize(light0), normLight1 = normalize(light1), normLight2 = normalize(light2);
-    gl_FragColor = color * vec4(vec3(.05333332, .09882354, .1819608) // ambient
-        // Diffuse:
-        + vec3(1         ,  .9607844 ,  .8078432) * max(-dot(normal, normLight0), 0.) * Shadow(normLight0, shadowPos0, depthBuff0)
-        + vec3( .9647059 ,  .7607844 ,  .4078432) * max(-dot(normal, normLight1), 0.) * Shadow(normLight1, shadowPos1, depthBuff1)
-        + vec3( .3231373 ,  .3607844 ,  .3937255) * max(-dot(normal, normLight2), 0.) * Shadow(normLight2, shadowPos2, depthBuff2)
-        // Specular:
-        + vec3(1         ,  .9607844 ,  .8078432) * pow(max(dot(-viewDir, reflect(normLight0, normal)), 0.), 16.)
-        + vec3(0         , 0         , 0        ) * pow(max(dot(-viewDir, reflect(normLight1, normal)), 0.), 16.)
-        + vec3( .3231373 ,  .3607844 ,  .3937255) * pow(max(dot(-viewDir, reflect(normLight2, normal)), 0.), 16.), 1);
+    gl_FragColor = color * vec4(vec3(.05333332, .09882354, .1819608) // ambient, then diffuse:
+                 + vec3(1         ,  .9607844 ,  .8078432) * max(-dot(normal, lightView0), 0.) * Shadow(lightView0, shadowPos0, depthBuff0)
+                 + vec3( .9647059 ,  .7607844 ,  .4078432) * max(-dot(normal, lightView1), 0.) * Shadow(lightView1, shadowPos1, depthBuff1)
+                 + vec3( .3231373 ,  .3607844 ,  .3937255) * max(-dot(normal, lightView2), 0.) * Shadow(lightView2, shadowPos2, depthBuff2)
+    + (specular ? (vec3(1         ,  .9607844 ,  .8078432) * pow(max(dot(-viewDir, reflect(lightView0, normal)), 0.), 16.)
+                 + vec3(0         , 0         , 0        ) * pow(max(dot(-viewDir, reflect(lightView1, normal)), 0.), 16.)
+                 + vec3( .3231373 ,  .3607844 ,  .3937255) * pow(max(dot(-viewDir, reflect(lightView2, normal)), 0.), 16.)) : vec3(0)), 1);
 }

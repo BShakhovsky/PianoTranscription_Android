@@ -8,8 +8,9 @@ import android.opengl.Matrix
 import ru.BShakhovsky.Piano_Transcription.BuildConfig
 import java.io.InputStreamReader
 
-open class Shader(context: Context, vertex: String, pixel: String) {
+abstract class Shader(context: Context, name: String) {
 
+    protected val pos: Int
     private val program = GLES31.glCreateProgram()
 
     init {
@@ -22,9 +23,11 @@ open class Shader(context: Context, vertex: String, pixel: String) {
                     if (err.isNotEmpty()) throw GLException(0, "Shader compile: $err") }
             })
 
-        attachShader(GLES31.GL_VERTEX_SHADER, vertex)
-        attachShader(GLES31.GL_FRAGMENT_SHADER, pixel)
+        attachShader(GLES31.GL_VERTEX_SHADER, "Vertex$name")
+        attachShader(GLES31.GL_FRAGMENT_SHADER, "Pixel$name")
         GLES31.glLinkProgram(program)
+        pos = attribute("pos")
+        GLES31.glEnableVertexAttribArray(pos)
     }
 
               fun uniform  (name: String) = GLES31.glGetUniformLocation(program, name)
@@ -32,7 +35,7 @@ open class Shader(context: Context, vertex: String, pixel: String) {
 
     protected fun use() { GLES31.glUseProgram(program) }
 
-    protected fun translate(matrix: FloatArray, matHandle: Int, offset: Float) { FloatArray(16).also { matOffset ->
+    protected fun translate(matrix: FloatArray, matHandle: Int, offset: Float = 0f) { FloatArray(16).also { matOffset ->
         Matrix.translateM(matOffset, 0, matrix, 0, offset, 0f, 0f)
         GLES31.glUniformMatrix4fv(matHandle, 1, false, matOffset, 0)
     } }

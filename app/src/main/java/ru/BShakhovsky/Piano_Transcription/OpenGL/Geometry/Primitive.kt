@@ -1,14 +1,15 @@
 @file:Suppress("PackageName")
-package ru.BShakhovsky.Piano_Transcription.OpenGL
+package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 import android.opengl.GLES31
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Utils
 import java.nio.FloatBuffer
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class Primitive(cords : FloatArray, order : IntArray) {
+class Primitive(cords: FloatArray, order: IntArray) {
 
-    private val vertices: FloatBuffer; private val normals: FloatBuffer; private val count:Int = order.size
+    private val vertices: FloatBuffer; private val normals: FloatBuffer; private val count: Int = order.size
 
     init { FloatArray(count * 3).also { vertexArray -> order.forEachIndexed { i, j ->
         for (k in 0..2) vertexArray[i * 3 + k] = cords[j * 3 + k] }
@@ -21,10 +22,8 @@ class Primitive(cords : FloatArray, order : IntArray) {
                 Triple(vertexArray[i * 9 + 6] - vertexArray[i * 9],
                        vertexArray[i * 9 + 7] - vertexArray[i * 9 + 1],
                        vertexArray[i * 9 + 8] - vertexArray[i * 9 + 2]).also { (x2, y2, z2) ->
-                    Triple(y1 * z2 - z1 * y2, z1 * x2 - x1 * z2,
-                        x1 * y2 - y1 * x2).also { (crossX, crossY, crossZ) ->
-                        sqrt(crossX.pow(2) + crossY.pow(2) + crossZ.pow(2)).also {
-                                distance -> for (k in 0..2) {
+                    Triple(y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2).also { (crossX, crossY, crossZ) ->
+                        sqrt(crossX.pow(2) + crossY.pow(2) + crossZ.pow(2)).also { distance -> for (k in 0..2) {
                             normArray[i * 9 + k * 3]     = crossX / distance
                             normArray[i * 9 + k * 3 + 1] = crossY / distance
                             normArray[i * 9 + k * 3 + 2] = crossZ / distance
