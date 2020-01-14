@@ -3,7 +3,7 @@ package ru.BShakhovsky.Piano_Transcription.OpenGL
 
 import android.content.Context
 import android.graphics.PointF
-import android.opengl.GLES31
+import android.opengl.GLES32
 import android.opengl.GLSurfaceView
 import android.opengl.GLU
 import android.os.SystemClock
@@ -22,16 +22,16 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
     private var zoomOut = true; private var zoomTime = 0L
 
     override fun onSurfaceCreated(glUnused: GL10?, config: EGLConfig?) {
-        GLES31.glEnable(GLES31.GL_DEPTH_TEST)
-        GLES31.glEnable(GLES31.GL_CULL_FACE)
-        GLES31.glBlendFunc(GLES31.GL_SRC_ALPHA, GLES31.GL_ONE_MINUS_SRC_ALPHA)
+        GLES32.glEnable(GLES32.GL_DEPTH_TEST)
+        GLES32.glEnable(GLES32.GL_CULL_FACE)
+        GLES32.glBlendFunc(GLES32.GL_SRC_ALPHA, GLES32.GL_ONE_MINUS_SRC_ALPHA)
         model = Model(context)
     }
     override fun onSurfaceChanged(glUnused: GL10?, newWidth: Int, newHeight: Int) {
         width  = newWidth; height = newHeight
         model.mats.project(width, height)
         model.mats.viewProject(x, yz, yz)
-        model.frames.resizeReflection(width, height)
+        model.textures.resizeReflection(width, height)
     }
     override fun onDrawFrame(glUnused: GL10?) {
         if (zoomOut and (SystemClock.uptimeMillis() > zoomTime)) {
@@ -67,7 +67,7 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
             fun worldCords(zDepth: Float) = floatArrayOf(0f, 0f, 0f, 0f).also { obj ->
                 GLU.gluUnProject(xWin, height - yWin, zDepth, model.mats.view, 0, model.mats.projection,
                     0, intArrayOf(0, 0, width, height), 0, obj, 0)
-                for (i in 0 .. obj.size - 2) obj[i] /= obj.last()
+                for (i in 0 until obj.lastIndex) obj[i] /= obj.last()
             }
             worldCords(0f).also { (xNear, yNear, zNear) -> worldCords(1f).also { (xFar, yFar, zFar) ->
                 assert((yNear > 0) and (zNear > 0))

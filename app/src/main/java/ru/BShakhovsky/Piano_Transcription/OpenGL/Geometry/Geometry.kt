@@ -3,9 +3,10 @@ package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 class Geometry {
 
-    companion object { const val whiteLen = 145f; const val whiteWid = 23f; const val overallLen = whiteWid * 52 }
+    companion object { const val whiteLen = 145f; const val whiteWid = 23f; const val overallLen = whiteWid * 52
+        const val deskOver = whiteWid * 3; const val deskHeight = whiteWid * 8; const val deskThick = whiteWid * 1.5f
+    }
     private val whiteGap = .6f; private val blackLen = 85f; private val blackWid = 9; private val blackFillet = 3
-    private val deskOver = whiteWid * 3; private val deskHeight = whiteWid * 8; private val deskThick = whiteWid * 1.5f
 
     private val whiteLeft: Primitive; private val whiteMid: Primitive; private val whiteRight: Primitive
     private val black    = Primitive(floatArrayOf(
@@ -27,7 +28,8 @@ class Geometry {
                               overallLen + deskOver,    0f,            -deskThick,
                                          - deskOver,    deskHeight,    -deskThick,
                               overallLen + deskOver,    deskHeight,    -deskThick),
-        intArrayOf(0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7,    0, 2, 6,  6, 4, 0,    1, 5, 3,  3, 5, 7))
+        intArrayOf(0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7,    0, 2, 6,  6, 4, 0,    1, 5, 3,  3, 5, 7),
+        floatArrayOf(1f, 1f, 1f,    1f, 1f, 1f))
 
     init { floatArrayOf(blackWid / 2f + blackFillet,    whiteWid,    0f,
              whiteWid - blackWid / 2  - blackFillet,    whiteWid,    0f,

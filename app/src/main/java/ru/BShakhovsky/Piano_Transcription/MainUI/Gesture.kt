@@ -9,12 +9,12 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 class Gesture(private val render: Render) : GestureDetector.SimpleOnGestureListener() {
 
     override fun onSingleTapUp(event: MotionEvent?): Boolean {
-        Log.d("Gestures", "Tap: ${event?.x}, ${event?.y}")
+        if (Log.isLoggable("Gestures", Log.DEBUG)) Log.d("Gestures", "Tap: ${event?.x}, ${event?.y}")
         return true
     }
 
     override fun onLongPress(event: MotionEvent?) {
-        Log.d("Gestures", "Long Press: ${event?.x}, ${event?.y}")
+        if (Log.isLoggable("Gestures", Log.DEBUG)) Log.d("Gestures", "Long Press: ${event?.x}, ${event?.y}")
     }
 
     override fun onScroll(event1: MotionEvent?, event2: MotionEvent?,

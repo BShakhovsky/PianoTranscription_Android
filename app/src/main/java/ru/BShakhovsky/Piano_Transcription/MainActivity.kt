@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
@@ -38,6 +39,12 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this)
         with(AdRequest.Builder()){ if (BuildConfig.DEBUG)
             addTestDevice(AdRequest.DEVICE_ID_EMULATOR).addTestDevice("87FD000F52337DF09DBB9E6684B0B878")
+            adView.adListener = object : AdListener() { override fun onAdFailedToLoad(error: Int) { Snackbar.make(adView, when (error) {
+                AdRequest.ERROR_CODE_INTERNAL_ERROR  -> "Invalid response received from the banner-ad server"
+                AdRequest.ERROR_CODE_INVALID_REQUEST -> "Banner-Ad unit ID is incorrect"
+                AdRequest.ERROR_CODE_NETWORK_ERROR   -> "Banner-Ad request unsuccessful due to network connectivity"
+                AdRequest.ERROR_CODE_NO_FILL         -> "No banner-ad returned due to lack of ad inventory"
+                else                                 -> "Unknown banner-ad error" }, Snackbar.LENGTH_LONG).show() } }
             adView.loadAd(build())
         }
     }

@@ -16,7 +16,7 @@ class Matrices {
     val refInvTransView = FloatArray(16)
 
     fun project(width: Int, height: Int) { (height.toFloat() / width.toFloat()).also { ratio ->
-        Matrix.frustumM(projection, 0, -1f, 1f, -ratio, ratio, 1f, Geometry.overallLen * .7f) } }
+        Matrix.frustumM(projection, 0, -1f, 1f, -ratio, ratio, 1f, Geometry.overallLen * .7f) } } // .67
 
     fun viewProject(x: Float, y: Float, z: Float) {
         Matrix.setLookAtM(view, 0, x, y, z, x, 0f, 0f, 0f, 1f, 0f)

@@ -2,49 +2,53 @@
 package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 import android.content.Context
-import android.opengl.GLES31
-import android.opengl.Matrix
-import ru.BShakhovsky.Piano_Transcription.OpenGL.FrameBuffs
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.*
+import android.opengl.GLES32
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Texture
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.DepthShader
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.Light
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.MainShader
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.TextureShader
+import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.StencilShader
 
 class Model(context: Context) {
 
     private val geom = Geometry()
 
-    val mats = Matrices(); val frames = FrameBuffs()
+    val mats = Matrices()
 
-    private val    mainShader =    MainShader  (context)
-    private val   depthShader =   DepthShader  (context)
-    private val stencilShader = StencilShader  (context)
-    private val   orthoShader =        Shader2D(context)
+    private val    mainShader =    MainShader(context)
+    private val   depthShader =   DepthShader(context)
+    private val stencilShader = StencilShader(context)
+    private val textureShader = TextureShader(context)
 
-    private val shadows = arrayOf(Shadow(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader),
-                                  Shadow(floatArrayOf( .7198464f,  .3420201f,  .6040227f), 1, mainShader),
-                                  Shadow(floatArrayOf( .4545195f, -.7660444f,  .4545195f), 2, mainShader))
-
-    init { FloatArray(16).also { ortho -> Matrix.orthoM(ortho, 0, -Geometry.overallLen / 2, Geometry.overallLen / 2,
-        -Geometry.overallLen / 2, Geometry.overallLen / 2, -Geometry.overallLen, Geometry.overallLen * 2)
-        shadows.forEach { it.ortho(ortho) } } }
+    private val lights = arrayOf(Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader),
+                                 Light(floatArrayOf( .7198464f,  .3420201f, -.6040227f), 1, mainShader), // z reversed
+                                 Light(floatArrayOf( .4545195f, -.7660444f,  .4545195f), 2, mainShader))
+    val textures = Texture(context, lights)
 
     fun draw(width: Int, height: Int) {
         for (lightNo in 0..2) {
-            depthShader.prepare(frames, lightNo)
-            geom.drawKeyboard { key, offset -> run { depthShader.draw(key, offset, shadows[lightNo].lightOrtho) }}
+            depthShader.prepare(textures, lights, lightNo)
+            /*// I do not like horizontal shadow-line from desk
+            GLES31.glDisable(GLES31.GL_CULL_FACE)
+            depthShader.draw(geom.desk, 0f, lights[lightNo].lightOrtho)
+            GLES31.glEnable(GLES31.GL_CULL_FACE)*/
+            geom.drawKeyboard { key, offset -> run { depthShader.draw(key, offset, lights[lightNo].lightOrtho) }}
         }
 
-        GLES31.glViewport(0, 0, width, height)
+        GLES32.glViewport(0, 0, width, height)
 
-        mainShader.initReflectBuff(frames, shadows)
+        mainShader.initReflectBuff(textures, lights)
         geom.drawKeyboard { key, offset -> run { mainShader.drawKey(key, offset, geom.isBlack(key),
-            mats.reflectView, mats.reflectVP, mats.refInvTransView, shadows) }}
+            mats.reflectView, mats.reflectVP, mats.refInvTransView, lights) }}
 
-        mainShader.initMainScreen(frames, shadows)
+        mainShader.initMainScreen(textures, lights)
         stencilShader.draw(geom.desk, mats.viewProjection)
-        orthoShader.draw(frames, shadows.size, true)
+        textureShader.draw(textures, lights.size, true)
 
-        mainShader.initMainScreen(frames, shadows, true)
-        mainShader.drawDesk(geom.desk, mats.view, mats.viewProjection, mats.invTransView)
+        mainShader.initMainScreen(textures, lights, true)
+        mainShader.drawDesk(geom.desk, mats.view, mats.viewProjection, mats.invTransView, textures, lights.size + 1)
         geom.drawKeyboard { key, offset -> run { mainShader.drawKey(key, offset, geom.isBlack(key),
-            mats.view, mats.viewProjection, mats.invTransView, shadows) }}
+            mats.view, mats.viewProjection, mats.invTransView, lights) }}
     }
 }
