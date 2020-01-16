@@ -30,17 +30,19 @@ void main() {
                        light2 = vec3(.3231373 , .3607844 , .3937255);
     gl_FragColor = color * vec4(vec3(.05333332, .09882354, .1819608) // ambient, then diffuse:
                      + light0 * max(-dot(normal, lightView0), 0.)  * Shadow(lightView0, shadowPos0, depthBuff0, pixel0, 0.)
-                     + light1 * max(-dot(normal, lightView1), 0.)//* Shadow(lightView1, shadowPos1, depthBuff1, pixel1, 0.)
-                     + light2 * max(-dot(normal, lightView2), 0.)  * Shadow(lightView2, shadowPos2, depthBuff2, pixel2, .0)
+    // Yellow light looks good only on desk:
+     + (withTex > .5 ? light1 * max(-dot(normal, lightView1), 0.)/** Shadow(lightView1, shadowPos1, depthBuff1, pixel1, 0.)*/ : vec3(0))
+                     + light2 * max(-dot(normal, lightView2), 0.)  * Shadow(lightView2, shadowPos2, depthBuff2, pixel2, 0.)
         + (specular ? (light0 * pow(max(dot(-viewDir, reflect(lightView0, normal)), 0.), 2.)
+    // But specular yellow light is Ok on the keyboard edge:
                      + light1 * pow(max(dot(-viewDir, reflect(lightView1, normal)), 0.), 4.)
                      + light2 * pow(max(dot(-viewDir, reflect(lightView2, normal)), 0.), 32.)) : vec3(0)), 1);
 
     if (withTex > .5 && max(texture2D(deskTexture, deskUV).r,
                         max(texture2D(deskTexture, deskUV).g,
                             texture2D(deskTexture, deskUV).b)) < .98) {
-        gl_FragColor.r *= 210. / 255. * 2.5; // Chocolate
-        gl_FragColor.g *= 105. / 255. * 2.5;
-        gl_FragColor.b *=  30. / 255. * 2.5;
+        gl_FragColor.r *= 210. / 255. * 5.; // Chocolate
+        gl_FragColor.g *= 105. / 255. * 5.;
+        gl_FragColor.b *=  30. / 255. * 5.;
     }
 }

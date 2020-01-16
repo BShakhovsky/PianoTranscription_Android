@@ -28,7 +28,7 @@ class MainShader(context: Context) : Shader(context, "Main") {
     init { intArrayOf(norm, texPos, withTex).forEach { GLES32.glEnableVertexAttribArray(it) } }
 
     fun initReflectBuff(textures: Texture, lights: Array<Light>) {
-        textures.bindBuff(lights.size); textures.bindTexture(lights.size)
+        with(textures) { with(lights.size) { bindBuff(this); bindTexture(this) } }
         GLES32.glClearColor(0f, 0f, 0f, 1f)
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT or GLES32.GL_DEPTH_BUFFER_BIT)
 //        withSpec = GLES31.GL_FALSE
@@ -51,9 +51,8 @@ class MainShader(context: Context) : Shader(context, "Main") {
 //        GLES31.glUniform1i(spec, withSpec)
         GLES32.glUniform1i(spec, GLES32.GL_TRUE)
         GLES32.glUniform1i(shadow, GLES32.GL_TRUE)
-        intArrayOf(pixel0, pixel1, pixel2).forEachIndexed { i, handle ->
-            GLES32.glUniform2fv(handle, 1, floatArrayOf(1f / lights[i].orthoWidth, 1f / lights[i].orthoHeight), 0)
-        }
+        intArrayOf(pixel0, pixel1, pixel2).forEachIndexed { i, handle -> with(lights[i]) {
+            GLES32.glUniform2fv(handle, 1, floatArrayOf(1f / orthoWidth, 1f / orthoHeight), 0) } }
         lights.forEachIndexed { lightNo, shadow -> with(shadow) {
             GLES32.glUniform3fv(light, 1, lightDir, 0)
             GLES32.glActiveTexture(GLES32.GL_TEXTURE0 + lightNo)
@@ -72,19 +71,19 @@ class MainShader(context: Context) : Shader(context, "Main") {
         GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, desk.withTex)
 
         GLES32.glUniform4fv(color, 1, floatArrayOf(.15f, .15f, .15f, .95f), 0)
-        translate(view, mv); translate(viewProjection, mvp); translate(invTransView, inTrV)
+        shiftRotate(view, mv); shiftRotate(viewProjection, mvp); shiftRotate(invTransView, inTrV)
         desk.draw(pos, norm)
 
         GLES32.glDisable(GLES32.GL_BLEND)
         GLES32.glUniform1i(shadow, GLES32.GL_TRUE)
     }
-    fun drawKey(key: Primitive, offset: Float, isBlack: Boolean,
+    fun drawKey(key: Primitive, offset: Float, angle: Float, col: FloatArray,
                 view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray, lights: Array<Light>) {
         GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, key.withTex)
-        GLES32.glUniform4fv(color, 1, if (isBlack) floatArrayOf(.15f, .15f, .15f, 1f)
-            else floatArrayOf(240 / 255f, 248 / 255f, 255 / 255f, 1f), 0) // Alice blue
-        translate(view, mv, offset); translate(viewProjection, mvp, offset); translate(invTransView, inTrV, offset)
-        lights.forEach { with(it) { translate(lightOrtho, lightMVO, offset) } }
+        GLES32.glUniform4fv(color, 1, col, 0)
+        shiftRotate(view, mv, offset, angle); shiftRotate(viewProjection, mvp, offset, angle)
+        shiftRotate(invTransView, inTrV, offset, angle)
+        lights.forEach { with(it) { shiftRotate(lightOrtho, lightMVO, offset, angle) } }
         key.draw(pos, norm)
     }
 }

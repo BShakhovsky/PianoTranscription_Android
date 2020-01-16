@@ -18,7 +18,7 @@ class StencilShader(context: Context) : Shader(context, "Stencil") {
 
         GLES32.glClear(GLES32.GL_DEPTH_BUFFER_BIT or GLES32.GL_STENCIL_BUFFER_BIT)
         use()
-        translate(viewProjection, mvp)
+        shiftRotate(viewProjection, mvp)
         figure.draw(pos)
 
         GLES32.glStencilFunc(GLES32.GL_EQUAL, 1, 1)

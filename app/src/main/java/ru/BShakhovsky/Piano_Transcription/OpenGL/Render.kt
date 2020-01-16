@@ -7,10 +7,12 @@ import android.opengl.GLES32
 import android.opengl.GLSurfaceView
 import android.opengl.GLU
 import android.os.SystemClock
+import ru.BShakhovsky.Piano_Transcription.Assert
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Model
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.min
 
 class Render(private val context: Context) : GLSurfaceView.Renderer {
 
@@ -19,7 +21,7 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
     private lateinit var model: Model
 
     private var x = Geometry.overallLen / 2; private var yz = Geometry.whiteLen
-    private var zoomOut = true; private var zoomTime = 0L
+    private var zoomOut = true; private var zoomTime = 0L; private var prevTime = 0L
 
     override fun onSurfaceCreated(glUnused: GL10?, config: EGLConfig?) {
         GLES32.glEnable(GLES32.GL_DEPTH_TEST)
@@ -29,16 +31,18 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
     }
     override fun onSurfaceChanged(glUnused: GL10?, newWidth: Int, newHeight: Int) {
         width  = newWidth; height = newHeight
-        model.mats.project(width, height)
-        model.mats.viewProject(x, yz, yz)
-        model.textures.resizeReflection(width, height)
+        with(model) { with(mats) { project(width, height); viewProject(x, yz, yz) }
+            textures.resizeReflection(width, height) }
     }
     override fun onDrawFrame(glUnused: GL10?) {
         if (zoomOut and (SystemClock.uptimeMillis() > zoomTime)) {
             if (zoomTime != 0L) zoom(1 - .0006f * (SystemClock.uptimeMillis() - zoomTime))
             zoomTime = SystemClock.uptimeMillis()
         }
-        model.draw(width, height)
+        with(model) { draw(width, height)
+            geom.keys.forEach { it.rotate(SystemClock.uptimeMillis() - prevTime) }
+            prevTime = SystemClock.uptimeMillis()
+        }
     }
 
     fun move(xStart: Float, xEnd: Float, yStart: Float) {
@@ -54,7 +58,7 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
 
     private fun fit() { (winX(0f) to winX(Geometry.overallLen)).also { (winLeft, winRight) -> when {
         (winLeft.x > 0) and (winRight.x < width) -> {
-            assert(winLeft.y == winRight.y)
+            Assert.state(winLeft.y == winRight.y)
             x  = Geometry.overallLen / 2; yz = Geometry.overallLen * .425f // 1 / 2 / sqrt(2) = 0.354
             model.mats.viewProject(x, yz, yz)
             zoomOut = false
@@ -63,20 +67,7 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
         winRight.x < width -> moveUnlimited(winRight.x, width.toFloat(), winRight.y)
     } } }
     private fun moveUnlimited(xStart: Float, xEnd: Float, yStart: Float) {
-        fun worldX(xWin: Float, yWin: Float): Float {
-            fun worldCords(zDepth: Float) = floatArrayOf(0f, 0f, 0f, 0f).also { obj ->
-                GLU.gluUnProject(xWin, height - yWin, zDepth, model.mats.view, 0, model.mats.projection,
-                    0, intArrayOf(0, 0, width, height), 0, obj, 0)
-                for (i in 0 until obj.lastIndex) obj[i] /= obj.last()
-            }
-            worldCords(0f).also { (xNear, yNear, zNear) -> worldCords(1f).also { (xFar, yFar, zFar) ->
-                assert((yNear > 0) and (zNear > 0))
-                return if (yWin > height / 2) // (zFar - yFar * (zNear - zFar) / (yNear - yFar) > 0)
-                     (xFar - yFar * (xNear - xFar) / (yNear - yFar))
-                else (xFar - zFar * (xNear - xFar) / (zNear - zFar))
-            } }
-        }
-        x = (x + worldX(xStart, yStart) - worldX(xEnd, yStart)).coerceAtLeast(0f).coerceAtMost(Geometry.overallLen)
+        x = (x + worldXZ(xStart, yStart).x - worldXZ(xEnd, yStart).x).coerceAtLeast(0f).coerceAtMost(Geometry.overallLen)
         model.mats.viewProject(x, yz, yz)
     }
     private fun zoomUnlimited(scale: Float) {
@@ -89,4 +80,70 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
         intArrayOf(0, 0, width, height), 0, it, 0)
         return PointF(it[0], it[1])
     } }
+    private fun worldXZ(xWin: Float, yWin: Float): PointF {
+        fun worldCords(zDepth: Float) = floatArrayOf(0f, 0f, 0f, 0f).also { obj -> with(model.mats) {
+            GLU.gluUnProject(xWin, height - yWin, zDepth, view, 0, projection,
+                0, intArrayOf(0, 0, width, height), 0, obj, 0) }
+            for (i in 0 until obj.lastIndex) obj[i] /= obj.last()
+        }
+        worldCords(0f).also { (xNear, yNear, zNear) -> worldCords(1f).also { (xFar, yFar, zFar) ->
+            Assert.state((yNear > 0) and (zNear > 0))
+            return if (yWin > height / 2) // (zFar - yFar * (zNear - zFar) / (yNear - yFar) > 0)
+                PointF(xFar + (Geometry.whiteWid - yFar) * (xNear - xFar) / (yNear - yFar),
+                      zFar + (Geometry.whiteWid - yFar) * (zNear - zFar) / (yNear - yFar))
+            else PointF(xFar - zFar * (xNear - xFar) / (zNear - zFar), 0f)
+        } }
+    }
+    private fun winToKey(xWin: Float, yWin: Float): Int { worldXZ(xWin, yWin).also { xz ->
+        if ((min(xz.x, xz.y) <= 0) or (xz.x >= Geometry.overallLen) or (xz.y >= Geometry.whiteLen))return -1
+        ((xz.x / Geometry.whiteWid + 5).toInt() / 7).also { octave ->
+            if (xz.y > Geometry.blackLen) { return when { xz.x < Geometry.whiteWid -> 0; xz.x < Geometry.whiteWid * 2 -> 2
+                else -> 3 + (octave - 1) * 12 + when ((xz.x / Geometry.whiteWid - 2).toInt() % 7) {
+                    0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11 else -> { Assert.argument(false); -1 } } }
+            } else (Geometry.blackWid * 1).also { blackW ->
+                      var cord = xz.x
+                          cord -= Geometry.whiteWid
+                when {    cord < -blackW            -> return -1//0
+                          cord <  blackW            -> return     1
+                          cord <  Geometry.whiteWid -> return -1//2
+                else -> { cord = xz.x
+                      if (cord >  Geometry.overallLen - Geometry.whiteWid) return 87
+                          cord -= Geometry.whiteWid * 2
+                          cord %= Geometry.whiteWid * 7
+                          cord -= Geometry.whiteWid
+                      if (cord < -blackW)              return -1//(octave - 1) * 12 + 3
+                 else if (cord <  blackW)              return     (octave - 1) * 12 + 4
+                          cord -= Geometry.whiteWid
+                   when { cord < -blackW            -> return -1//(octave - 1) * 12 + 5
+                          cord <  blackW            -> return     (octave - 1) * 12 + 6
+                          cord <  Geometry.whiteWid -> return -1//(octave - 1) * 12 + 7
+                else -> { cord -= Geometry.whiteWid * 2
+                      if (cord < -blackW)              return -1//(octave - 1) * 12 + 8
+                 else if (cord <  blackW)              return     (octave - 1) * 12 + 9
+                          cord -= Geometry.whiteWid
+                      if (cord < -blackW)              return -1//(octave - 1) * 12 + 10
+                 else if (cord <  blackW)              return     (octave - 1) * 12 + 11
+                          cord -= Geometry.whiteWid
+                  when {  cord < -blackW            -> return -1//(octave - 1) * 12 + 12
+                          cord <  blackW            -> return     (octave - 1) * 12 + 13
+                          cord <  Geometry.whiteWid -> return -1//(octave - 1) * 12 + 14
+                   } } } } } } }
+        Assert.state(false)
+        return -1
+    } }
+
+    fun     tap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1)     tapKey(it) } }
+    fun longTap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1) inverseKey(it) } }
+
+//  fun   pressKey(note: Int) { if (check(note))      model.geom.keys[note]       .isPressed = true }
+//  fun releaseKey(note: Int) { if (check(note))      model.geom.keys[note]       .isPressed = false }
+//  fun releaseAllKeys()      { if (check())          model.geom.keys.forEach { it.isPressed = false } }
+    private
+    fun inverseKey(note: Int) { if (check(note)) with(model.geom.keys[note])  {    isPressed = !isPressed } }
+    private
+    fun     tapKey(note: Int) { if (check(note))      model.geom.keys[note]       .isTapped  = true }
+    private fun check(note: Int = 0): Boolean {
+        Assert.argument(note in 0..87)
+        return ::model.isInitialized
+    }
 }

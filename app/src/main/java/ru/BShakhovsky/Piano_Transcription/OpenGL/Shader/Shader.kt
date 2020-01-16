@@ -35,8 +35,9 @@ abstract class Shader(context: Context, name: String) {
 
     protected fun use() { GLES32.glUseProgram(program) }
 
-    protected fun translate(matrix: FloatArray, matHandle: Int, offset: Float = 0f) { FloatArray(16).also { matOffset ->
-        Matrix.translateM(matOffset, 0, matrix, 0, offset, 0f, 0f)
-        GLES32.glUniformMatrix4fv(matHandle, 1, false, matOffset, 0)
+    protected fun shiftRotate(matrix: FloatArray, matHandle: Int, offset: Float = 0f, angle: Float = 0f) { matrix.copyOf().also { mat ->
+        if (angle != 0f) Matrix.rotateM(mat, 0, angle, 1f, 0f, 0f)
+        if (offset != 0f) Matrix.translateM(mat, 0, offset, 0f, 0f)
+        GLES32.glUniformMatrix4fv(matHandle, 1, false, mat, 0)
     } }
 }

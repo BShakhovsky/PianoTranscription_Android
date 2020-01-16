@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.opengl.GLES32
 import android.opengl.GLUtils
+import ru.BShakhovsky.Piano_Transcription.Assert
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.Light
 import ru.BShakhovsky.Piano_Transcription.R
 
@@ -23,19 +24,22 @@ class Texture(context: Context, lights: Array<Light>) {
             GLES32.glFramebufferTexture2D(GLES32.GL_FRAMEBUFFER, GLES32.GL_COLOR_ATTACHMENT0, GLES32.GL_TEXTURE_2D, texture[i], 0)
             parameteri()
         }
-        assert(GLES32.glCheckFramebufferStatus(GLES32.GL_FRAMEBUFFER) == GLES32.GL_FRAMEBUFFER_COMPLETE)
-
         val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.desk)
         bindTexture(texture.lastIndex)
         parameteri()
         GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, bitmap, 0)
         bitmap.recycle()
+
+        Assert.state(GLES32.glCheckFramebufferStatus(GLES32.GL_FRAMEBUFFER) == GLES32.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
     }
 
     fun bindBuff(i: Int) { GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, buff[i]) }
     fun bindTexture(i: Int) { GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, texture[i]) }
 
-    fun resizeReflection(width: Int, height: Int) { size(width, height); }
+    fun resizeReflection(width: Int, height: Int) {
+        size(width, height)
+        Assert.state(GLES32.glCheckFramebufferStatus(GLES32.GL_FRAMEBUFFER) == GLES32.GL_FRAMEBUFFER_COMPLETE)
+    }
     private fun size(newWidth: Int, newHeight: Int, i: Int = buff.lastIndex) {
         GLES32.glBindRenderbuffer(GLES32.GL_RENDERBUFFER, depthBuff[i])
         GLES32.glRenderbufferStorage(GLES32.GL_RENDERBUFFER, GLES32.GL_DEPTH_COMPONENT24, newWidth, newHeight)
