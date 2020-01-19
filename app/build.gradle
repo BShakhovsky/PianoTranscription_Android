@@ -19,6 +19,8 @@ android {
     }
 }
 
+configurations.all { resolutionStrategy.force "junit:junit:4.13" }
+
 dependencies {
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

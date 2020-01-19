@@ -12,14 +12,12 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Model
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.math.min
 
 class Render(private val context: Context) : GLSurfaceView.Renderer {
 
+    private lateinit var model: Model; private val sound = Sound(context)
+
     private var width = 0; private var height = 0
-
-    private lateinit var model: Model
-
     private var x = Geometry.overallLen / 2; private var yz = Geometry.whiteLen
     private var zoomOut = true; private var zoomTime = 0L; private var prevTime = 0L
 
@@ -88,62 +86,50 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
         }
         worldCords(0f).also { (xNear, yNear, zNear) -> worldCords(1f).also { (xFar, yFar, zFar) ->
             Assert.state((yNear > 0) and (zNear > 0))
-            return if (yWin > height / 2) // (zFar - yFar * (zNear - zFar) / (yNear - yFar) > 0)
-                PointF(xFar + (Geometry.whiteWid - yFar) * (xNear - xFar) / (yNear - yFar),
-                      zFar + (Geometry.whiteWid - yFar) * (zNear - zFar) / (yNear - yFar))
-            else PointF(xFar - zFar * (xNear - xFar) / (zNear - zFar), 0f)
-        } }
+            (zFar + (Geometry.whiteWid - yFar) * (zNear - zFar) / (yNear - yFar)).also { z ->
+                return if (yWin > height / 2) // (zFar - yFar * (zNear - zFar) / (yNear - yFar) > 0)
+                    if (z > Geometry.blackLen) PointF(xFar + (Geometry.whiteWid - yFar) * (xNear - xFar) / (yNear - yFar), z)
+                    else PointF(xFar + (Geometry.whiteWid + Geometry.blackWid - yFar) * (xNear - xFar) / (yNear - yFar),
+                        zFar + (Geometry.whiteWid + Geometry.blackWid - yFar) * (zNear - zFar) / (yNear - yFar))
+                else PointF(xFar - zFar * (xNear - xFar) / (zNear - zFar), 0f) } } }
     }
     private fun winToKey(xWin: Float, yWin: Float): Int { worldXZ(xWin, yWin).also { xz ->
-        if ((min(xz.x, xz.y) <= 0) or (xz.x >= Geometry.overallLen) or (xz.y >= Geometry.whiteLen))return -1
+        if ((xz.y == 0f) or (xz.x !in 0f..Geometry.overallLen) or (xz.y !in 0f..Geometry.whiteLen)) return -1
         ((xz.x / Geometry.whiteWid + 5).toInt() / 7).also { octave ->
             if (xz.y > Geometry.blackLen) { return when { xz.x < Geometry.whiteWid -> 0; xz.x < Geometry.whiteWid * 2 -> 2
                 else -> 3 + (octave - 1) * 12 + when ((xz.x / Geometry.whiteWid - 2).toInt() % 7) {
                     0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11 else -> { Assert.argument(false); -1 } } }
-            } else (Geometry.blackWid * 1).also { blackW ->
-                      var cord = xz.x
-                          cord -= Geometry.whiteWid
-                when {    cord < -blackW            -> return -1//0
-                          cord <  blackW            -> return     1
-                          cord <  Geometry.whiteWid -> return -1//2
-                else -> { cord = xz.x
-                      if (cord >  Geometry.overallLen - Geometry.whiteWid) return 87
-                          cord -= Geometry.whiteWid * 2
-                          cord %= Geometry.whiteWid * 7
-                          cord -= Geometry.whiteWid
-                      if (cord < -blackW)              return -1//(octave - 1) * 12 + 3
-                 else if (cord <  blackW)              return     (octave - 1) * 12 + 4
-                          cord -= Geometry.whiteWid
-                   when { cord < -blackW            -> return -1//(octave - 1) * 12 + 5
-                          cord <  blackW            -> return     (octave - 1) * 12 + 6
-                          cord <  Geometry.whiteWid -> return -1//(octave - 1) * 12 + 7
-                else -> { cord -= Geometry.whiteWid * 2
-                      if (cord < -blackW)              return -1//(octave - 1) * 12 + 8
-                 else if (cord <  blackW)              return     (octave - 1) * 12 + 9
-                          cord -= Geometry.whiteWid
-                      if (cord < -blackW)              return -1//(octave - 1) * 12 + 10
-                 else if (cord <  blackW)              return     (octave - 1) * 12 + 11
-                          cord -= Geometry.whiteWid
-                  when {  cord < -blackW            -> return -1//(octave - 1) * 12 + 12
-                          cord <  blackW            -> return     (octave - 1) * 12 + 13
-                          cord <  Geometry.whiteWid -> return -1//(octave - 1) * 12 + 14
-                   } } } } } } }
+            } else (Geometry.whiteWid / 2).also { blackW -> var cord = xz.x; when {
+                cord - Geometry.whiteWid     < -blackW             -> return -1//0
+                cord - Geometry.whiteWid     <  blackW             -> return  1
+                cord - Geometry.whiteWid     < Geometry.whiteWid   -> return -1//2
+                cord + Geometry.whiteWid     > Geometry.overallLen -> return 87
+              else -> { cord = (cord - Geometry.whiteWid * 2) % (Geometry.whiteWid * 7) - Geometry.whiteWid; when {
+                cord                         < -blackW             -> return -1//(octave - 1) * 12 + 3
+                cord                         <  blackW             -> return     (octave - 1) * 12 + 4
+                cord - Geometry.whiteWid     < -blackW             -> return -1//(octave - 1) * 12 + 5
+                cord - Geometry.whiteWid     <  blackW             -> return     (octave - 1) * 12 + 6
+                cord - Geometry.whiteWid     <  Geometry.whiteWid  -> return -1//(octave - 1) * 12 + 7
+                cord - Geometry.whiteWid * 3 < -blackW             -> return -1//(octave - 1) * 12 + 8
+                cord - Geometry.whiteWid * 3 <  blackW             -> return     (octave - 1) * 12 + 9
+                cord - Geometry.whiteWid * 4 < -blackW             -> return -1//(octave - 1) * 12 + 10
+                cord - Geometry.whiteWid * 4 <  blackW             -> return     (octave - 1) * 12 + 11
+                cord - Geometry.whiteWid * 5 < -blackW             -> return -1//(octave - 1) * 12 + 12
+                cord - Geometry.whiteWid * 5 <  blackW             -> return     (octave - 1) * 12 + 13
+                cord - Geometry.whiteWid * 5 <  Geometry.whiteWid  -> return -1//(octave - 1) * 12 + 14
+            } } } } }
         Assert.state(false)
         return -1
     } }
 
-    fun     tap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1)     tapKey(it) } }
-    fun longTap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1) inverseKey(it) } }
+    fun     tap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1) {
+             model.geom.keys[it]   .isTapped = true;          sound.play(it) } } }
+    fun longTap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1) {
+        with(model.geom.keys[it]) { isPressed = !isPressed }; sound.play(it) } } }
 
-//  fun   pressKey(note: Int) { if (check(note))      model.geom.keys[note]       .isPressed = true }
-//  fun releaseKey(note: Int) { if (check(note))      model.geom.keys[note]       .isPressed = false }
-//  fun releaseAllKeys()      { if (check())          model.geom.keys.forEach { it.isPressed = false } }
-    private
-    fun inverseKey(note: Int) { if (check(note)) with(model.geom.keys[note])  {    isPressed = !isPressed } }
-    private
-    fun     tapKey(note: Int) { if (check(note))      model.geom.keys[note]       .isTapped  = true }
-    private fun check(note: Int = 0): Boolean {
-        Assert.argument(note in 0..87)
-        return ::model.isInitialized
-    }
+//  fun   pressKey(note: Int, velocity: Float) { if (check(note)) { model.geom.keys[note]       .isPressed = true;  sound.play(note, velocity) } }
+//  fun releaseKey(note: Int)                  { if (check(note))   model.geom.keys[note]       .isPressed = false; sound.stop(note) }
+//  fun releaseAllKeys()                       { if (check())       model.geom.keys.forEach { it.isPressed = false } }
+
+//    private fun check(note: Int): Boolean { Assert.argument(note in 0..87); return ::model.isInitialized }
 }

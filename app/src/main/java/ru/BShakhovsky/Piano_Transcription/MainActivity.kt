@@ -42,11 +42,11 @@ class MainActivity : AppCompatActivity() {
         with(AdRequest.Builder()){ if (BuildConfig.DEBUG)
             addTestDevice(AdRequest.DEVICE_ID_EMULATOR).addTestDevice("87FD000F52337DF09DBB9E6684B0B878")
             adView.adListener = object : AdListener() { override fun onAdFailedToLoad(error: Int) { Snackbar.make(adView, when (error) {
-                AdRequest.ERROR_CODE_INTERNAL_ERROR  -> "Invalid response received from the banner-ad server"
-                AdRequest.ERROR_CODE_INVALID_REQUEST -> "Banner-Ad unit ID is incorrect"
-                AdRequest.ERROR_CODE_NETWORK_ERROR   -> "Banner-Ad request unsuccessful due to network connectivity"
-                AdRequest.ERROR_CODE_NO_FILL         -> "No banner-ad returned due to lack of ad inventory"
-                else                                 -> "Unknown banner-ad error" }, Snackbar.LENGTH_LONG).show() } }
+                AdRequest.ERROR_CODE_INTERNAL_ERROR  -> "Ad-banner server: invalid response"
+                AdRequest.ERROR_CODE_INVALID_REQUEST -> "Ad-banner unit ID incorrect"
+                AdRequest.ERROR_CODE_NETWORK_ERROR   -> "Ad-banner: network connectivity issue"
+                AdRequest.ERROR_CODE_NO_FILL         -> "Ad-banner: lack of ad inventory"
+                else                                 -> "Ad-banner error" }, Snackbar.LENGTH_LONG).show() } }
             adView.loadAd(build())
         }
     }

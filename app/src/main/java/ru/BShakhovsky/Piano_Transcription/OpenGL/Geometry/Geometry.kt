@@ -3,7 +3,7 @@ package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 class Geometry {
 
-    companion object { const val blackLen = 85f; const val blackWid = 9
+    companion object { const val blackLen = 85f; const val blackWid = 9f
         const val whiteLen = 145f; const val whiteWid = 23f; const val overallLen = whiteWid * 52
         const val deskOver = whiteWid * 3; const val deskHeight = whiteWid * 8; const val deskThick = whiteWid * 1.5f
     }

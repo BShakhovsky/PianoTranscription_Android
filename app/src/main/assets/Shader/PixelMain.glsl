@@ -1,7 +1,7 @@
 precision mediump float;
 
 uniform vec4 color;
-uniform bool shadow, specular;
+uniform bool shadow;
 uniform sampler2D deskTexture, depthBuff0, depthBuff1, depthBuff2;
 uniform vec2 pixel0, pixel1, pixel2;
 
@@ -25,18 +25,16 @@ float Shadow(const vec3 light, const vec4 shadowPos, const sampler2D depths, con
 }
 
 void main() {
-    const vec3         light0 = vec3(1        , .9607844 , .8078432),
-                       light1 = vec3(.9647059 , .7607844 , .4078432),
-                       light2 = vec3(.3231373 , .3607844 , .3937255);
+    const vec3 light0 = vec3(1        , .9607844 , .8078432),
+               light1 = vec3(.9647059 , .7607844 , .4078432),
+               light2 = vec3(.3231373 , .3607844 , .3937255);
     gl_FragColor = color * vec4(vec3(.05333332, .09882354, .1819608) // ambient, then diffuse:
-                     + light0 * max(-dot(normal, lightView0), 0.)  * Shadow(lightView0, shadowPos0, depthBuff0, pixel0, 0.)
-    // Yellow light looks good only on desk:
-     + (withTex > .5 ? light1 * max(-dot(normal, lightView1), 0.)/** Shadow(lightView1, shadowPos1, depthBuff1, pixel1, 0.)*/ : vec3(0))
-                     + light2 * max(-dot(normal, lightView2), 0.)  * Shadow(lightView2, shadowPos2, depthBuff2, pixel2, 0.)
-        + (specular ? (light0 * pow(max(dot(-viewDir, reflect(lightView0, normal)), 0.), 2.)
-    // But specular yellow light is Ok on the keyboard edge:
-                     + light1 * pow(max(dot(-viewDir, reflect(lightView1, normal)), 0.), 4.)
-                     + light2 * pow(max(dot(-viewDir, reflect(lightView2, normal)), 0.), 32.)) : vec3(0)), 1);
+             + light0 * max(-dot(normal, lightView0), 0.) * Shadow(lightView0, shadowPos0, depthBuff0, pixel0, 0.)
+             + light1 * max(-dot(normal, lightView1), 0.) * Shadow(lightView1, shadowPos1, depthBuff1, pixel1, 0.)
+             + light2 * max(-dot(normal, lightView2), 0.) * Shadow(lightView2, shadowPos2, depthBuff2, pixel2, 0.)
+             + light0 * pow(max(dot(-viewDir, reflect(lightView0, normal)), 0.), 2.)
+             + light1 * pow(max(dot(-viewDir, reflect(lightView1, normal)), 0.), 1.)
+             + light2 * pow(max(dot(-viewDir, reflect(lightView2, normal)), 0.), 32.), 1);
 
     if (withTex > .5 && max(texture2D(deskTexture, deskUV).r,
                         max(texture2D(deskTexture, deskUV).g,

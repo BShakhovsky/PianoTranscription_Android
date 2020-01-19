@@ -22,8 +22,6 @@ class MainShader(context: Context) : Shader(context, "Main") {
     private val deskTex = uniform  ("deskTexture")
     private val withTex = attribute("tex")
     private val shadow  = uniform  ("shadow")
-    private val spec    = uniform  ("specular")
-//    private var withSpec = GLES31.GL_TRUE
 
     init { intArrayOf(norm, texPos, withTex).forEach { GLES32.glEnableVertexAttribArray(it) } }
 
@@ -31,7 +29,6 @@ class MainShader(context: Context) : Shader(context, "Main") {
         with(textures) { with(lights.size) { bindBuff(this); bindTexture(this) } }
         GLES32.glClearColor(0f, 0f, 0f, 1f)
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT or GLES32.GL_DEPTH_BUFFER_BIT)
-//        withSpec = GLES31.GL_FALSE
         prepare(textures, lights)
     }
     fun initMainScreen(textures: Texture, lights: Array<Light>, transparent: Boolean = false) {
@@ -42,14 +39,11 @@ class MainShader(context: Context) : Shader(context, "Main") {
         }
         GLES32.glClear(GLES32.GL_DEPTH_BUFFER_BIT)
         GLES32.glDisable(GLES32.GL_STENCIL_TEST)
-//        withSpec = GLES31.GL_TRUE
         prepare(textures, lights)
     }
 
     private fun prepare(textures: Texture, lights: Array<Light>) {
         use()
-//        GLES31.glUniform1i(spec, withSpec)
-        GLES32.glUniform1i(spec, GLES32.GL_TRUE)
         GLES32.glUniform1i(shadow, GLES32.GL_TRUE)
         intArrayOf(pixel0, pixel1, pixel2).forEachIndexed { i, handle -> with(lights[i]) {
             GLES32.glUniform2fv(handle, 1, floatArrayOf(1f / orthoWidth, 1f / orthoHeight), 0) } }
@@ -64,7 +58,7 @@ class MainShader(context: Context) : Shader(context, "Main") {
     fun drawDesk(desk: Primitive, view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray,
                  textures: Texture, texInd: Int) {
         GLES32.glEnable(GLES32.GL_BLEND)
-        // Only light#2 gives produces shadow on desk, and I do not like this shadow
+        // Only light#2 produces shadow on desk, and I do not like this shadow
         GLES32.glUniform1i(shadow, GLES32.GL_FALSE)
 
         TextureShader.sendTexture(textures, texInd, deskTex, texPos)

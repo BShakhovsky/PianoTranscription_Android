@@ -19,9 +19,9 @@ class Model(context: Context) {
     private val stencilShader = StencilShader(context)
     private val textureShader = TextureShader(context)
 
-    private val lights = arrayOf(Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader),
-                                 Light(floatArrayOf( .7198464f,  .3420201f, -.6040227f), 1, mainShader), // z reversed
-                                 Light(floatArrayOf( .4545195f, -.7660444f,  .4545195f), 2, mainShader))
+    private val lights = arrayOf(Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader, true),
+                                 Light(floatArrayOf( .7198464f,  .3420201f, -.6040227f), 1, mainShader), // z reversed, so we see it
+                                 Light(floatArrayOf( .4545195f, -.7660444f,  .4545195f), 2, mainShader, true))
     val textures = Texture(context, lights)
 
     fun draw(width: Int, height: Int) {

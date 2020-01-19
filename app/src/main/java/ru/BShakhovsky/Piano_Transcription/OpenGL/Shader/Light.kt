@@ -4,7 +4,7 @@ package ru.BShakhovsky.Piano_Transcription.OpenGL.Shader
 import android.opengl.Matrix
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
 
-class Light(val lightDir: FloatArray, index: Int, mainShader: Shader) {
+class Light(val lightDir: FloatArray, index: Int, mainShader: Shader, shadowReversed: Boolean = false) {
 
     val depthBuff  = mainShader.uniform("depthBuff$index")
     val light      = mainShader.uniform("light$index")
@@ -13,8 +13,9 @@ class Light(val lightDir: FloatArray, index: Int, mainShader: Shader) {
 
     val orthoWidth: Int; val orthoHeight: Int
 
-    init { FloatArray(16).also { view -> Matrix.setLookAtM(view, 0, Geometry.overallLen / 2 - lightDir[0],
-        -lightDir[1], -lightDir[2], Geometry.overallLen / 2, 0f, 0f, 0f, 1f, 0f)
+    init { FloatArray(16).also { view -> Matrix.setLookAtM(view, 0,
+        Geometry.overallLen / 2 + lightDir[0] * if (shadowReversed) 1 else -1, -lightDir[1], -lightDir[2],
+        Geometry.overallLen / 2, 0f, 0f, 0f, 1f, 0f)
 
         var (xLeft, yBottom, zMin) = Triple(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
         var (xRight, yTop, zMax) = Triple(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY)
