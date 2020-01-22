@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Piano Transcription</string>
-    <string name="action_settings">Settings</string>
+
+    <string name="selectTracks">Select tracks</string>
+    <string name="midi">Midi info</string>
+    <string name="guide">User guide</string>
+
+    <string name="justTracks">Tracks</string>
+    <string name="justMidi">Midi</string>
+    <string name="justGuide">Guide</string>
+
+    <string name="tracks">%1$d of %2$d</string>
+    <string name="keyTempo">%1$s, %2$d bpm</string>
+    <string name="noMidi">not loaded</string>
 </resources>
