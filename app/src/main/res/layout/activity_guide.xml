@@ -1,0 +1,48 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout style="@style/MatchParent"
+    xmlns:android="http://schemas.android.com/apk/res/android" android:fitsSystemWindows="true"
+    xmlns:tools="http://schemas.android.com/tools" tools:ignore="ContentDescription"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.google.android.material.appbar.AppBarLayout android:id="@+id/app_bar"
+        android:layout_width="match_parent" android:layout_height="180dp"
+        android:fitsSystemWindows="true" android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            style="@style/MatchParent" android:fitsSystemWindows="true"
+            android:background="@drawable/linear_background" app:expandedTitleTextAppearance="@style/Expanded"
+            app:contentScrim="?attr/colorPrimary" app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <ImageView android:src="@mipmap/ic_launcher_round" style="@style/MatchParent"
+                android:scaleType="centerCrop" app:layout_collapseMode="parallax" />
+            <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+                android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin" app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView style="@style/MatchParent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout style="@style/WrapContent" android:orientation="vertical">
+            <TextView  style="@style/Text"  android:text="@string/userGuide1"/>
+            <ImageView style="@style/Image" android:background="@drawable/attach" />
+            <TextView  style="@style/Text"  android:text="@string/userGuide2"/>
+            <ImageView style="@style/Image" android:background="@drawable/info" />
+            <TextView  style="@style/Text"  android:text="@string/userGuide3"/>
+            <ImageView style="@style/Image" android:background="@drawable/queue" />
+            <TextView  style="@style/Text"  android:text="@string/userGuide4"/>
+            <TextView  style="@style/Text"  android:text="@string/userGuide5"/>
+            <ImageView style="@style/Image" android:background="@drawable/queue" />
+            <TextView  style="@style/Text"  android:text="@string/userGuide6"/>
+            <ImageView style="@style/Image" android:background="@android:drawable/ic_media_next" />
+            <TextView  style="@style/Text"  android:text="@string/userGuide7"/>
+            <ImageView style="@style/Image" android:background="@android:drawable/ic_media_play" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton android:id="@+id/fabGuide"
+        style="@style/WrapContent" android:layout_margin="16dp"
+        app:layout_anchor="@id/app_bar" app:layout_anchorGravity="bottom|end"
+        app:srcCompat="@android:drawable/ic_menu_share" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

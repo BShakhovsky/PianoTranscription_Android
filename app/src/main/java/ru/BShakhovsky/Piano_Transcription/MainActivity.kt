@@ -8,8 +8,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
-import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,15 +24,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
+        fileOpen.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
 
-        menuListener = MenuListener(drawerLayout)
+        menuListener = MenuListener(this, drawerLayout)
         drawerMenu.setNavigationItemSelectedListener(menuListener)
         with(drawerMenu.menu) {
             fun menuView(item: Int) = findItem(item).actionView as TextView
@@ -57,11 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         MobileAds.initialize(this)
-        with(AdRequest.Builder()) {
-            if (BuildConfig.DEBUG) addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .addTestDevice("87FD000F52337DF09DBB9E6684B0B878")
-            with(adView) { adListener = AdBanner(this); loadAd(build()) }
-        }
+        AdBanner(adMain)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

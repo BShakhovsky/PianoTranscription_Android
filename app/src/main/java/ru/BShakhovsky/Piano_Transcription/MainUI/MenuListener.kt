@@ -1,15 +1,19 @@
 @file:Suppress("PackageName")
 package ru.BShakhovsky.Piano_Transcription.MainUI
 
+import android.app.Activity
+import android.content.Intent
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import ru.BShakhovsky.Piano_Transcription.Assert
+import ru.BShakhovsky.Piano_Transcription.GuideActivity
 import ru.BShakhovsky.Piano_Transcription.R
 
-class MenuListener(private val drawer: DrawerLayout) : NavigationView.OnNavigationItemSelectedListener {
+class MenuListener(private val activity: Activity, private val drawer: DrawerLayout)
+    : NavigationView.OnNavigationItemSelectedListener {
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean { when (item.itemId) {
         R.id.drawerTracks -> tracks()
@@ -20,15 +24,9 @@ class MenuListener(private val drawer: DrawerLayout) : NavigationView.OnNavigati
         return true
     }
 
-    fun tracks() {
-        Snackbar.make(drawer, "Select tracks", Snackbar.LENGTH_LONG).show()
-    }
+    fun tracks() = Snackbar.make(drawer, "Select tracks", Snackbar.LENGTH_LONG).show()
 
-    fun midi() {
-        Snackbar.make(drawer, "Midi info", Snackbar.LENGTH_LONG).show()
-    }
+    fun midi() = Snackbar.make(drawer, "Midi info", Snackbar.LENGTH_LONG).show()
 
-    fun guide() {
-        Snackbar.make(drawer, "User guide", Snackbar.LENGTH_LONG).show()
-    }
+    fun guide() = activity.startActivity(Intent(activity, GuideActivity::class.java))
 }
