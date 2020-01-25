@@ -1,0 +1,82 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/MatchParent" android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout android:id="@+id/appBarMidi"
+        android:layout_width="match_parent" android:layout_height="180dp"
+        android:fitsSystemWindows="true" android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout style="@style/MatchParent"
+            android:fitsSystemWindows="true" android:background="@drawable/linear_background"
+            app:contentScrim="?attr/colorPrimary" app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <ImageView android:src="@drawable/info" style="@style/MatchParent"
+                android:scaleType="fitXY" app:layout_collapseMode="parallax"
+                xmlns:tools="http://schemas.android.com/tools" tools:ignore="ContentDescription" />
+            <androidx.appcompat.widget.Toolbar android:id="@+id/midiBar"
+                android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin" app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView style="@style/MatchParent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout android:id="@+id/midiInfo" style="@style/MatchParent" android:orientation="vertical"
+            xmlns:tools="http://schemas.android.com/tools" tools:ignore="SelectableText">
+            <TextView android:id="@+id/dur" style="@style/Text" />
+            <LinearLayout android:id="@+id/copyrightGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/copyright" />
+                <TextView android:id="@+id/copyright" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/keysGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/keys" />
+                <TextView android:id="@+id/keys" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/temposGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/tempos" />
+                <TextView android:id="@+id/tempos" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/lyricsGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/lyrics" />
+                <TextView android:id="@+id/lyrics" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/markerGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/marker" />
+                <TextView android:id="@+id/marker" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/cueGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/cue" />
+                <TextView android:id="@+id/cue" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/otherGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/otherText" />
+                <TextView android:id="@+id/otherText" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/garbageGroup" style="@style/MatchParent" android:orientation="vertical">
+                <TextView style="@style/TextTitle" android:text="@string/garbage" />
+                <TextView android:id="@+id/garbage" style="@style/Text" />
+                <View style="@style/Divider" />
+            </LinearLayout>
+            <TextView style="@style/TextTitle" android:text="@string/harm" />
+            <TextView android:id="@+id/harm" style="@style/Text" />
+            <View style="@style/Divider" />
+            <TextView style="@style/TextTitle" android:text="@string/percuss" />
+            <TextView android:id="@+id/percuss" style="@style/Text" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMidi" style="@style/WrapContent" android:layout_margin="16dp"
+        app:layout_anchor="@id/appBarMidi" app:layout_anchorGravity="bottom|end"
+        app:srcCompat="@android:drawable/ic_menu_share" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

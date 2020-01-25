@@ -64,7 +64,7 @@ class MainShader(context: Context) : Shader(context, "Main") {
         TextureShader.sendTexture(textures, texInd, deskTex, texPos)
         GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, desk.withTex)
 
-        GLES32.glUniform4fv(color, 1, floatArrayOf(.15f, .15f, .15f, .95f), 0)
+        GLES32.glUniform4fv(color, 1, floatArrayOf(.15f, .15f, .15f, .9f), 0)
         shiftRotate(view, mv); shiftRotate(viewProjection, mvp); shiftRotate(invTransView, inTrV)
         desk.draw(pos, norm)
 

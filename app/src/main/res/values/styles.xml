@@ -5,15 +5,28 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
-    <style name="Floating" parent="AppTheme"><item name="android:windowIsFloating">true</item></style>
 
     <style name="MatchParent"><item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item></style>
     <style name="WrapContent"><item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item></style>
 
-    <style name="Text"  parent="WrapContent"><item name="android:layout_margin">   16dp</item></style>
+    <style name="Text" parent="WrapContent"><item name="android:layout_margin">16dp</item></style>
+    <style name="TextTitle" parent="WrapContent">
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Headline</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:typeface">serif</item>
+    </style>
     <style name="Image" parent="WrapContent"><item name="android:layout_gravity">center</item></style>
-
-    <style name="Expanded"><!--<item name="android:textColor">@color/transparent</item>--></style>
+    <style name="Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:background">@color/design_default_color_primary</item>
+    </style>
 </resources>

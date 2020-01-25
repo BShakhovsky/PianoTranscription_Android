@@ -1,14 +1,31 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/drawerMidi" android:icon="@drawable/info" android:title="@string/midi"
-        android:enabled="false" app:actionViewClass="android.widget.TextView" />
+    <item android:id="@+id/drawerMidi"
+        android:icon="@drawable/info"
+        android:title="@string/midi"
 
-    <item android:title="@string/selectTracks"><menu>
-        <item android:id="@+id/drawerTracks" android:icon="@drawable/queue" android:title="@string/selectTracks"
-            android:enabled="false" app:actionViewClass="android.widget.TextView" />
-    </menu></item>
+        android:enabled="false"
+        app:actionViewClass="android.widget.TextView" />
 
-    <item android:id="@+id/drawerGuide" android:icon="@drawable/help" android:title="@string/guide" />
+    <item android:id="@+id/drawerTracks"
+        android:title="@string/justTracks">
+        <menu>
+            <item android:id="@+id/drawerAll"
+                android:icon="@drawable/queue"
+                android:title="@string/selectAll"
+
+                android:enabled="false"
+                app:actionViewClass="android.widget.Switch" />
+        </menu>
+    </item>
+
+    <item android:title="@string/justGuide">
+        <menu>
+            <item android:id="@+id/drawerGuide"
+                android:icon="@drawable/help"
+                android:title="@string/guide" />
+        </menu>
+    </item>
 
 </menu>

@@ -3,18 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools" tools:ignore="ContentDescription"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.google.android.material.appbar.AppBarLayout android:id="@+id/app_bar"
+    <com.google.android.material.appbar.AppBarLayout android:id="@+id/appBarGuide"
         android:layout_width="match_parent" android:layout_height="180dp"
         android:fitsSystemWindows="true" android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            style="@style/MatchParent" android:fitsSystemWindows="true"
-            android:background="@drawable/linear_background" app:expandedTitleTextAppearance="@style/Expanded"
+        <com.google.android.material.appbar.CollapsingToolbarLayout style="@style/MatchParent"
+            android:fitsSystemWindows="true" android:background="@drawable/linear_background"
             app:contentScrim="?attr/colorPrimary" app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <ImageView android:src="@mipmap/ic_launcher_round" style="@style/MatchParent"
-                android:scaleType="centerCrop" app:layout_collapseMode="parallax" />
-            <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+            <ImageView android:src="@drawable/help" style="@style/MatchParent"
+                android:scaleType="fitXY" app:layout_collapseMode="parallax" />
+            <androidx.appcompat.widget.Toolbar android:id="@+id/guideBar"
                 android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin" app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
@@ -40,9 +39,9 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton android:id="@+id/fabGuide"
-        style="@style/WrapContent" android:layout_margin="16dp"
-        app:layout_anchor="@id/app_bar" app:layout_anchorGravity="bottom|end"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabGuide" style="@style/WrapContent" android:layout_margin="16dp"
+        app:layout_anchor="@id/appBarGuide" app:layout_anchorGravity="bottom|end"
         app:srcCompat="@android:drawable/ic_menu_share" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

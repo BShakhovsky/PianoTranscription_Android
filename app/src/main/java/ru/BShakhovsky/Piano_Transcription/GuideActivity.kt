@@ -11,7 +11,7 @@ class GuideActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_guide)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(guideBar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setFinishOnTouchOutside(true)
         fabGuide.setOnClickListener { Snackbar.make(it, "Share", Snackbar.LENGTH_LONG).show() }
