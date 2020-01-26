@@ -5,7 +5,6 @@ import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_midi.*
-import ru.BShakhovsky.Piano_Transcription.Assert
 import ru.BShakhovsky.Piano_Transcription.R
 
 class MidiActivity : AppCompatActivity() {
@@ -18,19 +17,14 @@ class MidiActivity : AppCompatActivity() {
         setFinishOnTouchOutside(true)
         fabMidi.setOnClickListener { view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).show() }
         (intent.getParcelableExtra("Summary") as Summary).also { summary -> with(midiInfo) {
-            fun minSec(mSec: Long) = mSec / 60_000 to (mSec / 1_000) % 60
-            Assert.argument(intent.hasExtra("Duration"))
-            intent.getLongExtra("Duration", -1).also { midiDur ->
-                Assert.argument(midiDur != -1L)
-                with(minSec(midiDur)) { dur.text = getString(R.string.duration, getString(R.string.time, first, second)) }
-            }
             if (summary.copyright.isEmpty()) removeView(copyrightGroup) else copyright.text = summary.copyright.joinToString("\n")
 
-            fun timeStr(mSec: Long) = with(minSec(mSec)) { "Time %02d:%02d --> ".format(first, second) }
             if (summary.keys.isEmpty()) removeView(keysGroup)
-            else keys.text = summary.keys.joinToString("\n"){ with(it) { "${timeStr(milSec)}$key" } }
+            else keys.text = summary.keys.joinToString("\n"){ with(it) {
+                "${Midi.minSecStr(context, R.string.timeCur, milSec)} $key" } }
             if (summary.tempos.isEmpty()) removeView(temposGroup)
-            else tempos.text = summary.tempos.joinToString("\n"){ with(it) { "${timeStr(milSec)}BPM ${bpm.toInt()}" } }
+            else tempos.text = summary.tempos.joinToString("\n"){ with(it) {
+                "${Midi.minSecStr(context, R.string.timeCur, milSec)} BPM ${bpm.toInt()}" } }
 
             if (summary.lyrics .isEmpty()) removeView (lyricsGroup) else lyrics   .text = summary.lyrics .joinToString("\n")
             if (summary.marker .isEmpty()) removeView (markerGroup) else marker   .text = summary.marker .joinToString("\n")

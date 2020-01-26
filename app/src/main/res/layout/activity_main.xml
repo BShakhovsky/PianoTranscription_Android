@@ -3,33 +3,81 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout" style="@style/MatchParent" android:fitsSystemWindows="true">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout style="@style/MatchParent"
-        android:background="#4682B4"><!-- Steel blue -->
+    <LinearLayout style="@style/MatchParent" android:orientation="vertical">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
             <androidx.appcompat.widget.Toolbar android:id="@+id/mainBar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize" android:background="?attr/colorPrimary"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+                android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary" app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <android.opengl.GLSurfaceView android:id="@+id/surfaceView" style="@style/MatchParent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        <RelativeLayout android:id="@+id/mainLayout" style="@style/MatchParent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:background="#4682B4"><!-- Steel blue -->
 
-        <com.google.android.gms.ads.AdView android:id="@+id/adMain"
-            style="@style/WrapContent" android:layout_gravity="bottom|start"
-            xmlns:ads="http://schemas.android.com/apk/res-auto"
-            ads:adSize="BANNER" ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+            <android.opengl.GLSurfaceView android:id="@+id/surfaceView" style="@style/MatchParent" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton android:id="@+id/fileOpen"
-            style="@style/WrapContent" android:layout_gravity="bottom|end"
-            android:layout_margin="16dp" app:srcCompat="@drawable/attach" />
+            <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/control"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_margin="16dp" android:visibility="gone"
+                xmlns:tools="http://schemas.android.com/tools" tools:ignore="ContentDescription">
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+                <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/prev" style="@style/WrapContent"
+                    android:background="@android:drawable/ic_media_previous"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="@id/seek"
+                    app:layout_constraintBottom_toBottomOf="@id/seek"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <androidx.appcompat.widget.AppCompatSeekBar android:id="@+id/seek"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/prev"
+                    app:layout_constraintEnd_toStartOf="@id/next" />
+
+                <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/next" style="@style/WrapContent"
+                    android:background="@android:drawable/ic_media_next"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
+                    app:layout_constraintTop_toTopOf="@id/seek"
+                    app:layout_constraintBottom_toBottomOf="@id/seek"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/play" style="@style/WrapContent"
+                    android:background="@android:drawable/ic_media_play"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
+                    app:layout_constraintTop_toTopOf="@id/curTime"
+                    app:layout_constraintBottom_toBottomOf="@id/curTime"
+                    app:layout_constraintEnd_toStartOf="@id/curTime" />
+
+                <androidx.appcompat.widget.AppCompatTextView android:id="@+id/curTime"
+                    style="@style/WrapContent" android:textColor="@android:color/white"
+                    android:layout_margin="8dp" android:paddingStart="16dp" android:paddingEnd="0dp"
+                    app:layout_constraintTop_toBottomOf="@id/seek"
+                    app:layout_constraintStart_toStartOf="@id/seek"
+                    app:layout_constraintEnd_toEndOf="@id/seek" />
+
+                <androidx.appcompat.widget.AppCompatTextView android:id="@+id/durTime"
+                    style="@style/WrapContent" android:textColor="@android:color/white"
+                    app:layout_constraintTop_toTopOf="@id/curTime"
+                    app:layout_constraintStart_toEndOf="@id/curTime" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.gms.ads.AdView android:id="@+id/adMain" style="@style/WrapContent"
+                app:adSize="BANNER" app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+                android:layout_alignParentBottom="true" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton android:id="@+id/fileOpen"
+                style="@style/WrapContent" android:layout_margin="16dp" app:srcCompat="@drawable/attach"
+                android:layout_alignParentBottom="true" android:layout_alignParentEnd="true" />
+
+        </RelativeLayout>
+    </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView android:id="@+id/drawerMenu"
         style="@style/WrapContent" android:layout_gravity="start"

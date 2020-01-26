@@ -25,7 +25,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <LinearLayout android:id="@+id/midiInfo" style="@style/MatchParent" android:orientation="vertical"
             xmlns:tools="http://schemas.android.com/tools" tools:ignore="SelectableText">
-            <TextView android:id="@+id/dur" style="@style/Text" />
             <LinearLayout android:id="@+id/copyrightGroup" style="@style/MatchParent" android:orientation="vertical">
                 <TextView style="@style/TextTitle" android:text="@string/copyright" />
                 <TextView android:id="@+id/copyright" style="@style/Text" />

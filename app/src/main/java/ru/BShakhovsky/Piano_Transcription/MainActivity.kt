@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.CompoundButton
+import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,13 +20,18 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.next
+import kotlinx.android.synthetic.main.activity_main.prev
+import kotlinx.android.synthetic.main.activity_main.view.*
 import ru.BShakhovsky.Piano_Transcription.MainUI.Toggle
 import ru.BShakhovsky.Piano_Transcription.MainUI.Touch
 import ru.BShakhovsky.Piano_Transcription.Midi.Midi
 import ru.BShakhovsky.Piano_Transcription.Midi.MidiActivity
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+class MainActivity : AppCompatActivity(),
+    NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener,
+        View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     internal enum class RequestCode { FILE_OPEN }
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
@@ -33,6 +40,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var mainMenu: Menu
     private var midi: Midi? = null
     private var selTracks = mutableSetOf<Int>()
+    private var isPlaying = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,19 +53,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         drawerMenu.setNavigationItemSelectedListener(this)
         with(drawerMenu.menu) {
-            fun menuView(item: Int) = findItem(item).actionView as TextView
-            menuView(R.id.drawerMidi).text = getString(R.string.noMidi)
-            with(menuView(R.id.drawerAll)) {
-                isEnabled = false; text = getString(R.string.tracks, 0, 0)
-                with(this as Switch) { id = DrawerItem.CHECK_ALL.id; setOnCheckedChangeListener(this@MainActivity) }
-            }
-            intArrayOf(R.id.drawerMidi, R.id.drawerAll).forEach { with(menuView(it)) {
-                gravity = Gravity.CENTER_VERTICAL
-                setTypeface(null, Typeface.ITALIC)
-            } }
+            intArrayOf(R.id.drawerMidi, R.id.drawerAll).forEach { with(findItem(it).actionView as TextView) {
+                gravity = Gravity.CENTER_VERTICAL; setTextColor(getColor(R.color.colorAccent)) } }
+            with(findItem(R.id.drawerAll).actionView as Switch) {
+                id = DrawerItem.CHECK_ALL.id; setOnCheckedChangeListener(this@MainActivity) }
         }
-        with(Toggle(this, drawerLayout, mainBar, surfaceView)) {
+        midiEnabled(false); tracksEnabled(false)
+        with(Toggle(this, drawerLayout, mainBar, mainLayout)) {
             drawerLayout.addDrawerListener(this); syncState() }
+
+        arrayOf(play, prev, next).forEach { it.setOnClickListener(this) }
+        seek.setOnSeekBarChangeListener(this)
 
         with(surfaceView) {
             setEGLContextClientVersion(3)
@@ -107,7 +113,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     } }
     private fun midi() { Intent(this, MidiActivity::class.java).also { intent ->
-        intent.putExtra("Duration", midi?.dur)
         intent.putExtra("Summary", midi?.summary)
         intent.putExtra("Tracks", midi?.tracks?.map { it.info }?.toTypedArray())
         intent.putExtra("Percuss", midi?.percuss?.map { it.info }?.toTypedArray())
@@ -126,48 +131,96 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != RESULT_OK) return
         when (requestCode) {
-            RequestCode.FILE_OPEN.ordinal -> { data?.data?.let { uri ->
-                contentResolver.openInputStream(uri)?.let { inStream ->
-                    midi = Midi(inStream, getString(R.string.untitled))
+            RequestCode.FILE_OPEN.ordinal -> { data?.data?.let { uri -> contentResolver.openInputStream(uri)?.let { inStream ->
                     fun showError(msgId: Int, titleId: Int = R.string.emptyMidi) =
                         AlertDialog.Builder(this).setTitle(titleId).setMessage(msgId).setIcon(R.drawable.info)
                             .setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
-                    when {
-                        midi!!.badMidi               -> { showError(R.string.notMidi, R.string.badFile); return }
-                        midi?.tracks.isNullOrEmpty() ->   showError(R.string.noTracks)
-                        midi?.dur == 0L              ->   showError(R.string.zeroDur)
-                    }
-                    intArrayOf(R.id.menuMidi, R.id.menuTracks).forEach { mainMenu.findItem(it).isVisible = true }
-                    with(drawerMenu.menu) {
-                        with(findItem(R.id.drawerMidi)) { isEnabled = true
-                            with(actionView as TextView) { midi?.summary?.let {
-                                ((if (it.keys.isNullOrEmpty()) "" else it.keys.first().key) to (if (it.tempos.isNullOrEmpty())
-                                    0 else it.tempos.first().bpm.toInt())).also { (key, tempo) -> when (midi?.dur) {
-                                    in 0L..60L -> text = getString(R.string.secKeyTemp, midi?.dur?.div(1_000), key, tempo)
-                                    in 60L..Long.MAX_VALUE -> text = getString(R.string.minKeyTemp,
-                                        midi?.dur?.div(1_000)?.div(60f), key, tempo)
-                                    else -> Assert.state(false)
-                                } } }
-                                setTextColor(getColor(R.color.colorAccent))
-                                setTypeface(null, Typeface.BOLD_ITALIC)
-                            }
-                        }
-                        with(findItem(R.id.drawerAll)) { isEnabled = true
-                            with(actionView as Switch) { isEnabled = true
-                                text = getString(R.string.tracks, 0, midi?.tracks?.size) }
-                        }
-                        with(findItem(R.id.drawerTracks).subMenu) { removeGroup(DrawerGroup.TRACKS.id)
-                            midi?.tracks?.forEachIndexed { i, track -> with(Switch(this@MainActivity)) {
-                                id = i; showText = true; textOn = "+"; textOff = ""
-                                setOnCheckedChangeListener(this@MainActivity)
-                                add(1, i, Menu.NONE, track.info.name).also {
-                                    it.icon = getDrawable(R.drawable.queue); it.actionView = this }
-                            } }
+                    with(Midi(inStream, getString(R.string.untitled))) {
+                        if (badMidi) { showError(R.string.notMidi, R.string.badFile); return }
+                        midi = this; midiEnabled(true); tracksEnabled(false)
+                        when {
+                            tracks.isNullOrEmpty() -> { showError(R.string.noTracks); return }
+                            dur == 0L -> { showError(R.string.zeroDur); return }
+                            else -> { if (midi?.tracks?.size == 1) tracksEnabled(true) }
                         }
                     }
-                }
-            } }
+                } }
+            }
             else -> Assert.argument(false)
         }
     }
+
+    private fun midiEnabled(enabled: Boolean) {
+        if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuMidi).isVisible = false
+        with(drawerMenu.menu.findItem(R.id.drawerMidi)) {
+            isEnabled = enabled
+            with(actionView as TextView) { if (enabled) { midi?.let { midi ->
+                midi.summary.let { text = getString(R.string.keyTemp,
+                    if (it.keys.isNullOrEmpty()) "" else it.keys.first().key,
+                    if (it.tempos.isNullOrEmpty()) 0 else it.tempos.first().bpm.toInt())
+                } } }
+                else text = getString(R.string.noMidi)
+                font(this, enabled)
+            }
+        }
+    }
+    private fun tracksEnabled(enabled: Boolean) {
+        if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuTracks).isVisible = false
+        if (enabled) {
+            @Suppress("PLUGIN_WARNING")
+            control.visibility = View.VISIBLE
+            durTime.text = Midi.minSecStr(this, R.string.timeOf, (midi ?: return).dur)
+            seek.max = (midi ?: return).dur.toInt()
+        } else {
+            @Suppress("PLUGIN_WARNING")
+            control.visibility = View.GONE
+            seek.progress = 0
+            prev.visibility = View.GONE; next.visibility = View.VISIBLE
+            if (isPlaying) play.performClick()
+        }
+        with(drawerMenu.menu) {
+            with(findItem(R.id.drawerTracks).subMenu) {
+                if (enabled) { midi?.tracks?.forEachIndexed { i, track -> with(Switch(this@MainActivity)) {
+                    id = i; showText = true; textOn = "+"; textOff = ""
+                    setOnCheckedChangeListener(this@MainActivity)
+                    add(1, i, Menu.NONE, track.info.name).also {
+                        it.icon = getDrawable(R.drawable.queue); it.actionView = this }
+                } } }
+                else removeGroup(DrawerGroup.TRACKS.id)
+            }
+            with(findItem(R.id.drawerAll)) {
+                isEnabled = enabled
+                with(actionView as Switch) {
+                    isEnabled = enabled
+                    text = getString(R.string.tracks, 0, if (enabled) midi?.tracks?.size else 0)
+                    font(this, enabled)
+                    if (enabled) { toggle(); if (!isChecked) toggle() }
+                }
+            }
+        }
+    }
+    private fun font(t: TextView, enabled: Boolean) = t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
+
+    override fun onClick(view: View?) {
+        when (view?.id) {
+            R.id.play -> {
+                view.setBackgroundResource(if (isPlaying) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause)
+                isPlaying = !isPlaying
+                prevNext()
+            }
+            R.id.prev -> {}
+            R.id.next -> {}
+            else -> Assert.state(false)
+        }
+    }
+    override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
+        curTime.text = Midi.minSecStr(this, R.string.timeCur, pos.toLong())
+        prevNext()
+    }
+    override fun onStartTrackingTouch(bar: SeekBar?) {}
+    override fun onStopTrackingTouch(bar: SeekBar?) {}
+    private fun prevNext() { with(seek) {
+        prev.visibility = if ((isPlaying) or (progress == 0))   View.GONE else View.VISIBLE
+        next.visibility = if ((isPlaying) or (progress == max)) View.GONE else View.VISIBLE
+    } }
 }

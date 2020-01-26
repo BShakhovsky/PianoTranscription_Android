@@ -1,6 +1,7 @@
 @file:Suppress("PackageName")
 package ru.BShakhovsky.Piano_Transcription.Midi
 
+import android.content.Context
 import com.pdrogfer.mididroid.MidiFile
 import com.pdrogfer.mididroid.event.*
 import com.pdrogfer.mididroid.event.meta.*
@@ -9,6 +10,9 @@ import ru.BShakhovsky.Piano_Transcription.Assert
 import java.io.InputStream
 
 class Midi(inStream: InputStream, untitled: String) {
+
+    companion object { fun minSecStr(context: Context, strId: Int, mSec: Long) =
+        context.getString(strId, mSec / 60_000, (mSec / 1_000) % 60) }
 
     class Note(val note: Int, val vel: Float, val isOn: Boolean)
     class Chord(var mSec: Long, var notes: Array<Note>)

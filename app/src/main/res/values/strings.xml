@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="app_name">Piano Transcription</string>
 
     <string name="selectAll">Select all</string>
@@ -10,12 +10,11 @@
     <string name="justGuide">Guide</string>
 
     <string name="tracks">%1$d of %2$d</string>
-    <string name="minKeyTemp">%1$.1f min %2$s %3$d bpm</string>
-    <string name="secKeyTemp" tools:ignore="PluralsCandidate">%1$d sec %2$s %3$d bpm</string>
+    <string name="keyTemp">%1$s %2$d bpm</string>
     <string name="noMidi">not loaded</string>
 
-    <string name="duration">Duration %1$s</string>
-    <string name="time" tools:ignore="PluralsCandidate">%1$d min : %2$d sec</string>
+    <string name="timeCur">Time %1$02d:%2$02d</string>
+    <string name="timeOf">" of %1$02d:%2$02d"</string>
     <string name="copyright">Copyright</string>
     <string name="keys">Keys</string>
     <string name="tempos">Tempos</string>
