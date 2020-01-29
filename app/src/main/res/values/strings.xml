@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Piano Transcription</string>
+    <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
     <string name="selectAll">Select all</string>
     <string name="midi">Midi info</string>
@@ -32,6 +33,8 @@
     <string name="emptyMidi">Empty Midi</string>
     <string name="noTracks">This MIDI-file does not contain any non-percussion notes.\nNothing to play on piano.</string>
     <string name="zeroDur">This MIDI-file does not contain any time data.\nCannot play it.</string>
+    <string name="trackNotSel">No tracks are chosen</string>
+    <string name="trackNotSelPlaying">At least 1 track should always be chosen while playing</string>
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio-file (such as MP3, WAV, etc.)</string>
     <string name="userGuide2">The program will automatically transcribe audio and save as a MIDI-file</string>

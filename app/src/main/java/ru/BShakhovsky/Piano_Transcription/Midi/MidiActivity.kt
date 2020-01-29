@@ -6,6 +6,7 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_midi.*
 import ru.BShakhovsky.Piano_Transcription.R
+import kotlin.math.roundToInt
 
 class MidiActivity : AppCompatActivity() {
 
@@ -24,7 +25,7 @@ class MidiActivity : AppCompatActivity() {
                 "${Midi.minSecStr(context, R.string.timeCur, milSec)} $key" } }
             if (summary.tempos.isEmpty()) removeView(temposGroup)
             else tempos.text = summary.tempos.joinToString("\n"){ with(it) {
-                "${Midi.minSecStr(context, R.string.timeCur, milSec)} BPM ${bpm.toInt()}" } }
+                "${Midi.minSecStr(context, R.string.timeCur, milSec)} BPM ${bpm.roundToInt()}" } }
 
             if (summary.lyrics .isEmpty()) removeView (lyricsGroup) else lyrics   .text = summary.lyrics .joinToString("\n")
             if (summary.marker .isEmpty()) removeView (markerGroup) else marker   .text = summary.marker .joinToString("\n")

@@ -7,19 +7,26 @@ import android.opengl.GLES32
 import android.opengl.GLSurfaceView
 import android.opengl.GLU
 import android.os.SystemClock
+import android.widget.ImageButton
+import android.widget.ProgressBar
+import android.widget.TextView
 import ru.BShakhovsky.Piano_Transcription.Assert
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Model
+import ru.BShakhovsky.Piano_Transcription.Sound
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class Render(private val context: Context) : GLSurfaceView.Renderer {
+class Render(private val context: Context, private val playPause: ImageButton,
+             soundBar: ProgressBar, soundCount: TextView) : GLSurfaceView.Renderer {
 
-    private lateinit var model: Model; private val sound = Sound(context)
+    private lateinit var model: Model; private val sound = Sound(context, soundBar, soundCount)
 
     private var width = 0; private var height = 0
     private var x = Geometry.overallLen / 2; private var yz = Geometry.whiteLen
-    private var zoomOut = true; private var zoomTime = 0L; private var prevTime = 0L
+    private var zoomOut = true; private var zoomTime = 0L
+
+    private var prevTime = 0L
 
     override fun onSurfaceCreated(glUnused: GL10?, config: EGLConfig?) {
         GLES32.glEnable(GLES32.GL_DEPTH_TEST)
@@ -96,9 +103,12 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
     private fun winToKey(xWin: Float, yWin: Float): Int { worldXZ(xWin, yWin).also { xz ->
         if ((xz.y == 0f) or (xz.x !in 0f..Geometry.overallLen) or (xz.y !in 0f..Geometry.whiteLen)) return -1
         ((xz.x / Geometry.whiteWid + 5).toInt() / 7).also { octave ->
-            if (xz.y > Geometry.blackLen) { return when { xz.x < Geometry.whiteWid -> 0; xz.x < Geometry.whiteWid * 2 -> 2
+            if (xz.y > Geometry.blackLen) { return when {
+                xz.x < Geometry.whiteWid     -> 0
+                xz.x < Geometry.whiteWid * 2 -> 2
                 else -> 3 + (octave - 1) * 12 + when ((xz.x / Geometry.whiteWid - 2).toInt() % 7) {
-                    0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11 else -> { Assert.argument(false); -1 } } }
+                    0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11
+                    else -> { Assert.argument(false); -1 } } }
             } else (Geometry.whiteWid / 2).also { blackW -> var cord = xz.x; when {
                 cord - Geometry.whiteWid     < -blackW             -> return -1//0
                 cord - Geometry.whiteWid     <  blackW             -> return  1
@@ -122,14 +132,16 @@ class Render(private val context: Context) : GLSurfaceView.Renderer {
         return -1
     } }
 
-    fun     tap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1) {
-             model.geom.keys[it]   .isTapped = true;          sound.play(it) } } }
-    fun longTap(xWin: Float, yWin: Float) { winToKey(xWin, yWin).also { if (it != -1) {
-        with(model.geom.keys[it]) { isPressed = !isPressed }; sound.play(it) } } }
+    fun     tap(xWin: Float, yWin: Float) { if (yWin < height / 2) playPause.performClick() else winToKey(xWin, yWin).also {
+        if (it != -1) {      model.geom.keys[it]   .isTapped  = true;         sound.play(it) } } }
+    fun longTap(xWin: Float, yWin: Float) { if (yWin < height / 2) playPause.performClick() else winToKey(xWin, yWin).also {
+        if (it != -1) { with(model.geom.keys[it]) { isPressed = !isPressed }; sound.play(it) } } }
 
-//  fun   pressKey(note: Int, velocity: Float) { if (check(note)) { model.geom.keys[note]       .isPressed = true;  sound.play(note, velocity) } }
-//  fun releaseKey(note: Int)                  { if (check(note))   model.geom.keys[note]       .isPressed = false; sound.stop(note) }
-//  fun releaseAllKeys()                       { if (check())       model.geom.keys.forEach { it.isPressed = false } }
+    fun   pressKey(note: Int, velocity: Float) { if (check(note)) {
+             model.geom.keys[note] .isPressed = true;         sound.play(note, velocity) } }
+    fun releaseKey(note: Int)                  { if (check(note)) {
+             model.geom.keys[note] .isPressed = false;        sound.stop(note) } }
+    fun releaseAllKeys() = model.geom.keys.forEachIndexed { note, key -> key.isPressed = false; sound.stop(note) }
 
-//    private fun check(note: Int): Boolean { Assert.argument(note in 0..87); return ::model.isInitialized }
+    private fun check(note: Int): Boolean { Assert.argument(note in 0..87); return ::model.isInitialized }
 }
