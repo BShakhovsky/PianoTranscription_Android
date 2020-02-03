@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Piano Transcription</string>
+    <string name="error">Error</string>
+    <string name="crash">App crashed and restarted</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
     <string name="selectAll">Select all</string>

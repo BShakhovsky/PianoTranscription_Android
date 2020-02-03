@@ -41,6 +41,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         setSupportActionBar(mainBar)
 
+        Thread.setDefaultUncaughtExceptionHandler(Crash(this))
+        if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(R.string.error).apply {
+            if (BuildConfig.DEBUG) setMessage(intent.getStringExtra("Crash")) else setMessage(R.string.crash) }
+            .setIcon(R.drawable.info).setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
+
         with(surfaceView) {
             setEGLContextClientVersion(3)
             /* https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglChooseConfig.xhtml
@@ -48,7 +53,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 from changing the selection algorithm used by eglChooseConfig.
                 Therefore, selections may change from release to release of the client-side library. */
 //            setEGLConfigChooser(EGLChooser(depth = 1, stencil = 1))
-            render = Render(context, playPause, soundBar, soundCount)
+            render = Render(context, playPause, prev, next, soundBar, soundCount)
             setRenderer(render); setOnTouchListener(Touch(render))
         }
 
@@ -113,7 +118,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun midi() { Intent(this, MidiActivity::class.java).also { intent ->
         intent.putExtra("Summary", midi?.summary)
         intent.putExtra("Tracks",  midi?.tracks ?.map { it.info }?.toTypedArray())
-        intent.putExtra("Percuss", midi?.percuss?.map { it.info }?.toTypedArray())
+        intent.putExtra("Percuss", midi?.percuss)
         startActivity(intent)
     } }
     private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
@@ -163,14 +168,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     private fun tracksEnabled(enabled: Boolean) {
         if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuTracks).isVisible = enabled
+        control.visibility = if (enabled) View.VISIBLE else View.GONE
         if (enabled) {
-            @Suppress("PLUGIN_WARNING")
-            control.visibility = View.VISIBLE
             durTime.text = Midi.minSecStr(this, R.string.timeOf, (midi ?: return).dur)
             seek.max = (midi ?: return).dur.toInt()
         } else {
-            @Suppress("PLUGIN_WARNING")
-            control.visibility = View.GONE
             seek.progress = 0
             prev.visibility = View.GONE; next.visibility = View.VISIBLE
             if ((play ?: return).isPlaying) playPause.performClick()
@@ -198,19 +200,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     private fun font(t: TextView, enabled: Boolean) = t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
 
-    override fun onClick(view: View?) { when (view?.id) {
-        R.id.playPause -> { play?.let { with(it) {
-            if (!isPlaying and (numSelTracks() == 0)) {
-                showError(R.string.justTracks, R.string.trackNotSel)
-                drawerLayout.openDrawer(GravityCompat.START)
-            } else { view.setBackgroundResource(if (isPlaying)
-                android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause)
-                toggle(); prevNext() }
-        } } }
-        R.id.prev -> {}
-        R.id.next -> {}
+    override fun onClick(view: View?) { play?.let { with(it) { seek.progress.also { prevMilSec -> when (view?.id) {
+        R.id.playPause -> {
+            if (!isPlaying and noTracks()) return
+            view.setBackgroundResource(if (isPlaying) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause)
+            toggle(); prevNext()
+        }
+        R.id.prev -> if (!isPlaying and !noTracks()) { render.releaseAllKeys(); do {
+            val  anyPressed        = prevChord() } while (((prevMilSec - seek.progress < 1) or !anyPressed) and (seek.progress != 0)) }
+        R.id.next -> if (!isPlaying and !noTracks()) { render.releaseAllKeys(); do {
+            val (anyPressed, stop) = nextChord() } while (((seek.progress - prevMilSec < 1) or !anyPressed) and !stop) }
         else -> Assert.state(false)
-    } }
+    } } } } }
     override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
         curTime.text = Midi.minSecStr(this, R.string.timeCur, pos.toLong())
         prevNext()
@@ -223,6 +224,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         next.visibility = if (((play ?: return@with).isPlaying) or (progress == max)) View.INVISIBLE else View.VISIBLE
     } }
 
+    private fun noTracks(): Boolean { if (play?.numSelTracks() == 0) {
+        showError(R.string.justTracks, R.string.trackNotSel)
+        drawerLayout.openDrawer(GravityCompat.START)
+        return true }; return false }
     private fun showError(titleId: Int, msgId: Int) = AlertDialog.Builder(this).setTitle(titleId)
         .setMessage(msgId).setIcon(R.drawable.info).setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
 }

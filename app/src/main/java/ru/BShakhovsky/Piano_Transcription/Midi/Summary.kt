@@ -9,7 +9,7 @@ class Summary(var text: Array<String> = emptyArray(), var copyright: Array<Strin
               var tempos: Array<Bpm> = emptyArray(), var keys: Array<Key> = emptyArray(),
               var garbage: Array<String> = emptyArray()) : Parcelable {
 
-    class Key(val milSec: Long, val key: String) : Parcelable {
+    class Key(var milSec: Long, val key: String) : Parcelable {
         constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readString()!!)
         override fun writeToParcel(parcel: Parcel, flags: Int) { parcel.writeLong(milSec); parcel.writeString(key) }
         override fun describeContents() = 0
@@ -18,7 +18,7 @@ class Summary(var text: Array<String> = emptyArray(), var copyright: Array<Strin
             override fun newArray(size: Int) = arrayOfNulls<Key>(size) }
     }
 
-    class Bpm(val milSec: Long, val bpm: Float) : Parcelable {
+    class Bpm(var milSec: Long, val bpm: Float) : Parcelable {
         constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readFloat())
         override fun writeToParcel(parcel: Parcel, flags: Int) { parcel.writeLong(milSec); parcel.writeFloat(bpm) }
         override fun describeContents() = 0

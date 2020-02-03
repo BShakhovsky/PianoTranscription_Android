@@ -17,35 +17,16 @@ class Play(private val render: Render, private val tracks: Array<Track>,
     private val curIndices = IntArray(tracks.size)
     private var curMilSec = 0L
 
-    override fun run() {
-        Assert.state(selTracks.isNotEmpty())
-        curMilSec.also { prevMilSec ->
-            curMilSec = Long.MAX_VALUE
-            tracks.forEachIndexed { trackNo, track -> if (selTracks.contains(trackNo)) with(track.chords) {
-                if (curIndices[trackNo] >= size) return@with
-                if (this[curIndices[trackNo]].mSec == prevMilSec) {
-                    this[curIndices[trackNo]].notes.forEach { with(it) { when {
-                        isOn -> render.pressKey(note, vel); else -> render.releaseKey(note) } } }
-                    ++curIndices[trackNo]
-                }
-                if (curIndices[trackNo] < size) curMilSec = minOf(curMilSec,
-                    prevMilSec + 1_000, this[curIndices[trackNo]].mSec)
-            } }
-            seekBar.progress = curMilSec.toInt()
-
-            var stop = true
-            tracks.forEachIndexed { trackNo, track -> if (curIndices[trackNo] < track.chords.size) {
-                stop = false; return@forEachIndexed } }
-            if (stop) { playPause.performClick(); seek(0) }
-            else handle.postDelayed(this, curMilSec - prevMilSec)
-        }
-    }
+    override fun run() { curMilSec.also { prevMilSec -> nextChord().also { (_, stop) ->
+        if (stop) { playPause.performClick(); seek(0) }
+        else handle.postDelayed(this, curMilSec - prevMilSec)
+    } } }
 
     fun toggle() { isPlaying = !isPlaying; if (isPlaying) { render.releaseAllKeys()
         handle.post(this) } else handle.removeCallbacks(this) }
 
     fun numSelTracks() = selTracks.size
-    fun addTrack(trackNo: Int) { selTracks.add(trackNo); seekTrack(curMilSec, trackNo) }
+    fun addTrack(trackNo: Int) { selTracks += trackNo; seekTrack(curMilSec, trackNo) }
     fun removeTrack(trackNo: Int) = selTracks.remove(trackNo)
 
     fun seek(newMilSec: Long) {
@@ -57,5 +38,49 @@ class Play(private val render: Render, private val tracks: Array<Track>,
         curIndices[trackNo] = 0
         while (tracks[trackNo].chords[curIndices[trackNo]].mSec < newMilSec)
             if (++curIndices[trackNo] >= tracks[trackNo].chords.size) return
+    }
+
+    fun nextChord(): Pair<Boolean, Boolean> {
+        Assert.state(selTracks.isNotEmpty())
+        curMilSec.also { prevMilSec -> curMilSec = Int.MAX_VALUE.toLong(); var anyPressed = false
+            tracks.forEachIndexed { trackNo, track -> if (selTracks.contains(trackNo)) with(track.chords) {
+                if (curIndices[trackNo] == size) return@with
+                if (curIndices[trackNo] == -1) ++curIndices[trackNo]
+                if (this[curIndices[trackNo]].mSec < prevMilSec) ++curIndices[trackNo]
+                if (this[curIndices[trackNo]].mSec == prevMilSec) {
+                    this[curIndices[trackNo]].notes.forEach { (note, vel) -> when (vel) {
+                        0f   ->   render.releaseKey(note)
+                        else -> { render.  pressKey(note, vel); anyPressed = true } } }
+                    ++curIndices[trackNo]
+                }
+                if (curIndices[trackNo] != size) curMilSec = minOf(curMilSec,
+                    prevMilSec + 1_000, this[curIndices[trackNo]].mSec)
+            } }
+            seekBar.progress = curMilSec.toInt()
+
+            var stop = true
+            tracks.forEachIndexed { trackNo, track -> if (curIndices[trackNo] < track.chords.size) {
+                stop = false; return@forEachIndexed } }
+
+            return anyPressed to stop
+        }
+    }
+    fun prevChord(): Boolean {
+        Assert.state(selTracks.isNotEmpty())
+        curMilSec.also { prevMilSec -> curMilSec = 0
+            tracks.forEachIndexed { trackNo, track -> if (selTracks.contains(trackNo)) with(track.chords) {
+                if (curIndices[trackNo] == -1) return@with
+                if (curIndices[trackNo] == size) --curIndices[trackNo]
+                if (this[curIndices[trackNo]].mSec >= prevMilSec) --curIndices[trackNo]
+                if (curIndices[trackNo] != -1) curMilSec = maxOf(curMilSec, this[curIndices[trackNo]].mSec)
+            } }
+            seekBar.progress = curMilSec.toInt(); var anyPressed = false
+            tracks.forEachIndexed { trackNo, track -> if (selTracks.contains(trackNo)) with(track.chords) {
+                if (curIndices[trackNo] == -1) return@with
+                if (this[curIndices[trackNo]].mSec == curMilSec) { this[curIndices[trackNo]].notes.forEach { (note, vel) ->
+                    if (vel != 0f) { render.pressKey(note, vel); anyPressed = true } } }
+            } }
+            return anyPressed
+        }
     }
 }
