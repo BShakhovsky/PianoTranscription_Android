@@ -63,21 +63,25 @@ class MainShader(context: Context) : Shader(context, "Main") {
 
         TextureShader.sendTexture(textures, texInd, deskTex, texPos)
         GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, desk.withTex)
-
-        GLES32.glUniform4fv(color, 1, floatArrayOf(.15f, .15f, .15f, .9f), 0)
-        shiftRotate(view, mv); shiftRotate(viewProjection, mvp); shiftRotate(invTransView, inTrV)
-        desk.draw(pos, norm)
+        drawCommon(desk, floatArrayOf(.15f, .15f, .15f, .9f), view, viewProjection, invTransView)
 
         GLES32.glDisable(GLES32.GL_BLEND)
         GLES32.glUniform1i(shadow, GLES32.GL_TRUE)
     }
+    fun drawCotton(cotton: Primitive, view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray, lights: Array<Light>)
+            = drawCommon(cotton, floatArrayOf(0xD5.toFloat() / 0xFF, 0f, 0f, 1f), view, viewProjection, invTransView, lights)
     fun drawKey(key: Primitive, offset: Float, angle: Float, col: FloatArray,
                 view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray, lights: Array<Light>) {
         GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, key.withTex)
+        drawCommon(key, col, view, viewProjection, invTransView, lights, offset, angle)
+    }
+
+    private fun drawCommon(shape: Primitive, col: FloatArray, view: FloatArray, viewProjection: FloatArray,
+                           invTransView: FloatArray, lights: Array<Light>? = null, offset: Float = 0f, angle: Float = 0f) {
         GLES32.glUniform4fv(color, 1, col, 0)
         shiftRotate(view, mv, offset, angle); shiftRotate(viewProjection, mvp, offset, angle)
         shiftRotate(invTransView, inTrV, offset, angle)
-        lights.forEach { with(it) { shiftRotate(lightOrtho, lightMVO, offset, angle) } }
-        key.draw(pos, norm)
+        lights?.forEach { with(it) { shiftRotate(lightOrtho, lightMVO, offset, angle) } }
+        shape.draw(pos, norm)
     }
 }

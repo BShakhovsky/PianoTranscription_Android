@@ -141,7 +141,7 @@ class Render(private val context: Context, private val playPause: ImageButton,
         in 0f .. width / 3f -> prev.performClick()
         in width / 3f .. width * 2 / 3f -> playPause.performClick()
         in width * 2 / 3f .. width.toFloat() -> next.performClick()
-        else -> Assert.state(false)
+        else -> Assert.argument(false)
     } }
 
     fun   pressKey(note: Int, velocity: Float) { if (check(note)) {

@@ -21,7 +21,7 @@ class AdBanner(private val adView: AdView) : AdListener() {
             AdRequest.ERROR_CODE_INVALID_REQUEST -> "Ad-banner unit ID incorrect"
             AdRequest.ERROR_CODE_NETWORK_ERROR   -> "Ad-banner: no internet connection"
             AdRequest.ERROR_CODE_NO_FILL         -> "Ad-banner: lack of ad inventory"
-            else                                 -> { Assert.state(false); "Ad-banner error" }
+            else                                 -> { Assert.argument(false); "Ad-banner error" }
         }, Snackbar.LENGTH_LONG).show()
     }
 }

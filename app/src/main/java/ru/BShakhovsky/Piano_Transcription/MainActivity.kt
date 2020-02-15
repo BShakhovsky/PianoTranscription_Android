@@ -1,8 +1,10 @@
 @file:Suppress("PackageName")
 package ru.BShakhovsky.Piano_Transcription
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
@@ -19,6 +21,7 @@ import androidx.core.view.GravityCompat
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
+import ru.BShakhovsky.Piano_Transcription.MainUI.Crash
 import ru.BShakhovsky.Piano_Transcription.MainUI.Toggle
 import ru.BShakhovsky.Piano_Transcription.MainUI.Touch
 import ru.BShakhovsky.Piano_Transcription.Midi.Midi
@@ -28,7 +31,14 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
-    internal enum class RequestCode { FILE_OPEN }
+    companion object {
+        fun msgDialog(context: Context, titleId: Int, msgStr: String, okId: Int = R.string.ok, okAction: (()->Unit) = {})
+                : AlertDialog = AlertDialog.Builder(context).setTitle(titleId).setMessage(msgStr)
+            .setIcon(R.drawable.info).setPositiveButton(okId) { _, _ -> okAction() }.setCancelable(false).show()
+        fun msgDialog(context: Context, titleId: Int, msgId: Int, okId: Int = R.string.ok, okAction: (()->Unit) = {})
+                : AlertDialog = msgDialog(context, titleId, context.getString(msgId), okId, okAction)
+    }
+
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
     internal enum class DrawerItem(val id: Int) { CHECK_ALL(-1) }
 
@@ -57,9 +67,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             setRenderer(render); setOnTouchListener(Touch(render))
         }
 
-        fileOpen.setOnClickListener { Intent(Intent.ACTION_GET_CONTENT).also { intent -> intent.type = "*/*"
-            startActivityForResult(intent, RequestCode.FILE_OPEN.ordinal) } }
-
         drawerMenu.setNavigationItemSelectedListener(this)
         with(drawerMenu.menu) {
             intArrayOf(R.id.drawerMidi, R.id.drawerAll).forEach { with(findItem(it).actionView as TextView) {
@@ -71,7 +78,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         with(Toggle(this, drawerLayout, mainBar, mainLayout)) {
             drawerLayout.addDrawerListener(this); syncState() }
 
-        arrayOf(playPause, prev, next).forEach { it.setOnClickListener(this) }
+        arrayOf<View>(newMedia, playPause, prev, next).forEach { it.setOnClickListener(this) }
         seek.setOnSeekBarChangeListener(this)
 
         MobileAds.initialize(this)
@@ -85,7 +92,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean { when (item.itemId) {
         R.id.menuTracks -> drawerLayout.openDrawer(GravityCompat.START)
-        R.id.menuMidi -> midi(); R.id.menuGuide -> guide() else -> Assert.state(false) }
+        R.id.menuMidi -> midi(); R.id.menuGuide -> guide() else -> Assert.argument(false) }
         return true
     }
     override fun onNavigationItemSelected(item: MenuItem): Boolean { when (item.itemId) {
@@ -123,9 +130,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     } }
     private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
     private fun checkGroup(groupId: Int, itemId: Int) = when (groupId) {
-        0                     -> { Assert.state(itemId == R.id.drawerAll);            false }
-        DrawerGroup.TRACKS.id -> { Assert.state(itemId in 0..midi!!.tracks.lastIndex); true }
-        else                  -> { Assert.state(false);                               false } }
+        0                     -> { Assert.argument(itemId == R.id.drawerAll);            false }
+        DrawerGroup.TRACKS.id -> { Assert.argument(itemId in 0..midi!!.tracks.lastIndex); true }
+        else                  -> { Assert.argument(false);                               false } }
 
     override fun onBackPressed() { with(drawerLayout) { GravityCompat.START.also {
         if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed() } } }
@@ -133,23 +140,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onStop()  { super.onStop();  if ( (play ?: return).isPlaying) playPause.performClick() }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode != RESULT_OK) return
-        when (requestCode) {
-            RequestCode.FILE_OPEN.ordinal -> { data?.data?.let { uri -> contentResolver.openInputStream(uri)?.let { inStream ->
-                with(Midi(inStream, getString(R.string.untitled))) {
-                    if (badMidi) { showError(R.string.badFile, R.string.notMidi); return }
-                    midi = this; midiEnabled(true); tracksEnabled(false) // needs to know old play.isPlaying
-                    when {
-                        tracks.isNullOrEmpty() -> { showError(R.string.emptyMidi, R.string.noTracks); return }
-                        dur == 0L -> { showError(R.string.emptyMidi, R.string.zeroDur); return }
-                        else -> { Assert.state(::render.isInitialized); play = Play(render, tracks, playPause, seek); tracksEnabled(true) }
-                    }
-                }
-            } } }
+        when (requestCode.toShort().toInt()) { // Dialog fragment on super() will receive it
+            AddDialog.RequestCode.OPEN_MEDIA.id -> { if (resultCode != RESULT_OK) return; openMidi(data?.data) }
+            AddDialog.RequestCode.OPEN_MIDI .id -> { if (resultCode != RESULT_OK) return; openMidi(data?.data) }
+            AddDialog.RequestCode.WRITE_WAV .id,
+            AddDialog.Permission.RECORD_SETTINGS.id -> super.onActivityResult(requestCode, resultCode, data)
             else -> Assert.argument(false)
         }
     }
+    private fun openMidi(uri: Uri?) { uri?.let { u -> contentResolver.openInputStream(u)?.use { inStream ->
+        with(Midi(inStream, getString(R.string.untitled))) {
+            if (badMidi) { showError(R.string.badFile, R.string.notMidi); return }
+            midi = this; midiEnabled(true); tracksEnabled(false) // needs to know old play.isPlaying
+            when {
+                tracks.isNullOrEmpty() -> { showError(R.string.emptyMidi, R.string.noTracks); return }
+                dur == 0L -> { showError(R.string.emptyMidi, R.string.zeroDur); return }
+                else -> { Assert.state(::render.isInitialized); play = Play(render, tracks, playPause, seek); tracksEnabled(true) }
+            }
+        }
+    } } }
 
     private fun midiEnabled(enabled: Boolean) {
         if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuMidi).isVisible = enabled
@@ -200,18 +209,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     private fun font(t: TextView, enabled: Boolean) = t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
 
-    override fun onClick(view: View?) { play?.let { with(it) { seek.progress.also { prevMilSec -> when (view?.id) {
-        R.id.playPause -> {
-            if (!isPlaying and noTracks()) return
-            view.setBackgroundResource(if (isPlaying) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause)
-            toggle(); prevNext()
-        }
-        R.id.prev -> if (!isPlaying and !noTracks()) { render.releaseAllKeys(); do {
-            val  anyPressed        = prevChord() } while (((prevMilSec - seek.progress < 1) or !anyPressed) and (seek.progress != 0)) }
-        R.id.next -> if (!isPlaying and !noTracks()) { render.releaseAllKeys(); do {
-            val (anyPressed, stop) = nextChord() } while (((seek.progress - prevMilSec < 1) or !anyPressed) and !stop) }
-        else -> Assert.state(false)
-    } } } } }
+    override fun onClick(view: View?) { when (view?.id) {
+        R.id.newMedia -> AddDialog().show(supportFragmentManager, "Dialog Add")
+        else -> play?.let { with(it) { seek.progress.also { prevMilSec -> when (view?.id) {
+            R.id.playPause -> {
+                if (!isPlaying and noTracks()) return
+                view.setBackgroundResource(if (isPlaying) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause)
+                toggle(); prevNext()
+            }
+            R.id.prev -> if (!isPlaying and !noTracks()) { render.releaseAllKeys(); do {
+                val  anyPressed        = prevChord() } while (((prevMilSec - seek.progress < 1) or !anyPressed) and (seek.progress != 0)) }
+            R.id.next -> if (!isPlaying and !noTracks()) { render.releaseAllKeys(); do {
+                val (anyPressed, stop) = nextChord() } while (((seek.progress - prevMilSec < 1) or !anyPressed) and !stop) }
+            else -> Assert.argument(false)
+        } } } }
+    } }
     override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
         curTime.text = Midi.minSecStr(this, R.string.timeCur, pos.toLong())
         prevNext()
@@ -228,6 +240,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         showError(R.string.justTracks, R.string.trackNotSel)
         drawerLayout.openDrawer(GravityCompat.START)
         return true }; return false }
-    private fun showError(titleId: Int, msgId: Int) = AlertDialog.Builder(this).setTitle(titleId)
-        .setMessage(msgId).setIcon(R.drawable.info).setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
+    private fun showError(titleId: Int, msgId: Int) = msgDialog(this, titleId, msgId)
 }

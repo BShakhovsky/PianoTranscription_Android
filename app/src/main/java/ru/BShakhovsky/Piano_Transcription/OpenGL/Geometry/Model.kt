@@ -38,6 +38,7 @@ class Model(context: Context) {
 
         with(mats) {
             mainShader.initReflectBuff(textures, lights)
+            mainShader.drawCotton(geom.cotton, reflectView, reflectVP, refInvTransView, lights)
             geom.drawKeyboard { key, offset, angle, color -> run { mainShader.drawKey(key, offset, angle, color,
                 reflectView, reflectVP, refInvTransView, lights) }}
 
@@ -47,6 +48,7 @@ class Model(context: Context) {
 
             mainShader.initMainScreen(textures, lights, true)
             mainShader.drawDesk(geom.desk, view, viewProjection, invTransView, textures, lights.size + 1)
+            mainShader.drawCotton(geom.cotton, view, viewProjection, invTransView, lights)
             geom.drawKeyboard { key, offset, angle, color -> run { mainShader.drawKey(key, offset, angle, color,
                 view, viewProjection, invTransView, lights) }}
         }

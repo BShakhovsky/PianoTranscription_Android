@@ -3,23 +3,24 @@ package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 class Geometry {
 
-    companion object { const val blackLen = 85f; const val blackWid = 9f
+    companion object { const val blackWid = 9f; const val cotThick = blackWid / 2; const val blackLen = 85 + cotThick
         const val whiteLen = 145f; const val whiteWid = 23f; const val overallLen = whiteWid * 52
         const val deskOver = whiteWid * 3; const val deskHeight = whiteWid * 8; const val deskThick = whiteWid * 1.5f
     }
-    private val whiteGap = .6f; private val blackFillet = 3
+    private val whiteGap = whiteWid / 38; private val filletSide = blackWid / 3; private val filletFront = filletSide * 3
 
     private val whiteLeft: Primitive; private val whiteMid: Primitive; private val whiteRight: Primitive; private val whiteFull: Primitive
     private val black    = Primitive(floatArrayOf(
-            whiteWid - blackWid / 2,                  whiteWid + blackWid,    0f,
-            whiteWid + blackWid / 2,                  whiteWid + blackWid,    0f,
-            whiteWid - blackWid / 2,                  whiteWid + blackWid,    blackLen - 3 * blackFillet,
-            whiteWid + blackWid / 2,                  whiteWid + blackWid,    blackLen - 3 * blackFillet,
-            whiteWid - blackWid / 2 - blackFillet,    whiteWid - blackWid,    blackLen,
-            whiteWid + blackWid / 2 + blackFillet,    whiteWid - blackWid,    blackLen,
-            whiteWid - blackWid / 2 - blackFillet,    whiteWid - blackWid,    0f,
-            whiteWid + blackWid / 2 + blackFillet,    whiteWid - blackWid,    0f),
-        intArrayOf(0, 2, 1,  1, 2, 3,    2, 4, 3,  3, 4, 5,    0, 6, 2,  2, 6, 4,    1, 3, 7,  7, 3, 5))
+            whiteWid - blackWid / 2,                    whiteWid + blackWid,    cotThick,
+            whiteWid + blackWid / 2,                    whiteWid + blackWid,    cotThick,
+            whiteWid - blackWid / 2,                    whiteWid + blackWid,    blackLen - filletFront,
+            whiteWid + blackWid / 2,                    whiteWid + blackWid,    blackLen - filletFront,
+            whiteWid - blackWid / 2 - filletSide,       whiteWid - blackWid,    blackLen,
+            whiteWid + blackWid / 2 + filletSide,       whiteWid - blackWid,    blackLen,
+            whiteWid - blackWid / 2 - filletSide,       whiteWid - blackWid,    cotThick,
+            whiteWid + blackWid / 2 + filletSide,       whiteWid - blackWid,    cotThick),
+        intArrayOf(0, 2, 1,  1, 2, 3,    2, 4, 3,  3, 4, 5,    0, 6, 2,  2, 6, 4,    1, 3, 7,  7, 3, 5,
+                   0, 1, 6,  6, 1, 7))
     val desk    = Primitive(floatArrayOf(- deskOver,    0f,            0f,
                               overallLen + deskOver,    0f,            0f,
                                          - deskOver,    deskHeight,    0f,
@@ -31,27 +32,38 @@ class Geometry {
                               overallLen + deskOver,    deskHeight,    -deskThick),
         intArrayOf(0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7,    0, 2, 6,  6, 4, 0,    1, 5, 3,  3, 5, 7),
         floatArrayOf(1f, 1f, 1f,    1f, 1f, 1f))
+    val cotton  = Primitive(floatArrayOf(0f,            whiteWid,            cotThick,
+                              overallLen,               whiteWid,            cotThick,
+                                         0f,            whiteWid + cotThick, cotThick,
+                              overallLen,               whiteWid + cotThick, cotThick,
+
+                                         0f,            whiteWid,            0f,
+                              overallLen,               whiteWid,            0f,
+                                         0f,            whiteWid + cotThick, 0f,
+                              overallLen,               whiteWid + cotThick, 0f),
+        intArrayOf(0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7,    0, 2, 6,  6, 4, 0,    1, 5, 3,  3, 5, 7),
+        floatArrayOf(1f, 1f, 1f,    1f, 1f, 1f))
 
     val keys = Array(88){ Key(it) }
 
-    init { floatArrayOf(blackWid / 2f + blackFillet,    whiteWid,    0f,
-             whiteWid - blackWid / 2  - blackFillet,    whiteWid,    0f,
-                        blackWid / 2f + blackFillet,    whiteWid,    blackLen,
-             whiteWid - blackWid / 2  - blackFillet,    whiteWid,    blackLen,
-             whiteGap                              ,    whiteWid,    blackLen,
-             whiteWid - whiteGap                   ,    whiteWid,    blackLen,
+    init { floatArrayOf(blackWid / 2f + filletSide,    whiteWid,    0f,
+             whiteWid - blackWid / 2  - filletSide,    whiteWid,    0f,
+                        blackWid / 2f + filletSide,    whiteWid,    blackLen,
+             whiteWid - blackWid / 2  - filletSide,    whiteWid,    blackLen,
+             whiteGap                             ,    whiteWid,    blackLen,
+             whiteWid - whiteGap                  ,    whiteWid,    blackLen,
 
-             whiteGap                              ,    whiteWid,    whiteLen,
-             whiteWid - whiteGap                   ,    whiteWid,    whiteLen,
-             whiteGap                              ,    0f      ,    whiteLen,
-             whiteWid - whiteGap                   ,    0f      ,    whiteLen,
+             whiteGap                             ,    whiteWid,    whiteLen,
+             whiteWid - whiteGap                  ,    whiteWid,    whiteLen,
+             whiteGap                             ,    0f      ,    whiteLen,
+             whiteWid - whiteGap                  ,    0f      ,    whiteLen,
 
-                        blackWid / 2f + blackFillet,    0f      ,    0f,
-             whiteWid - blackWid / 2  - blackFillet,    0f      ,    0f,
-                        blackWid / 2f + blackFillet,    0f      ,    blackLen,
-             whiteWid - blackWid / 2  - blackFillet,    0f      ,    blackLen,
-             whiteGap                              ,    0f      ,    blackLen,
-             whiteWid - whiteGap                   ,    0f      ,    blackLen
+                        blackWid / 2f + filletSide,    0f      ,    0f,
+             whiteWid - blackWid / 2  - filletSide,    0f      ,    0f,
+                        blackWid / 2f + filletSide,    0f      ,    blackLen,
+             whiteWid - blackWid / 2  - filletSide,    0f      ,    blackLen,
+             whiteGap                             ,    0f      ,    blackLen,
+             whiteWid - whiteGap                  ,    0f      ,    blackLen
     ).also { whiteMidCords -> intArrayOf(0, 2,  1,   1,  2,  3,   4, 6,  5,   5, 6,  7,  6, 8, 7,  7, 8, 9,
                                          0, 10, 2,   2,  10, 12,  4, 14, 6,   6, 14, 8,
                                          1, 3,  11,  11, 3,  13,  5, 7,  15,  15, 7, 9).also { whiteOrder ->

@@ -1,0 +1,16 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/WrapContent" android:orientation="vertical"
+    android:layout_alignParentBottom="true" android:layout_alignParentEnd="true"
+    android:layout_margin="32dp" android:padding="16dp" android:background="@drawable/round_corners">
+
+    <com.google.android.material.button.MaterialButton android:id="@+id/surf" style="@style/Button"
+        app:icon="@drawable/earth" android:text="@string/surf" android:layout_marginBottom="8dp" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/mediaFile" style="@style/Button"
+        app:icon="@drawable/gallery" android:text="@string/mediaFile" android:layout_marginBottom="8dp" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/midiFile" style="@style/Button"
+        app:icon="@drawable/queue" android:text="@string/midiFile" android:layout_marginBottom="8dp" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/record" style="@style/Button"
+        app:icon="@drawable/record" android:text="@string/recordAudio" />
+
+</LinearLayout>

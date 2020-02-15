@@ -47,6 +47,7 @@ class Play(private val render: Render, private val tracks: Array<Track>,
                 if (curIndices[trackNo] == size) return@with
                 if (curIndices[trackNo] == -1) ++curIndices[trackNo]
                 if (this[curIndices[trackNo]].mSec < prevMilSec) ++curIndices[trackNo]
+                if (curIndices[trackNo] == size) return@with
                 if (this[curIndices[trackNo]].mSec == prevMilSec) {
                     this[curIndices[trackNo]].notes.forEach { (note, vel) -> when (vel) {
                         0f   ->   render.releaseKey(note)
@@ -59,8 +60,8 @@ class Play(private val render: Render, private val tracks: Array<Track>,
             seekBar.progress = curMilSec.toInt()
 
             var stop = true
-            tracks.forEachIndexed { trackNo, track -> if (curIndices[trackNo] < track.chords.size) {
-                stop = false; return@forEachIndexed } }
+            tracks.forEachIndexed { trackNo, track -> if (selTracks.contains(trackNo)
+                and (curIndices[trackNo] < track.chords.size)) { stop = false; return@forEachIndexed } }
 
             return anyPressed to stop
         }
