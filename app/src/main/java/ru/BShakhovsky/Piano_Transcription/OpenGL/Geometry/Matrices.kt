@@ -1,22 +1,28 @@
 @file:Suppress("PackageName")
+
 package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 import android.opengl.Matrix
 
 class Matrices {
 
-    val projection      = FloatArray(16)
+    val projection: FloatArray = FloatArray(16)
 
-    val view            = FloatArray(16)
-    val viewProjection  = FloatArray(16)
-    val invTransView    = FloatArray(16)
+    val view: FloatArray = FloatArray(16)
+    val viewProjection: FloatArray = FloatArray(16)
+    val invTransView: FloatArray = FloatArray(16)
 
-    val reflectView     = FloatArray(16)
-    val reflectVP       = FloatArray(16)
-    val refInvTransView = FloatArray(16)
+    val reflectView: FloatArray = FloatArray(16)
+    val reflectVP: FloatArray = FloatArray(16)
+    val refInvTransView: FloatArray = FloatArray(16)
 
-    fun project(width: Int, height: Int) { (height.toFloat() / width.toFloat()).also { ratio ->
-        Matrix.frustumM(projection, 0, -1f, 1f, -ratio, ratio, 1f, Geometry.overallLen * .7f) } } // .67
+    fun project(width: Int, height: Int): Float =
+        (height.toFloat() / width.toFloat()).also { ratio ->
+            Matrix.frustumM(
+                projection, 0, -1f, 1f, -ratio, ratio, 1f,
+                Geometry.overallLen * .7f // .67
+            )
+        }
 
     fun viewProject(x: Float, y: Float, z: Float) {
         Matrix.setLookAtM(view, 0, x, y, z, x, 0f, 0f, 0f, 1f, 0f)

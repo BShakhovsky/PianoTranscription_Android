@@ -1,4 +1,5 @@
 @file:Suppress("PackageName")
+
 package ru.BShakhovsky.Piano_Transcription.MainUI
 
 import android.annotation.SuppressLint
@@ -11,15 +12,16 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
 class Touch(private val render: Render) : View.OnTouchListener {
 
-    private var zoom    : ScaleGestureDetector? = null
-    private var gesture : GestureDetectorCompat? = null
+    private var zoom: ScaleGestureDetector? = null
+    private var gesture: GestureDetectorCompat? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         with(v as GLSurfaceView) {
             if (zoom == null) zoom = ScaleGestureDetector(context, Zoom(render))
             if (gesture == null) gesture = GestureDetectorCompat(context, Gesture(render))
-            (zoom ?: return@with).onTouchEvent(event); (gesture ?: return@with).onTouchEvent(event)
+            (zoom ?: return@with).onTouchEvent(event)
+            (gesture ?: return@with).onTouchEvent(event)
             requestRender()
         }
         return true

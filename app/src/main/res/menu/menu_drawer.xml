@@ -4,8 +4,8 @@
     <item android:id="@+id/drawerMidi"
         android:icon="@drawable/info"
         android:title="@string/midi"
-
         android:enabled="false"
+
         app:actionViewClass="android.widget.TextView" />
 
     <item android:id="@+id/drawerTracks"
@@ -14,8 +14,8 @@
             <item android:id="@+id/drawerAll"
                 android:icon="@drawable/queue"
                 android:title="@string/selectAll"
-
                 android:enabled="false"
+
                 app:actionViewClass="android.widget.Switch" />
         </menu>
     </item>

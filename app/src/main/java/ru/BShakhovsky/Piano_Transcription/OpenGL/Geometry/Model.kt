@@ -1,4 +1,5 @@
 @file:Suppress("PackageName")
+
 package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
 import android.content.Context
@@ -12,17 +13,21 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.StencilShader
 
 class Model(context: Context) {
 
-    val geom = Geometry(); val mats = Matrices()
+    val geom: Geometry = Geometry()
+    val mats: Matrices = Matrices()
 
-    private val    mainShader =    MainShader(context)
-    private val   depthShader =   DepthShader(context)
+    private val mainShader = MainShader(context)
+    private val depthShader = DepthShader(context)
     private val stencilShader = StencilShader(context)
     private val textureShader = TextureShader(context)
 
-    private val lights = arrayOf(Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader, true),
-                                 Light(floatArrayOf( .7198464f,  .3420201f, -.6040227f), 1, mainShader), // z reversed, so we see it
-                                 Light(floatArrayOf( .4545195f, -.7660444f,  .4545195f), 2, mainShader, true))
-    val textures = Texture(context, lights)
+    private val lights = arrayOf(
+        Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader, true),
+        // z reversed, so we see it:
+        Light(floatArrayOf(.7198464f, .3420201f, -.6040227f), 1, mainShader),
+        Light(floatArrayOf(.4545195f, -.7660444f, .4545195f), 2, mainShader, true)
+    )
+    val textures: Texture = Texture(context, lights)
 
     fun draw(width: Int, height: Int) {
         for (lightNo in 0..2) {
@@ -31,7 +36,9 @@ class Model(context: Context) {
             GLES32.glDisable(GLES32.GL_CULL_FACE)
             depthShader.draw(geom.desk, 0f, 0f, lights[lightNo].lightOrtho)
             GLES32.glEnable(GLES32.GL_CULL_FACE)*/
-            geom.drawKeyboard { key, offset, angle, _ -> run { depthShader.draw(key, offset, angle, lights[lightNo].lightOrtho) }}
+            geom.drawKeyboard { key, offset, angle, _ ->
+                depthShader.draw(key, offset, angle, lights[lightNo].lightOrtho)
+            }
         }
 
         GLES32.glViewport(0, 0, width, height)
@@ -39,18 +46,26 @@ class Model(context: Context) {
         with(mats) {
             mainShader.initReflectBuff(textures, lights)
             mainShader.drawCotton(geom.cotton, reflectView, reflectVP, refInvTransView, lights)
-            geom.drawKeyboard { key, offset, angle, color -> run { mainShader.drawKey(key, offset, angle, color,
-                reflectView, reflectVP, refInvTransView, lights) }}
+            geom.drawKeyboard { key, offset, angle, color ->
+                mainShader.drawKey(
+                    key, offset, angle, color, reflectView, reflectVP, refInvTransView, lights
+                )
+            }
 
             mainShader.initMainScreen(textures, lights)
             stencilShader.draw(geom.desk, viewProjection)
             textureShader.draw(textures, lights.size, true)
 
             mainShader.initMainScreen(textures, lights, true)
-            mainShader.drawDesk(geom.desk, view, viewProjection, invTransView, textures, lights.size + 1)
+            mainShader.drawDesk(
+                geom.desk, view, viewProjection, invTransView, textures, lights.size + 1
+            )
             mainShader.drawCotton(geom.cotton, view, viewProjection, invTransView, lights)
-            geom.drawKeyboard { key, offset, angle, color -> run { mainShader.drawKey(key, offset, angle, color,
-                view, viewProjection, invTransView, lights) }}
+            geom.drawKeyboard { key, offset, angle, color ->
+                mainShader.drawKey(
+                    key, offset, angle, color, view, viewProjection, invTransView, lights
+                )
+            }
         }
     }
 }

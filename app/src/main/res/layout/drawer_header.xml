@@ -1,17 +1,27 @@
 <!-- Margins are default per Android Design guidelines -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="176dp"
-    android:padding="16dp" android:gravity="bottom" android:orientation="vertical"
-    android:background="@drawable/linear_background" android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="bottom"
+    android:background="@drawable/linear_background"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView android:layout_width="wrap_content" android:layout_height="0dp"
-        android:layout_weight="1" android:adjustViewBounds="true"
-        xmlns:app="http://schemas.android.com/apk/res-auto" app:srcCompat="@drawable/google_play_icon"
-        xmlns:tools="http://schemas.android.com/tools" tools:ignore="ContentDescription" />
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
 
-    <TextView android:text="@string/midiSettings" style="@style/WrapContent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:srcCompat="@drawable/google_play_icon"
+
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:ignore="ContentDescription" />
+
+    <TextView style="@style/WrapContent"
+        android:text="@string/midiSettings"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-    <TextView android:text="@string/selectBelow" style="@style/WrapContent" />
+    <TextView style="@style/WrapContent"
+        android:text="@string/selectBelow" />
 
 </LinearLayout>

@@ -3,8 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.0"
+    compileSdkVersion 'android-R'
+    buildToolsVersion '30.0.0 rc1'
     defaultConfig {
         applicationId "ru.BShakhovsky.Piano_Transcription"
         minSdkVersion 24

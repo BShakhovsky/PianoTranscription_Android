@@ -1,77 +1,117 @@
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawerLayout" style="@style/MatchParent" android:fitsSystemWindows="true">
 
-    <LinearLayout style="@style/MatchParent" android:orientation="vertical" android:background="#4682B4"><!-- Steel blue -->
+    android:id="@+id/drawerLayout"
+    style="@style/MatchParent"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout style="@style/MatchParent"
+        android:orientation="vertical"
+        android:background="#4682B4"><!-- Steel blue -->
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-            <androidx.appcompat.widget.Toolbar android:id="@+id/mainBar"
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/mainBar"
                 android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary" app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <RelativeLayout android:id="@+id/mainLayout" style="@style/MatchParent"
+        <RelativeLayout android:id="@+id/mainLayout"
+            style="@style/MatchParent"
+
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <android.opengl.GLSurfaceView android:id="@+id/surfaceView" style="@style/MatchParent" />
+            <android.opengl.GLSurfaceView
+                android:id="@+id/surfaceView"
+                style="@style/MatchParent" />
 
-            <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <TextView android:id="@+id/soundCount" style="@style/WrapContent"
+                <TextView android:id="@+id/soundCount"
+                    style="@style/WrapContent"
                     android:layout_marginTop="16dp" android:layout_marginBottom="8dp"
-                    android:layout_gravity="center_horizontal" android:textColor="@android:color/white"
-                    android:textIsSelectable="false" android:visibility="gone" />
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="@android:color/white"
+                    android:textIsSelectable="false"
+                    android:visibility="gone" />
 
-                <ProgressBar android:id="@+id/soundBar" style="?android:attr/progressBarStyleHorizontal"
+                <ProgressBar android:id="@+id/soundBar"
+                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:max="88" android:visibility="gone" />
+                    android:max="88"
+                    android:visibility="gone" />
 
-                <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/control"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/control"
                     android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_margin="16dp" android:visibility="gone"
-                    xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedIds">
+                    android:layout_margin="16dp"
+                    android:visibility="gone"
 
-                    <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/prev" style="@style/WrapContent"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    tools:ignore="UnusedIds">
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/prev"
+                        style="@style/WrapContent"
                         android:background="@android:drawable/ic_media_previous"
                         android:foreground="?android:selectableItemBackgroundBorderless"
                         android:visibility="gone"
+
                         app:layout_constraintTop_toTopOf="@id/seek"
                         app:layout_constraintBottom_toBottomOf="@id/seek"
                         app:layout_constraintStart_toStartOf="parent" />
 
-                    <androidx.appcompat.widget.AppCompatSeekBar android:id="@+id/seek"
+                    <androidx.appcompat.widget.AppCompatSeekBar
+                        android:id="@+id/seek"
                         android:layout_width="0dp" android:layout_height="wrap_content"
+
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toEndOf="@id/prev"
                         app:layout_constraintEnd_toStartOf="@id/next" />
 
-                    <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/next" style="@style/WrapContent"
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/next"
+                        style="@style/WrapContent"
                         android:background="@android:drawable/ic_media_next"
                         android:foreground="?android:selectableItemBackgroundBorderless"
+
                         app:layout_constraintTop_toTopOf="@id/seek"
                         app:layout_constraintBottom_toBottomOf="@id/seek"
                         app:layout_constraintEnd_toEndOf="parent" />
 
-                    <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/playPause" style="@style/WrapContent"
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/playPause"
+                        style="@style/WrapContent"
                         android:background="@android:drawable/ic_media_play"
                         android:foreground="?android:selectableItemBackgroundBorderless"
+
                         app:layout_constraintTop_toTopOf="@id/curTime"
                         app:layout_constraintBottom_toBottomOf="@id/curTime"
                         app:layout_constraintEnd_toStartOf="@id/curTime" />
 
-                    <androidx.appcompat.widget.AppCompatTextView android:id="@+id/curTime"
-                        style="@style/WrapContent" android:textColor="@android:color/white"
-                        android:layout_margin="8dp" android:paddingStart="16dp" android:paddingEnd="0dp"
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/curTime"
+                        style="@style/WrapContent"
+                        android:textColor="@android:color/white"
+                        android:layout_margin="8dp"
+                        android:paddingStart="16dp" android:paddingEnd="0dp"
+
                         app:layout_constraintTop_toBottomOf="@id/seek"
                         app:layout_constraintStart_toStartOf="@id/seek"
                         app:layout_constraintEnd_toEndOf="@id/seek" />
 
-                    <androidx.appcompat.widget.AppCompatTextView android:id="@+id/durTime"
-                        style="@style/WrapContent" android:textColor="@android:color/white"
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/durTime"
+                        style="@style/WrapContent"
+                        android:textColor="@android:color/white"
+
                         app:layout_constraintTop_toTopOf="@id/curTime"
                         app:layout_constraintStart_toEndOf="@id/curTime" />
 
@@ -79,19 +119,32 @@
 
             </LinearLayout>
 
-            <com.google.android.gms.ads.AdView android:id="@+id/adMain" style="@style/WrapContent"
-                app:adSize="BANNER" app:adUnitId="ca-app-pub-3940256099942544/6300978111"
-                android:layout_alignParentBottom="true" />
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adMain"
+                style="@style/WrapContent"
+                android:layout_alignParentBottom="true"
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton android:id="@+id/newMedia"
-                style="@style/WrapContent" android:layout_margin="16dp" app:srcCompat="@drawable/add"
-                android:layout_alignParentBottom="true" android:layout_alignParentEnd="true" />
+                app:adSize="BANNER"
+                app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/newMedia"
+                style="@style/WrapContent"
+                android:layout_margin="16dp"
+                android:layout_alignParentBottom="true" android:layout_alignParentEnd="true"
+
+                app:srcCompat="@drawable/add" />
 
         </RelativeLayout>
+
     </LinearLayout>
 
-    <com.google.android.material.navigation.NavigationView android:id="@+id/drawerMenu"
-        style="@style/WrapContent" android:layout_gravity="start"
-        app:headerLayout="@layout/drawer_header" app:menu="@menu/menu_drawer" />
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/drawerMenu"
+        style="@style/WrapContent"
+        android:layout_gravity="start"
+
+        app:headerLayout="@layout/drawer_header"
+        app:menu="@menu/menu_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -6,24 +6,14 @@
     <string name="crash">App crashed and restarted</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
+    ADD DIALOG
+
     <string name="surf">Surf for video</string>
     <string name="mediaFile">Open audio/video</string>
     <string name="midiFile">Open MIDI</string>
     <string name="recordAudio">Record audio</string>
 
-    <string name="settings">Settings</string>
-    <string name="grantRec">Open Permissions and allow Microphone</string>
-    <string name="micError">Could not record audio</string>
-    <string name="record">Record</string>
-
-    <string name="warning">Warning</string>
-    <string name="notSaved">Record file was not created.\nTry again, choose a location and type file name.</string>
-    <string name="save">Choose a location, type file name and click save</string>
-
-    <string name="recording">Recording…</string>
-    <string name="recFormat" tools:ignore="PluralsCandidate">%1$s kHz, %2$s, %3$d bit</string>
-    <string name="mono">Mono</string>
-    <string name="stereo">Stereo</string>
+    DRAWER
 
     <string name="midiSettings">MIDI playback settings</string>
     <string name="selectBelow">Choose tracks below</string>
@@ -34,10 +24,14 @@
     <string name="justMidi">Midi</string>
     <string name="justGuide">Guide</string>
 
+    Info
     <string name="tracks">%1$d of %2$d</string>
     <string name="keyTemp">%1$s %2$d bpm</string>
     <string name="noMidi">not loaded</string>
 
+    MIDI
+
+    Info
     <string name="timeCur">Time %1$02d:%2$02d</string>
     <string name="timeOf">" of %1$02d:%2$02d"</string>
     <string name="copyright">Copyright</string>
@@ -52,19 +46,51 @@
     <string name="percuss">Percussion tracks</string>
     <string name="untitled">Untitled</string>
 
+    Error
     <string name="badFile">File not supported</string>
     <string name="notMidi">This is not a MIDI-file</string>
     <string name="emptyMidi">Empty Midi</string>
-    <string name="noTracks">This MIDI-file does not contain any non-percussion notes.\nNothing to play on piano.</string>
+    <string name="noTracks">This MIDI-file does not contain any non-percussion notes.\n
+        Nothing to play on piano.</string>
     <string name="zeroDur">This MIDI-file does not contain any time data.\nCannot play it.</string>
     <string name="trackNotSel">No tracks are chosen</string>
-    <string name="trackNotSelPlaying">At least 1 track should always be chosen while playing</string>
+    <string name="trackNotSelPlaying">At least 1 track
+        should always be chosen while playing</string>
 
-    <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio-file (such as MP3, WAV, etc.)</string>
-    <string name="userGuide2">The program will automatically transcribe audio and save as a MIDI-file</string>
-    <string name="userGuide3">However, no instrument information is extracted, and all transcribed notes get combined into one part</string>
-    <string name="userGuide4">The accuracy depends on the complexity of the song, and is obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
-    <string name="userGuide5">Select tracks.  Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.) will be disabled.</string>
-    <string name="userGuide6">If you want to go forward or backwards chord-by-chord, you can use scroll-bar left or right button</string>
-    <string name="userGuide7">Or if you want just to play the song in real time, press “Play” button</string>
+    RECORD
+
+    Permission
+    <string name="settings">Settings</string>
+    <string name="grantRec">Open Permissions and allow Microphone</string>
+    <string name="micError">Could not record audio</string>
+    <string name="record">Record</string>
+
+    Error
+    <string name="warning">Warning</string>
+    <string name="notSaved">Record file was not created.\n
+        Try again, choose a location and type file name.</string>
+    <string name="save">Choose a location, type file name and click save</string>
+
+    Recording
+    <string name="recording">Recording…</string>
+    <string name="recFormat" tools:ignore="PluralsCandidate">%1$s kHz, %2$s, %3$d bit</string>
+    <string name="mono">Mono</string>
+    <string name="stereo">Stereo</string>
+
+    USER GUIDE
+
+    <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio-file
+        (such as MP3, WAV, etc.)</string>
+    <string name="userGuide2">The program will automatically transcribe audio
+        and save as a MIDI-file</string>
+    <string name="userGuide3">However, no instrument information is extracted,
+        and all transcribed notes get combined into one part</string>
+    <string name="userGuide4">The accuracy depends on the complexity of the song, and is obviously
+        higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
+    <string name="userGuide5">Select tracks.  Percussion-tracks (like “Drums”, “Rhythms”, “Hit”,
+        “Blow”, “Strike”, “Clash”, etc.) will be disabled.</string>
+    <string name="userGuide6">If you want to go forward or backwards chord-by-chord,
+        you can use scroll-bar left or right button</string>
+    <string name="userGuide7">Or if you want just to play the song in real time,
+        press “Play” button</string>
 </resources>

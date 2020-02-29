@@ -1,11 +1,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/menuMidi" android:title="@string/justMidi" app:showAsAction="ifRoom"
-        android:visible="false" />
-    <item android:id="@+id/menuTracks" android:title="@string/justTracks" app:showAsAction="ifRoom"
-        android:visible="false" />
+    <item android:id="@+id/menuMidi"
+        android:title="@string/justMidi"
+        android:visible="false"
 
-    <item android:id="@+id/menuGuide" android:title="@string/justGuide" app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/menuTracks"
+        android:title="@string/justTracks"
+        android:visible="false"
+
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/menuGuide"
+        android:title="@string/justGuide"
+
+        app:showAsAction="ifRoom"/>
 
 </menu>

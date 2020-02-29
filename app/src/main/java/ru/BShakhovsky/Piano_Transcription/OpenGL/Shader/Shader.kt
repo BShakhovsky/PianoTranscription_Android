@@ -1,4 +1,5 @@
 @file:Suppress("PackageName")
+
 package ru.BShakhovsky.Piano_Transcription.OpenGL.Shader
 
 import android.content.Context
@@ -16,11 +17,15 @@ abstract class Shader(context: Context, name: String) {
     init {
         fun attachShader(type: Int, glslName: String) = GLES32.glAttachShader(program,
             GLES32.glCreateShader(type).also { shader ->
-                GLES32.glShaderSource(shader, InputStreamReader(
-                    context.assets.open("Shader/$glslName.glsl")).readText())
+                GLES32.glShaderSource(
+                    shader, InputStreamReader(
+                        context.assets.open("Shader/$glslName.glsl")
+                    ).readText()
+                )
                 GLES32.glCompileShader(shader)
                 if (BuildConfig.DEBUG) GLES32.glGetShaderInfoLog(shader).also { err ->
-                    if (err.isNotEmpty()) throw GLException(0, "Shader compile: $err") }
+                    if (err.isNotEmpty()) throw GLException(0, "Shader compile: $err")
+                }
             })
 
         attachShader(GLES32.GL_VERTEX_SHADER, "Vertex$name")
@@ -30,14 +35,18 @@ abstract class Shader(context: Context, name: String) {
         GLES32.glEnableVertexAttribArray(pos)
     }
 
-              fun uniform  (name: String) = GLES32.glGetUniformLocation(program, name)
-    protected fun attribute(name: String) = GLES32.glGetAttribLocation (program, name)
+    fun uniform(name: String): Int = GLES32.glGetUniformLocation(program, name)
+    protected fun attribute(name: String): Int = GLES32.glGetAttribLocation(program, name)
 
-    protected fun use() { GLES32.glUseProgram(program) }
+    protected fun use(): Unit = GLES32.glUseProgram(program)
 
-    protected fun shiftRotate(matrix: FloatArray, matHandle: Int, offset: Float = 0f, angle: Float = 0f) { matrix.copyOf().also { mat ->
-        if (angle != 0f) Matrix.rotateM(mat, 0, angle, 1f, 0f, 0f)
-        if (offset != 0f) Matrix.translateM(mat, 0, offset, 0f, 0f)
-        GLES32.glUniformMatrix4fv(matHandle, 1, false, mat, 0)
-    } }
+    protected fun shiftRotate(
+        matrix: FloatArray, matHandle: Int, offset: Float = 0f, angle: Float = 0f
+    ) {
+        matrix.copyOf().also { mat ->
+            if (angle != 0f) Matrix.rotateM(mat, 0, angle, 1f, 0f, 0f)
+            if (offset != 0f) Matrix.translateM(mat, 0, offset, 0f, 0f)
+            GLES32.glUniformMatrix4fv(matHandle, 1, false, mat, 0)
+        }
+    }
 }
