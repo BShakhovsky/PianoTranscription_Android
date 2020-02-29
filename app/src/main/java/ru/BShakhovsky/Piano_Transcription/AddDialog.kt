@@ -16,7 +16,11 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.dialog_add.*
+
+import kotlinx.android.synthetic.main.dialog_add.mediaFile
+import kotlinx.android.synthetic.main.dialog_add.midiFile
+import kotlinx.android.synthetic.main.dialog_add.record
+import kotlinx.android.synthetic.main.dialog_add.surf
 
 class AddDialog : DialogFragment(), View.OnClickListener {
 
@@ -24,18 +28,27 @@ class AddDialog : DialogFragment(), View.OnClickListener {
     enum class Permission(val id: Int) { RECORD(20), RECORD_SETTINGS(21) }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        DebugMode.assertState(context != null)
         with(Dialog((context ?: return super.onCreateDialog(savedInstanceState)))) {
             setContentView(R.layout.dialog_add)
-            window?.setGravity(Gravity.BOTTOM or Gravity.END)
-            window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+            DebugMode.assertState(window != null)
+            window?.run {
+                setGravity(Gravity.BOTTOM or Gravity.END)
+                setBackgroundDrawableResource(android.R.color.transparent)
+            }
+
             arrayOf(surf, mediaFile, midiFile, record).forEach {
                 it.setOnClickListener(this@AddDialog)
             }
+
             return this
         }
     }
 
     override fun onClick(view: View?) {
+        DebugMode.assertArgument(view != null)
+        DebugMode.assertState((dialog != null) and (activity != null))
         when (view?.id) {
             R.id.surf -> dialog?.dismiss()
             R.id.mediaFile -> {
@@ -64,7 +77,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                     arrayOf(Manifest.permission.RECORD_AUDIO), Permission.RECORD.id
                 ) else writeWav()
 
-            else -> Assert.argument(false)
+            else -> DebugMode.assertArgument(false)
         }
     }
 
@@ -78,29 +91,32 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                             grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 ) writeWav()
                 else settings()
-
-            else -> Assert.argument(false)
+            else -> DebugMode.assertArgument(false)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            Permission.RECORD_SETTINGS.id ->
+            Permission.RECORD_SETTINGS.id -> {
                 // if (resultCode != FragmentActivity.RESULT_OK) for some reason it is never equal
+                DebugMode.assertState(activity != null)
                 if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     == PackageManager.PERMISSION_GRANTED
                 ) writeWav()
                 else settings()
-
+            }
             RequestCode.WRITE_WAV.id -> {
+                DebugMode.assertState((context != null) and (dialog != null) and (activity != null))
                 context?.let { c ->
                     if (resultCode != FragmentActivity.RESULT_OK) {
                         MainActivity.msgDialog(
                             c, R.string.warning, R.string.notSaved
                         )
                         dialog?.dismiss()
-                    } else
+                    } else {
+                        DebugMode.assertArgument(data != null)
+                        DebugMode.assertState(data?.data != null)
                         data?.data?.let { uri ->
                             activity?.contentResolver?.openOutputStream(uri)?.let { outStream ->
                                 with(Record(c)) {
@@ -117,7 +133,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                                                     1 -> R.string.mono
                                                     2 -> R.string.stereo
                                                     else -> {
-                                                        Assert.state(false)
+                                                        DebugMode.assertState(false)
                                                         R.string.error
                                                     }
                                                 }
@@ -132,22 +148,30 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                                 }
                             }
                         }
+                    }
                 }
             }
-            else -> Assert.argument(false)
+            else -> DebugMode.assertArgument(false)
         }
     }
 
-    private fun settings() = dialog?.record?.let {
-        Snackbar.make(it, R.string.grantRec, Snackbar.LENGTH_LONG).setAction(R.string.settings) {
-            startActivityForResult(
-                Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.parse("package:${context?.packageName}")
-                ), Permission.RECORD_SETTINGS.id
-            )
-            Toast.makeText(context, R.string.grantRec, Toast.LENGTH_LONG).show()
-        }.show()
+    private fun settings() {
+        DebugMode.assertState((dialog != null) and (dialog?.record != null))
+        dialog?.record?.let {
+            Snackbar.make(it, R.string.grantRec, Snackbar.LENGTH_LONG)
+                .setAction(R.string.settings) {
+                    DebugMode.assertState(context != null)
+                    context?.run {
+                        startActivityForResult(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:$packageName")
+                            ), Permission.RECORD_SETTINGS.id
+                        )
+                    }
+                    Toast.makeText(context, R.string.grantRec, Toast.LENGTH_LONG).show()
+                }.show()
+        }
     }
 
     private fun writeWav() {

@@ -121,8 +121,9 @@ class Sound(
     }
 
     override fun onLoadComplete(sound: SoundPool?, note: Int, status: Int) {
+        DebugMode.assertArgument(sound != null)
         with(loaded) {
-            Assert.state(!contains(note) and (size in 0..87) and (status == 0))
+            DebugMode.assertState(!contains(note) and (size in 0..87) and (status == 0))
             add(note)
             bar.progress = size
             bar.secondaryProgress = (size + 88) / 2
@@ -132,7 +133,7 @@ class Sound(
     }
 
     fun play(note: Int, velocity: Float = 1f) {
-        Assert.argument(velocity in 0f..1f)
+        DebugMode.assertArgument(velocity in 0f..1f)
         sound.play(
             notes[note],
             velocity * (notes.lastIndex - note) / notes.lastIndex.toFloat(),

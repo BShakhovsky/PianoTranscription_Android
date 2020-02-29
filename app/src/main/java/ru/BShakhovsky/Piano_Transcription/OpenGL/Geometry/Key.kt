@@ -2,7 +2,7 @@
 
 package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
-import ru.BShakhovsky.Piano_Transcription.Assert
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import kotlin.math.atan
 
 class Key(note: Int) {
@@ -27,7 +27,7 @@ class Key(note: Int) {
             2, 7, 9         ->  KeyType.WHITE_MID
             1, 3, 6, 8, 10  ->  KeyType.BLACK
             else -> {
-                Assert.argument(false)
+                DebugMode.assertArgument(false)
                                 KeyType.WHITE_FULL
             }
         }
@@ -46,7 +46,7 @@ class Key(note: Int) {
             9, 10   ->  7
             11      ->  8
             else -> {
-                Assert.argument(false)
+                DebugMode.assertArgument(false)
                         0
             }
         } + (note - 3) / 12 * 7
@@ -55,10 +55,10 @@ class Key(note: Int) {
     var isPressed: Boolean = false
     var isTapped: Boolean = false
     var angle: Float = 0f
-    private val maxAngle =
-        if (key == KeyType.BLACK)
-            Math.toDegrees(atan(1.1 * Geometry.blackWid / Geometry.blackLen)).toFloat()
-        else Math.toDegrees(atan(.6 * Geometry.whiteWid / Geometry.whiteLen)).toFloat()
+
+    private val maxAngle = if (key == KeyType.BLACK)
+        Math.toDegrees(atan(1.1 * Geometry.blackWid / Geometry.blackLen)).toFloat()
+    else Math.toDegrees(atan(.6 * Geometry.whiteWid / Geometry.whiteLen)).toFloat()
 
     fun color(): FloatArray =
         if (isPressed or isTapped) if (key == KeyType.BLACK) slateGray else lightSilver
@@ -73,14 +73,14 @@ class Key(note: Int) {
                     angle == 0f         -> isTapped = false
                     angle >  0          -> decAngle(deltaTime)
                 }
-                    angle < maxAngle    -> incAngle(deltaTime)
+                    angle <  maxAngle   -> incAngle(deltaTime)
             }
             !isPressed -> when {
                 isTapped -> when {
                     angle == maxAngle   -> isTapped = false
                     angle <  maxAngle   -> incAngle(deltaTime)
                 }
-                    angle > 0           -> decAngle(deltaTime)
+                    angle >  0          -> decAngle(deltaTime)
             }
         }
     }

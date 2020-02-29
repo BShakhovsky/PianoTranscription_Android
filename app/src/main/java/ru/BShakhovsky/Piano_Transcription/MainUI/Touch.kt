@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import androidx.core.view.GestureDetectorCompat
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
 class Touch(private val render: Render) : View.OnTouchListener {
@@ -16,12 +17,17 @@ class Touch(private val render: Render) : View.OnTouchListener {
     private var gesture: GestureDetectorCompat? = null
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        with(v as GLSurfaceView) {
+    override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+        DebugMode.assertArgument((view != null) and (event != null))
+        with(view as GLSurfaceView) {
             if (zoom == null) zoom = ScaleGestureDetector(context, Zoom(render))
             if (gesture == null) gesture = GestureDetectorCompat(context, Gesture(render))
-            (zoom ?: return@with).onTouchEvent(event)
-            (gesture ?: return@with).onTouchEvent(event)
+
+            DebugMode.assertArgument((zoom != null) and (gesture != null))
+
+            zoom?.onTouchEvent(event)
+            gesture?.onTouchEvent(event)
+
             requestRender()
         }
         return true

@@ -48,7 +48,7 @@ class Record(private val context: Context) {
                                         AudioFormat.CHANNEL_IN_MONO -> 1
                                         AudioFormat.CHANNEL_IN_STEREO -> 2
                                         else -> {
-                                            Assert.argument(false)
+                                            DebugMode.assertArgument(false)
                                             0
                                         }
                                     }
@@ -60,7 +60,7 @@ class Record(private val context: Context) {
                                             16
                                         }
                                         else -> {
-                                            Assert.argument(false)
+                                            DebugMode.assertArgument(false)
                                             0
                                         }
                                     }
@@ -74,23 +74,22 @@ class Record(private val context: Context) {
         if ((record == null) or (record?.state != AudioRecord.STATE_INITIALIZED)
             or (byteBuf.isEmpty())
         ) {
-            Assert.state(false)
+            DebugMode.assertState(false)
             showError()
         } else record?.run {
             startRecording()
             Thread {
                 while (isRecording) {
-                    val samplesRead = if (shortBuf.isNotEmpty()) {
-                        read(shortBuf, 0, shortBuf.size).apply {
-                            ByteBuffer.wrap(byteBuf).order(ByteOrder.LITTLE_ENDIAN)
-                                .asShortBuffer().put(shortBuf)
-                        }
-                    } else read(byteBuf, 0, byteBuf.size)
                     if (intArrayOf(
                             AudioRecord.ERROR_INVALID_OPERATION, AudioRecord.ERROR_BAD_VALUE
-                        ).contains(samplesRead)
+                        ).contains(
+                            if (shortBuf.isNotEmpty()) read(shortBuf, 0, shortBuf.size).apply {
+                                ByteBuffer.wrap(byteBuf).order(ByteOrder.LITTLE_ENDIAN)
+                                    .asShortBuffer().put(shortBuf)
+                            }
+                            else read(byteBuf, 0, byteBuf.size))
                     ) {
-                        Assert.state(false)
+                        DebugMode.assertState(false)
                         showError()
                         return@Thread
                     }
@@ -115,7 +114,7 @@ class Record(private val context: Context) {
                             is Short -> 2
                             is Int -> 4
                             else -> {
-                                Assert.argument(false)
+                                DebugMode.assertArgument(false)
                                 0
                             }
                         }
@@ -124,7 +123,7 @@ class Record(private val context: Context) {
                             when (data) {
                                 is Short -> asShortBuffer().put(data)
                                 is Int -> asIntBuffer().put(data)
-                                else -> Assert.argument(false)
+                                else -> DebugMode.assertArgument(false)
                             }
                         }
                         write(bytes)
@@ -138,7 +137,7 @@ class Record(private val context: Context) {
                 writeInt(36 + totalBuf.size * blockAlign)
                 @Suppress("SpellCheckingInspection")
                 write("WAVEfmt ".toByteArray())
-                // Size of format chunk = 4 shorts and 2 ints = 16 always
+                // Size of format chunk = 4 shorts and 2 ints = 16 always:
                 writeInt(2 + 2 + 4 + 4 + 2 + 2)
                 writeShort(1.toShort()) // format 1 = Pulse Code Modulation
                 writeShort(nChannels)

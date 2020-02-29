@@ -8,6 +8,7 @@ import com.pdrogfer.mididroid.MidiFile
 import com.pdrogfer.mididroid.event.ChannelAftertouch
 import com.pdrogfer.mididroid.event.ChannelEvent
 import com.pdrogfer.mididroid.event.Controller
+import com.pdrogfer.mididroid.event.MidiEvent
 import com.pdrogfer.mididroid.event.NoteAftertouch
 import com.pdrogfer.mididroid.event.NoteOff
 import com.pdrogfer.mididroid.event.NoteOn
@@ -33,7 +34,7 @@ import com.pdrogfer.mididroid.event.meta.Text
 import com.pdrogfer.mididroid.event.meta.TextualMetaEvent
 import com.pdrogfer.mididroid.event.meta.TrackName
 
-import ru.BShakhovsky.Piano_Transcription.Assert
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import java.io.InputStream
 import kotlin.math.roundToLong
 
@@ -52,12 +53,13 @@ class Midi(inStream: InputStream, untitled: String) {
         private set
     var percuss: Array<TrackInfo> = emptyArray()
         private set
+
     val badMidi: Boolean
     val dur: Long
 
     init {
         val midi = MidiFile(inStream)
-        Assert.state(
+        DebugMode.assertState(
             (midi.resolution and 0x80_00) == 0,
             "Time-code-based time: ticks per frame * fps SMPTE time = ticks per second"
         )
@@ -66,9 +68,8 @@ class Midi(inStream: InputStream, untitled: String) {
             val tempos = sortedMapOf<Long, Int>()
             val ticks = sortedMapOf<Long, Long>()
             midi.tracks.forEachIndexed { i, track ->
-                var curTick = 0L
                 val curTrack = Track()
-                var isPercuss = false
+                var (curTick, isPercuss) = (0L to false)
                 track.events.forEach { event ->
                     with(event) {
                         curTick += delta
@@ -82,7 +83,7 @@ class Midi(inStream: InputStream, untitled: String) {
                                 is Lyrics -> summary.lyrics += lyric
                                 is Marker -> summary.marker += markerName
                                 is CuePoint -> summary.cue += cue
-                                else -> Assert.state(false, "Wrong text meta-event")
+                                else -> DebugMode.assertState(false, "Wrong text meta-event")
                             }
                             is Tempo -> {
                                 tempos += curTick to mpqn
@@ -112,7 +113,7 @@ class Midi(inStream: InputStream, untitled: String) {
                                         7 -> majMin("C#", "A#")
 
                                         else -> {
-                                            Assert.state(false, "Wrong key signature")
+                                            DebugMode.assertState(false, "Wrong key signature")
                                             "unknown"
                                         }
                                     }
@@ -122,46 +123,9 @@ class Midi(inStream: InputStream, untitled: String) {
                                 // (!) Should be 10, but there seems to be bug in library
                                 // https://github.com/LeffelMania/android-midi-lib/issues/17
                                 9 -> isPercuss = true
-                                else -> (if (curTrack.chords.isEmpty()) true
-                                else curTrack.chords.last().mSec != curTick).also { newChord ->
-                                    when (this) {
-                                        is NoteOn -> {
-                                            when {
-                                                newChord -> curTrack.chords += Chord(
-                                                    curTick, mutableMapOf(
-                                                        noteValue - 21 to velocity / 127f
-                                                    )
-                                                )
-                                                else -> curTrack.chords.last().notes[
-                                                        noteValue - 21] = maxOf(
-                                                    curTrack.chords.last().notes.getOrDefault(
-                                                        noteValue - 21, 0f
-                                                    ), velocity / 127f
-                                                )
-                                            }
-                                        }
-                                        is NoteOff -> {
-                                            when {
-                                                newChord -> curTrack.chords += Chord(
-                                                    curTick, mutableMapOf(
-                                                        noteValue - 21 to 0f
-                                                    )
-                                                )
-                                                else -> curTrack.chords.last().notes.getOrPut(
-                                                    noteValue - 21
-                                                ) { 0f }
-                                            }
-                                        }
-                                        else -> Assert.state(
-                                            (this is NoteAftertouch) or (this is Controller)
-                                                    or (this is ProgramChange)
-                                                    or (this is ChannelAftertouch)
-                                                    or (this is PitchBend)
-                                        )
-                                    }
-                                }
+                                else -> addNote(this, curTrack, curTick)
                             }
-                            else -> Assert.state(
+                            else -> DebugMode.assertState(
                                 (this is SequencerSpecificEvent) or (this is SequenceNumber)
                                         or (this is MidiChannelPrefix) or (this is EndOfTrack)
                                         or (this is SmpteOffset) or (this is TimeSignature)
@@ -185,38 +149,64 @@ class Midi(inStream: InputStream, untitled: String) {
             }
 
             if (tempos.isEmpty()) {
-                Assert.state(false)
+                DebugMode.assertState(false)
                 tempos += 0L to 60_000_000 / 120
             }
             if (!tempos.containsKey(0)) {
-                Assert.state(false)
+                DebugMode.assertState(false)
                 tempos += 0L to 60_000_000 / 120
             }
             var (lastTick, lastMicSec) = 0L to 0L
             ticks.keys.forEach { tick ->
-                Assert.state(tempos.containsKey(lastTick))
-                ticks[tick] = lastMicSec + (tick - lastTick) * (tempos[lastTick] ?: return@forEach)
+                DebugMode.assertState(tempos.containsKey(lastTick))
+                tempos[lastTick]?.let { ticks[tick] = lastMicSec + (tick - lastTick) * it }
                 if (tempos.containsKey(tick)) {
                     lastTick = tick
-                    lastMicSec = (ticks[tick] ?: return@forEach)
+                    DebugMode.assertState(ticks[tick] != null)
+                    ticks[tick]?.let { lastMicSec = it }
                 }
             }
-            ticks.keys.forEach {
-                ticks[it] = ticks[it]?.div(1_000.0)?.div(midi.resolution)?.roundToLong()
+            ticks.entries.forEach { (key, value) ->
+                ticks[key] = (value / 1_000.0 / midi.resolution).roundToLong()
             }
 
             summary.tempos.forEach { with(it) { milSec = ticks.getOrDefault(milSec, 0) } }
             summary.keys.forEach { with(it) { milSec = ticks.getOrDefault(milSec, 0) } }
             tracks.forEach { track ->
-                track.chords.forEach { chord ->
-                    with(chord) {
-                        mSec = ticks.getOrDefault(mSec, 0)
-                    }
-                }
+                track.chords.forEach { chord -> with(chord) { mSec = ticks.getOrDefault(mSec, 0) } }
             }
         }
         dur = if (tracks.isEmpty()) 0L else tracks.maxBy {
             it.chords.last().mSec
         }!!.chords.last().mSec
+    }
+
+    private fun addNote(event: MidiEvent, curTrack: Track, curTick: Long) {
+        (if (curTrack.chords.isEmpty()) true
+        else curTrack.chords.last().mSec != curTick).also { newChord ->
+            with(event) {
+                when (this) {
+                    is NoteOn -> when {
+                        newChord -> curTrack.chords += Chord(
+                            curTick, mutableMapOf(noteValue - 21 to velocity / 127f)
+                        )
+                        else -> curTrack.chords.last().notes[noteValue - 21] = maxOf(
+                            curTrack.chords.last().notes[noteValue - 21] ?: 0f, velocity / 127f
+                        )
+                    }
+                    is NoteOff -> when {
+                        newChord -> curTrack.chords += Chord(
+                            curTick, mutableMapOf(noteValue - 21 to 0f)
+                        )
+                        else -> curTrack.chords.last().notes.getOrPut(noteValue - 21) { 0f }
+                    }
+                    else -> DebugMode.assertState(
+                        (this is NoteAftertouch) or (this is Controller)
+                                or (this is ProgramChange) or (this is ChannelAftertouch)
+                                or (this is PitchBend)
+                    )
+                }
+            }
+        }
     }
 }

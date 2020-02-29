@@ -11,8 +11,8 @@
 
     <application android:label="@string/app_name"
 
-        xmlns:tools="http://schemas.android.com/tools"
         android:allowBackup="false"
+        xmlns:tools="http://schemas.android.com/tools"
         tools:replace="android:allowBackup"
 
         android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round"

@@ -11,6 +11,7 @@ import kotlin.math.sqrt
 class Primitive(cords: FloatArray, order: IntArray, texArray: FloatArray? = null) {
 
     val withTex: FloatBuffer
+
     private val vertices: FloatBuffer
     private val normals: FloatBuffer
     private val count: Int = order.size

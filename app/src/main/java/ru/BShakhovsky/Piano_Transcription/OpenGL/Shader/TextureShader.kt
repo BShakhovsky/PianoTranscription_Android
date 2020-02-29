@@ -19,8 +19,7 @@ class TextureShader(context: Context) : Shader(context, "2D") {
             textures.bindTexture(buffNo)
             GLES32.glUniform1i(frameBuff, buffNo)
             GLES32.glVertexAttribPointer(
-                texPos, 2, GLES32.GL_FLOAT, false, 0,
-                Utils.allocFloat(
+                texPos, 2, GLES32.GL_FLOAT, false, 0, Utils.allocFloat(
                     @Suppress("LongLine", "Reformat")
                     if (toReflect)  floatArrayOf(1f, 0f,  0f, 0f,  1f, 1f,    1f, 1f,  0f, 0f,  0f, 1f)
                     else            floatArrayOf(0f, 0f,  1f, 0f,  0f, 1f,    0f, 1f,  1f, 0f,  1f, 1f)
@@ -39,7 +38,7 @@ class TextureShader(context: Context) : Shader(context, "2D") {
         GLES32.glVertexAttribPointer(
             pos, 2, GLES32.GL_FLOAT, false, 0, Utils.allocFloat(
                 @Suppress("Reformat")
-                floatArrayOf(-1f,  -1f,   1f, -1f,  -1f, 1f,    -1f, 1f,  1f, -1f,  1f, 1f)
+                floatArrayOf(-1f, -1f,  1f, -1f,  -1f, 1f,    -1f,  1f,  1f, -1f,  1f, 1f)
             )
         )
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, 6)

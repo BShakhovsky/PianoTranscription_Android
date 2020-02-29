@@ -6,7 +6,7 @@ import android.content.Context
 import android.opengl.GLES32
 import android.opengl.GLException
 import android.opengl.Matrix
-import ru.BShakhovsky.Piano_Transcription.BuildConfig
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import java.io.InputStreamReader
 
 abstract class Shader(context: Context, name: String) {
@@ -23,8 +23,8 @@ abstract class Shader(context: Context, name: String) {
                     ).readText()
                 )
                 GLES32.glCompileShader(shader)
-                if (BuildConfig.DEBUG) GLES32.glGetShaderInfoLog(shader).also { err ->
-                    if (err.isNotEmpty()) throw GLException(0, "Shader compile: $err")
+                if (DebugMode.debug) GLES32.glGetShaderInfoLog(shader).run {
+                    if (isNotEmpty()) throw GLException(0, "Shader compile: $this")
                 }
             })
 
@@ -42,11 +42,9 @@ abstract class Shader(context: Context, name: String) {
 
     protected fun shiftRotate(
         matrix: FloatArray, matHandle: Int, offset: Float = 0f, angle: Float = 0f
-    ) {
-        matrix.copyOf().also { mat ->
-            if (angle != 0f) Matrix.rotateM(mat, 0, angle, 1f, 0f, 0f)
-            if (offset != 0f) Matrix.translateM(mat, 0, offset, 0f, 0f)
-            GLES32.glUniformMatrix4fv(matHandle, 1, false, mat, 0)
-        }
+    ): Unit = matrix.copyOf().run {
+        if (angle != 0f) Matrix.rotateM(this, 0, angle, 1f, 0f, 0f)
+        if (offset != 0f) Matrix.translateM(this, 0, offset, 0f, 0f)
+        GLES32.glUniformMatrix4fv(matHandle, 1, false, this, 0)
     }
 }

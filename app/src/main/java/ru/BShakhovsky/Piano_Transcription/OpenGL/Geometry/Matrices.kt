@@ -19,8 +19,7 @@ class Matrices {
     fun project(width: Int, height: Int): Float =
         (height.toFloat() / width.toFloat()).also { ratio ->
             Matrix.frustumM(
-                projection, 0, -1f, 1f, -ratio, ratio, 1f,
-                Geometry.overallLen * .7f // .67
+                projection, 0, -1f, 1f, -ratio, ratio, 1f, Geometry.overallLen * .7f // .67
             )
         }
 

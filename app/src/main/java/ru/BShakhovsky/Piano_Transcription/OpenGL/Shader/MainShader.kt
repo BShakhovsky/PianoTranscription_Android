@@ -30,9 +30,9 @@ class MainShader(context: Context) : Shader(context, "Main") {
 
     fun initReflectBuff(textures: Texture, lights: Array<Light>) {
         with(textures) {
-            with(lights.size) {
-                bindBuff(this)
-                bindTexture(this)
+            lights.size.also { id ->
+                bindBuff(id)
+                bindTexture(id)
             }
         }
         GLES32.glClearColor(0f, 0f, 0f, 1f)

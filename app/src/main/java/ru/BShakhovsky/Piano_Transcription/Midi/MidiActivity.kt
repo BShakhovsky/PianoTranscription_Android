@@ -3,6 +3,7 @@
 package ru.BShakhovsky.Piano_Transcription.Midi
 
 import android.os.Bundle
+import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 
@@ -28,25 +29,31 @@ import kotlinx.android.synthetic.main.activity_midi.percuss
 import kotlinx.android.synthetic.main.activity_midi.tempos
 import kotlinx.android.synthetic.main.activity_midi.temposGroup
 
-import ru.BShakhovsky.Piano_Transcription.Assert
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import ru.BShakhovsky.Piano_Transcription.R
 import kotlin.math.roundToInt
 
-class MidiActivity : AppCompatActivity() {
+class MidiActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_midi)
+
         setSupportActionBar(midiBar)
+        DebugMode.assertState(supportActionBar != null)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        midiBar.setNavigationOnClickListener(this)
+
         setFinishOnTouchOutside(true)
+
         fabMidi.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).show()
         }
+
         intent.getParcelableExtra<Summary>("Summary").also { summary ->
-            with(midiInfo) {
-                Assert.state(summary != null)
-                summary?.let { s ->
+            DebugMode.assertState(summary != null)
+            summary?.let { s ->
+                with(midiInfo) {
                     if (s.copyright.isEmpty()) removeView(copyrightGroup)
                     else copyright.text = s.copyright.joinToString("\n")
 
@@ -79,12 +86,24 @@ class MidiActivity : AppCompatActivity() {
                     else garbage.text = s.garbage.joinToString("\n")
                 }
             }
-            fun joinText(key: String) =
+            fun joinText(key: String): String {
+                DebugMode.assertState(
+                    (intent.hasExtra(key)) and (intent.getParcelableArrayExtra(key) != null)
+                )
                 with(intent.getParcelableArrayExtra(key)?.joinToString("\n") {
                     with(it as TrackInfo) { "$name ${instrument ?: ""}" }
-                }) { if (isNullOrEmpty()) "N/A" else this!! }
+                }) { return if (isNullOrEmpty()) "N/A" else this!! }
+            }
             harm.text = joinText("Tracks")
             percuss.text = joinText("Percuss")
+        }
+    }
+
+    override fun onClick(view: View?) {
+        DebugMode.assertArgument(view != null)
+        when (view?.id) {
+            -1 -> onBackPressed() // not android.R.id.home
+            else -> DebugMode.assertState(false)
         }
     }
 }

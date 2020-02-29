@@ -18,8 +18,10 @@ class Toggle(
     override fun onDrawerStateChanged(newState: Int) {}
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-        content.translationX = drawerView.width * slideOffset / 2
-        content.scaleX = 1 - slideOffset * drawerView.width / content.width
-        content.scaleY = 1 - slideOffset * drawerView.width / content.width
+        with(content) {
+            translationX = drawerView.width * slideOffset / 2
+            scaleX = 1 - slideOffset * drawerView.width / width
+            scaleY = 1 - slideOffset * drawerView.width / width
+        }
     }
 }

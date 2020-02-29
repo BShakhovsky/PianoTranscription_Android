@@ -1,3 +1,4 @@
+<!DOCTYPE resources [<!ENTITY tryAgain ".\nTry again, choose a location and type file name.">]>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Piano Transcription</string>
     <string name="ok">OK</string>
@@ -6,14 +7,14 @@
     <string name="crash">App crashed and restarted</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
-    ADD DIALOG
+    DIALOG ADD
 
     <string name="surf">Surf for video</string>
     <string name="mediaFile">Open audio/video</string>
     <string name="midiFile">Open MIDI</string>
     <string name="recordAudio">Record audio</string>
 
-    DRAWER
+    MENU
 
     <string name="midiSettings">MIDI playback settings</string>
     <string name="selectBelow">Choose tracks below</string>
@@ -24,12 +25,25 @@
     <string name="justMidi">Midi</string>
     <string name="justGuide">Guide</string>
 
-    Info
+    DRAWER
+
     <string name="tracks">%1$d of %2$d</string>
     <string name="keyTemp">%1$s %2$d bpm</string>
     <string name="noMidi">not loaded</string>
 
     MIDI
+
+    Error
+    <string name="notFound">File not found</string>
+    <string name="badFile">File not supported</string>
+    <string name="notMidi">This is not a MIDI-file</string>
+    <string name="emptyMidi">Empty Midi</string>
+    <string name="noTracks">This MIDI-file does not contain any non-percussion notes.\n
+        Nothing to play on piano.</string>
+    <string name="zeroDur">This MIDI-file does not contain any time data.\nCannot play it.</string>
+    <string name="trackNotSel">No tracks are chosen</string>
+    <string name="trackNotSelPlaying">At least 1 track should
+        always be chosen while playing</string>
 
     Info
     <string name="timeCur">Time %1$02d:%2$02d</string>
@@ -46,18 +60,7 @@
     <string name="percuss">Percussion tracks</string>
     <string name="untitled">Untitled</string>
 
-    Error
-    <string name="badFile">File not supported</string>
-    <string name="notMidi">This is not a MIDI-file</string>
-    <string name="emptyMidi">Empty Midi</string>
-    <string name="noTracks">This MIDI-file does not contain any non-percussion notes.\n
-        Nothing to play on piano.</string>
-    <string name="zeroDur">This MIDI-file does not contain any time data.\nCannot play it.</string>
-    <string name="trackNotSel">No tracks are chosen</string>
-    <string name="trackNotSelPlaying">At least 1 track
-        should always be chosen while playing</string>
-
-    RECORD
+    MICROPHONE RECORDING
 
     Permission
     <string name="settings">Settings</string>
@@ -85,8 +88,8 @@
         and save as a MIDI-file</string>
     <string name="userGuide3">However, no instrument information is extracted,
         and all transcribed notes get combined into one part</string>
-    <string name="userGuide4">The accuracy depends on the complexity of the song, and is obviously
-        higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
+    <string name="userGuide4">The accuracy depends on the complexity of the song, and is
+        obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
     <string name="userGuide5">Select tracks.  Percussion-tracks (like “Drums”, “Rhythms”, “Hit”,
         “Blow”, “Strike”, “Clash”, etc.) will be disabled.</string>
     <string name="userGuide6">If you want to go forward or backwards chord-by-chord,

@@ -23,48 +23,48 @@ class Model(context: Context) {
 
     private val lights = arrayOf(
         Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader, true),
-        // z reversed, so we see it:
+        // Z reversed, so we see it:
         Light(floatArrayOf(.7198464f, .3420201f, -.6040227f), 1, mainShader),
         Light(floatArrayOf(.4545195f, -.7660444f, .4545195f), 2, mainShader, true)
     )
     val textures: Texture = Texture(context, lights)
 
-    fun draw(width: Int, height: Int) {
-        for (lightNo in 0..2) {
-            depthShader.prepare(textures, lights, lightNo)
+    fun draw(width: Int, height: Int): Unit = with(geom) {
+        for (lightNo in 0..2) with(depthShader) {
+            prepare(textures, lights, lightNo)
             /*// I do not like horizontal shadow-line from desk
             GLES32.glDisable(GLES32.GL_CULL_FACE)
             depthShader.draw(geom.desk, 0f, 0f, lights[lightNo].lightOrtho)
             GLES32.glEnable(GLES32.GL_CULL_FACE)*/
-            geom.drawKeyboard { key, offset, angle, _ ->
-                depthShader.draw(key, offset, angle, lights[lightNo].lightOrtho)
+            drawKeyboard { key, offset, angle, _ ->
+                draw(key, offset, angle, lights[lightNo].lightOrtho)
             }
         }
 
         GLES32.glViewport(0, 0, width, height)
 
-        with(mats) {
-            mainShader.initReflectBuff(textures, lights)
-            mainShader.drawCotton(geom.cotton, reflectView, reflectVP, refInvTransView, lights)
-            geom.drawKeyboard { key, offset, angle, color ->
-                mainShader.drawKey(
-                    key, offset, angle, color, reflectView, reflectVP, refInvTransView, lights
-                )
-            }
+        with(mainShader) {
+            initReflectBuff(textures, lights)
+            with(mats) {
+                drawCotton(cotton, reflectView, reflectVP, refInvTransView, lights)
+                drawKeyboard { key, offset, angle, color ->
+                    drawKey(
+                        key, offset, angle, color,
+                        reflectView, reflectVP, refInvTransView, lights
+                    )
+                }
 
-            mainShader.initMainScreen(textures, lights)
-            stencilShader.draw(geom.desk, viewProjection)
-            textureShader.draw(textures, lights.size, true)
-
-            mainShader.initMainScreen(textures, lights, true)
-            mainShader.drawDesk(
-                geom.desk, view, viewProjection, invTransView, textures, lights.size + 1
-            )
-            mainShader.drawCotton(geom.cotton, view, viewProjection, invTransView, lights)
-            geom.drawKeyboard { key, offset, angle, color ->
-                mainShader.drawKey(
-                    key, offset, angle, color, view, viewProjection, invTransView, lights
-                )
+                initMainScreen(textures, lights)
+                stencilShader.draw(desk, viewProjection)
+                with(lights) {
+                    textureShader.draw(textures, size, true)
+                    initMainScreen(textures, lights, true)
+                    drawDesk(desk, view, viewProjection, invTransView, textures, size + 1)
+                }
+                drawCotton(cotton, view, viewProjection, invTransView, lights)
+                drawKeyboard { key, offset, angle, color ->
+                    drawKey(key, offset, angle, color, view, viewProjection, invTransView, lights)
+                }
             }
         }
     }

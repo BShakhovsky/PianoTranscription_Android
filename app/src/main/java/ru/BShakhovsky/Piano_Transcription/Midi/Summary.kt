@@ -15,9 +15,9 @@ class Summary(
     class Key(var milSec: Long, val key: String) : Parcelable {
         constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readString()!!)
 
-        override fun writeToParcel(parcel: Parcel, flags: Int) {
-            parcel.writeLong(milSec)
-            parcel.writeString(key)
+        override fun writeToParcel(parcel: Parcel, flags: Int): Unit = with(parcel) {
+            writeLong(milSec)
+            writeString(key)
         }
 
         override fun describeContents(): Int = 0
@@ -31,9 +31,9 @@ class Summary(
     class Bpm(var milSec: Long, val bpm: Float) : Parcelable {
         constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readFloat())
 
-        override fun writeToParcel(parcel: Parcel, flags: Int) {
-            parcel.writeLong(milSec)
-            parcel.writeFloat(bpm)
+        override fun writeToParcel(parcel: Parcel, flags: Int): Unit = with(parcel) {
+            writeLong(milSec)
+            writeFloat(bpm)
         }
 
         override fun describeContents(): Int = 0

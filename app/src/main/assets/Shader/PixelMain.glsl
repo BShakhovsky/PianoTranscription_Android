@@ -33,7 +33,7 @@ void main() {
     const vec3 light0 = vec3(1        , .9607844 , .8078432),
                light1 = vec3(.9647059 , .7607844 , .4078432),
                light2 = vec3(.3231373 , .3607844 , .3937255);
-    gl_FragColor = color * vec4(vec3(.05333332, .09882354, .1819608) // ambient, then diffuse:
+    gl_FragColor = color * vec4(vec3(.05333332, .09882354, .1819608) // ambient
              + light0 * Diffuse(lightView0, shadowPos0, depthBuff0, pixel0)
              + light1 * Diffuse(lightView1, shadowPos1, depthBuff1, pixel1)
              + light2 * Diffuse(lightView2, shadowPos2, depthBuff2, pixel2)

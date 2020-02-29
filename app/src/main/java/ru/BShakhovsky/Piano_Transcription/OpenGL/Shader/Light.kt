@@ -33,28 +33,20 @@ class Light(
             )
 
             FloatArray(4).also { viewCords ->
+                @Suppress("LongLine", "Reformat")
                 for (cords in arrayOf(
-                    floatArrayOf(0f, 0f, Geometry.whiteLen, 1f),
-                    floatArrayOf(0f, Geometry.whiteWid, Geometry.whiteLen, 1f),
-                    floatArrayOf(Geometry.overallLen, 0f, Geometry.whiteLen, 1f),
-                    floatArrayOf(Geometry.overallLen, Geometry.whiteWid, Geometry.whiteLen, 1f),
+                    floatArrayOf(0f,                                            0f,                     Geometry.whiteLen,      1f),
+                    floatArrayOf(0f,                                            Geometry.whiteWid,      Geometry.whiteLen,      1f),
+                    floatArrayOf(Geometry.overallLen,                           0f,                     Geometry.whiteLen,      1f),
+                    floatArrayOf(Geometry.overallLen,                           Geometry.whiteWid,      Geometry.whiteLen,      1f),
 
-                    floatArrayOf(-Geometry.deskOver, 0f, -Geometry.deskThick, 1f),
-                    floatArrayOf(-Geometry.deskOver, Geometry.deskHeight, -Geometry.deskThick, 1f),
-                    floatArrayOf(-Geometry.deskOver, Geometry.deskHeight, 0f, 1f),
+                    floatArrayOf(                       - Geometry.deskOver,    0f,                     -Geometry.deskThick,    1f),
+                    floatArrayOf(                       - Geometry.deskOver,    Geometry.deskHeight,    -Geometry.deskThick,    1f),
+                    floatArrayOf(                       - Geometry.deskOver,    Geometry.deskHeight,    0f,                     1f),
 
-                    floatArrayOf(
-                        Geometry.overallLen + Geometry.deskOver, 0f,
-                        -Geometry.deskThick, 1f
-                    ),
-                    floatArrayOf(
-                        Geometry.overallLen + Geometry.deskOver, Geometry.deskHeight,
-                        -Geometry.deskThick, 1f
-                    ),
-                    floatArrayOf(
-                        Geometry.overallLen + Geometry.deskOver, Geometry.deskHeight,
-                        0f, 1f
-                    )
+                    floatArrayOf(Geometry.overallLen    + Geometry.deskOver,    0f,                     -Geometry.deskThick,    1f),
+                    floatArrayOf(Geometry.overallLen    + Geometry.deskOver,    Geometry.deskHeight,    -Geometry.deskThick,    1f),
+                    floatArrayOf(Geometry.overallLen    + Geometry.deskOver,    Geometry.deskHeight,    0f,                     1f)
                 )) {
                     Matrix.multiplyMV(viewCords, 0, view, 0, cords, 0)
                     for (i in 0..viewCords.lastIndex) viewCords[i] /= viewCords.last()

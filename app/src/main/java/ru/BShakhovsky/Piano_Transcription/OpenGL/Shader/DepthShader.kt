@@ -16,7 +16,7 @@ class DepthShader(context: Context) : Shader(context, "Shadow") {
             bindBuff(lightNo)
             bindTexture(lightNo)
         }
-        GLES32.glViewport(0, 0, lights[lightNo].orthoWidth, lights[lightNo].orthoHeight)
+        with(lights[lightNo]) { GLES32.glViewport(0, 0, orthoWidth, orthoHeight) }
         GLES32.glClearColor(1f, 1f, 1f, 1f)
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT or GLES32.GL_DEPTH_BUFFER_BIT)
         use()

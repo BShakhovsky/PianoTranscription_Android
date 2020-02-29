@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
 
     style="@style/MatchParent"
     android:fitsSystemWindows="true">
@@ -26,7 +27,6 @@
 
                 app:layout_collapseMode="parallax"
 
-                xmlns:tools="http://schemas.android.com/tools"
                 tools:ignore="ContentDescription" />
 
             <androidx.appcompat.widget.Toolbar
@@ -37,11 +37,11 @@
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/midiContent"
-        xmlns:tools="http://schemas.android.com/tools"
         tools:ignore="UnusedIds"
 
         style="@style/MatchParent"
@@ -52,7 +52,6 @@
             style="@style/MatchParent"
             android:orientation="vertical"
 
-            xmlns:tools="http://schemas.android.com/tools"
             tools:ignore="SelectableText">
 
             <LinearLayout android:id="@+id/copyrightGroup" style="@style/MatchParent" android:orientation="vertical">

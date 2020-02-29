@@ -4,11 +4,14 @@ package ru.BShakhovsky.Piano_Transcription.Midi
 
 import android.os.Parcel
 import android.os.Parcelable
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 
 class TrackInfo(var name: String? = null, var instrument: String? = null) : Parcelable {
-    constructor(parcel: Parcel) : this(parcel.readString(), parcel.readString())
+    constructor(parcel: Parcel) : this(parcel.readString()!!, parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int): Unit = with(parcel) {
+        DebugMode.assertArgument(name != null)
+//        DebugMode.assertArgument(instrument != null)
         writeString(name)
         writeString(instrument)
     }

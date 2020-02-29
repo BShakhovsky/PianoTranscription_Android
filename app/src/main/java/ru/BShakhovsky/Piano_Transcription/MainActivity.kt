@@ -6,7 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
+
+import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
 
 import android.view.Gravity
 import android.view.Menu
@@ -17,6 +20,7 @@ import android.widget.CompoundButton
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -49,6 +53,9 @@ import ru.BShakhovsky.Piano_Transcription.Midi.Midi
 import ru.BShakhovsky.Piano_Transcription.Midi.MidiActivity
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
+import java.io.FileNotFoundException
+import java.util.concurrent.Executors
+
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
@@ -71,20 +78,70 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private lateinit var mainMenu: Menu
     private lateinit var render: Render
+
     private var midi: Midi? = null
     private var play: Play? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(mainBar)
-
+        if (DebugMode.debug) {
+            StrictMode.enableDefaults()
+            with(StrictMode.VmPolicy.Builder()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    detectContentUriWithoutPermission()//.detectUntaggedSockets()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { //detectNonSdkApiUsage().
+                        penaltyListener(
+                            Executors.newSingleThreadExecutor(), StrictMode.OnVmViolationListener {
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        it.localizedMessage ?: "Unknown Vm policy violation",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            })
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                            detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
+                    }
+                }
+                StrictMode.setVmPolicy(//detectAll().detectCleartextNetwork().detectActivityLeaks().
+                    detectFileUriExposure().detectLeakedClosableObjects()
+                        .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
+                        .penaltyLog().build()
+                )
+            }
+            with(StrictMode.ThreadPolicy.Builder()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    detectUnbufferedIo()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        penaltyListener(
+                            Executors.newSingleThreadExecutor(),
+                            StrictMode.OnThreadViolationListener { v ->
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        v.localizedMessage ?: "Unknown Thread policy violation",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            })
+                    }
+                }
+                StrictMode.setThreadPolicy(//detectAll().detectCustomSlowCalls().detectDiskReads().
+                    detectDiskWrites().detectNetwork().detectResourceMismatches()
+                        .penaltyDialog().penaltyLog().build()
+                )
+            }
+        }
         Thread.setDefaultUncaughtExceptionHandler(Crash(this))
         if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(R.string.error).apply {
             if (BuildConfig.DEBUG) setMessage(intent.getStringExtra("Crash"))
             else setMessage(R.string.crash)
         }.setIcon(R.drawable.info).setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
+
+        super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        setContentView(R.layout.activity_main)
+        setSupportActionBar(mainBar)
 
         with(surfaceView) {
             setEGLContextClientVersion(3)
@@ -131,7 +188,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.menuTracks -> drawerLayout.openDrawer(GravityCompat.START)
             R.id.menuMidi -> midi()
             R.id.menuGuide -> guide()
-            else -> Assert.argument(false)
+            else -> DebugMode.assertArgument(false)
         }
         return true
     }
@@ -151,30 +208,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onCheckedChanged(button: CompoundButton?, checked: Boolean) {
-        when (button?.id) {
-            DrawerItem.CHECK_ALL.id -> for (i in 0..(midi ?: return).tracks.lastIndex) {
-                with(drawerMenu.menu.findItem(R.id.drawerTracks).subMenu.findItem(i)) {
-                    if (checkGroup(groupId, itemId))
-                        (actionView as Switch).isChecked = button.isChecked
-                }
-            }
-            else -> {
-                Assert.state(
-                    (midi != null) and (button?.id in 0..(midi ?: return).tracks.lastIndex)
-                )
-                play?.let {
-                    with(it) {
-                        when {
-                            (button ?: return).isChecked -> addTrack(button.id)
-                            isPlaying and (numSelTracks() == 1) -> {
-                                showError(R.string.justTracks, R.string.trackNotSelPlaying)
-                                button.performClick()
-                                return
-                            }
-                            else -> removeTrack(button.id)
+        DebugMode.assertArgument(button != null)
+        button?.run {
+            DebugMode.assertState(midi != null)
+            midi?.run {
+                when (id) {
+                    DrawerItem.CHECK_ALL.id -> for (i in 0..tracks.lastIndex) {
+                        with(drawerMenu.menu.findItem(R.id.drawerTracks).subMenu.findItem(i)) {
+                            if (checkGroup(groupId, itemId))
+                                (actionView as Switch).isChecked = button.isChecked
                         }
-                        (drawerMenu.menu.findItem(R.id.drawerAll).actionView as Switch).text =
-                            getString(R.string.tracks, numSelTracks(), midi?.tracks?.size)
+                    }
+                    else -> {
+                        midi?.run {
+                            DebugMode.assertState((play != null) and (id in 0..tracks.lastIndex))
+                            play?.run {
+                                when {
+                                    isChecked -> addTrack(id)
+                                    isPlaying and (numSelTracks() == 1) -> {
+                                        showError(R.string.justTracks, R.string.trackNotSelPlaying)
+                                        performClick()
+                                        return
+                                    }
+                                    else -> removeTrack(id)
+                                }
+                                (drawerMenu.menu.findItem(R.id.drawerAll)
+                                    .actionView as Switch).text =
+                                    getString(R.string.tracks, numSelTracks(), tracks.size)
+                            }
+                        }
                     }
                 }
             }
@@ -183,9 +245,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun midi() {
         Intent(this, MidiActivity::class.java).also { intent ->
-            intent.putExtra("Summary", midi?.summary)
-            intent.putExtra("Tracks", midi?.tracks?.map { it.info }?.toTypedArray())
-            intent.putExtra("Percuss", midi?.percuss)
+            DebugMode.assertState(midi != null)
+            midi?.run {
+                intent.putExtra("Summary", summary)
+                intent.putExtra("Tracks", tracks.map { it.info }.toTypedArray())
+                intent.putExtra("Percuss", percuss)
+            }
             startActivity(intent)
         }
     }
@@ -194,15 +259,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun checkGroup(groupId: Int, itemId: Int) = when (groupId) {
         0 -> {
-            Assert.argument(itemId == R.id.drawerAll)
+            DebugMode.assertArgument(itemId == R.id.drawerAll)
             false
         }
         DrawerGroup.TRACKS.id -> {
-            Assert.argument(itemId in 0..midi!!.tracks.lastIndex)
+            DebugMode.assertArgument(itemId in 0..midi!!.tracks.lastIndex)
             true
         }
         else -> {
-            Assert.argument(false)
+            DebugMode.assertArgument(false)
             false
         }
     }
@@ -225,26 +290,47 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if ((play ?: return).isPlaying) playPause.performClick()
     }
 
+    override fun onResume() {
+        super.onResume()
+//        if (::render.isInitialized)
+        surfaceView.onResume()
+    }
+
+    override fun onPause() {
+//        if (::render.isInitialized)
+        surfaceView.onPause()
+        super.onPause()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode.toShort().toInt()) { // Dialog fragment on super() will receive it
             AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
-                openMidi(data?.data)
+                DebugMode.assertState((data != null) and (data?.data != null))
+                data?.data?.let { openMidi(it) }
             }
             AddDialog.RequestCode.OPEN_MIDI.id -> {
                 if (resultCode != RESULT_OK) return
-                openMidi(data?.data)
+                DebugMode.assertState((data != null) and (data?.data != null))
+                data?.data?.let { openMidi(it) }
             }
             AddDialog.RequestCode.WRITE_WAV.id, AddDialog.Permission.RECORD_SETTINGS.id ->
                 super.onActivityResult(requestCode, resultCode, data)
-
-            else -> Assert.argument(false)
+            else -> DebugMode.assertArgument(false)
         }
     }
 
-    private fun openMidi(uri: Uri?) {
-        uri?.let { u ->
-            contentResolver.openInputStream(u)?.use { inStream ->
+    private fun openMidi(uri: Uri) {
+        try {
+            contentResolver.openInputStream(uri)
+        } catch (e: FileNotFoundException) {
+            with(e) {
+                showMsg(R.string.notFound, "${localizedMessage ?: this}\n\n$uri")
+            }
+            return
+        }.also { inputStream ->
+            DebugMode.assertState(inputStream != null)
+            inputStream?.use { inStream ->
                 with(Midi(inStream, getString(R.string.untitled))) {
                     if (badMidi) {
                         showError(R.string.badFile, R.string.notMidi)
@@ -263,7 +349,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             return
                         }
                         else -> {
-                            Assert.state(::render.isInitialized)
+                            DebugMode.assertState(::render.isInitialized)
                             play = Play(render, tracks, playPause, seek)
                             tracksEnabled(true)
                         }
@@ -277,19 +363,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuMidi).isVisible = enabled
         with(drawerMenu.menu.findItem(R.id.drawerMidi)) {
             isEnabled = enabled
-            with(actionView as TextView) {
+            (actionView as TextView).also { t ->
                 if (enabled) {
-                    midi?.let { midi ->
-                        midi.summary.let {
-                            text = getString(
-                                R.string.keyTemp,
-                                if (it.keys.isNullOrEmpty()) "" else it.keys.first().key,
-                                if (it.tempos.isNullOrEmpty()) 0 else it.tempos.first().bpm.toInt()
-                            )
-                        }
+                    DebugMode.assertState((midi != null) and (midi?.summary != null))
+                    midi?.summary?.run {
+                        t.text = getString(
+                            R.string.keyTemp,
+                            if (keys.isNullOrEmpty()) "" else keys.first().key,
+                            if (tempos.isNullOrEmpty()) 0 else tempos.first().bpm.toInt()
+                        )
                     }
-                } else text = getString(R.string.noMidi)
-                font(this, enabled)
+                } else t.text = getString(R.string.noMidi)
+                font(t, enabled)
             }
         }
     }
@@ -298,27 +383,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuTracks).isVisible = enabled
         control.visibility = if (enabled) View.VISIBLE else View.GONE
         if (enabled) {
-            durTime.text = Midi.minSecStr(this, R.string.timeOf, (midi ?: return).dur)
-            seek.max = (midi ?: return).dur.toInt()
+            DebugMode.assertState((midi != null) and (midi?.tracks != null))
+            midi?.run {
+                durTime.text = Midi.minSecStr(this@MainActivity, R.string.timeOf, dur)
+                seek.max = dur.toInt()
+            }
         } else {
             seek.progress = 0
             prev.visibility = View.GONE
             next.visibility = View.VISIBLE
-            if ((play ?: return).isPlaying) playPause.performClick()
+            // Null for at least first two calls,
+            // then after created for the first time, never becomes null:
+//            DebugMode.assertState(play != null)
+            play?.run { if (isPlaying) playPause.performClick() }
         }
         with(drawerMenu.menu) {
             with(findItem(R.id.drawerTracks).subMenu) {
                 if (enabled) {
                     midi?.tracks?.forEachIndexed { i, track ->
-                        with(Switch(this@MainActivity)) {
+                        (Switch(this@MainActivity)).run {
                             id = i
                             showText = true
                             textOn = "+"
                             textOff = ""
                             setOnCheckedChangeListener(this@MainActivity)
-                            add(1, i, Menu.NONE, track.info.name).also {
-                                it.icon = getDrawable(R.drawable.queue)
-                                it.actionView = this
+                            with(add(1, i, Menu.NONE, track.info.name)) {
+                                icon = getDrawable(R.drawable.queue)
+                                actionView = this@run
                             }
                         }
                     }
@@ -343,38 +434,43 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
 
     override fun onClick(view: View?) {
-        when (view?.id) {
-            R.id.newMedia -> AddDialog().show(supportFragmentManager, "Dialog Add")
-            else -> play?.let {
-                with(it) {
-                    seek.progress.also { prevMilSec ->
-                        when (view?.id) {
-                            R.id.playPause -> {
-                                if (!isPlaying and noTracks()) return
-                                view.setBackgroundResource(
-                                    if (isPlaying) android.R.drawable.ic_media_play
-                                    else android.R.drawable.ic_media_pause
-                                )
-                                toggle()
-                                prevNext()
+        DebugMode.assertArgument(view != null)
+        view?.run {
+            when (id) {
+                R.id.newMedia -> AddDialog().show(supportFragmentManager, "Dialog Add")
+                else -> {
+                    // Can be clicked by touching GL view, even when buttons are invisible
+//                    DebugMode.assertState(play != null)
+                    play?.run {
+                        seek.progress.also { prevMilSec ->
+                            when (id) {
+                                R.id.playPause -> {
+                                    if (!isPlaying and noTracks()) return
+                                    view.setBackgroundResource(
+                                        if (isPlaying) android.R.drawable.ic_media_play
+                                        else android.R.drawable.ic_media_pause
+                                    )
+                                    toggle()
+                                    prevNext()
+                                }
+                                R.id.prev -> if (!isPlaying and !noTracks()) {
+                                    render.releaseAllKeys()
+                                    do {
+                                        val anyPressed = prevChord()
+                                    } while (((prevMilSec - seek.progress < 1) or !anyPressed)
+                                        and (seek.progress != 0)
+                                    )
+                                }
+                                R.id.next -> if (!isPlaying and !noTracks()) {
+                                    render.releaseAllKeys()
+                                    do {
+                                        val (anyPressed, stop) = nextChord()
+                                    } while (((seek.progress - prevMilSec < 1) or !anyPressed)
+                                        and !stop
+                                    )
+                                }
+                                else -> DebugMode.assertArgument(false)
                             }
-                            R.id.prev -> if (!isPlaying and !noTracks()) {
-                                render.releaseAllKeys()
-                                do {
-                                    val anyPressed = prevChord()
-                                } while (((prevMilSec - seek.progress < 1) or !anyPressed)
-                                    and (seek.progress != 0)
-                                )
-                            }
-                            R.id.next -> if (!isPlaying and !noTracks()) {
-                                render.releaseAllKeys()
-                                do {
-                                    val (anyPressed, stop) = nextChord()
-                                } while (((seek.progress - prevMilSec < 1) or !anyPressed)
-                                    and !stop
-                                )
-                            }
-                            else -> Assert.argument(false)
                         }
                     }
                 }
@@ -383,26 +479,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
+        DebugMode.assertArgument(bar != null)
         curTime.text = Midi.minSecStr(this, R.string.timeCur, pos.toLong())
         prevNext()
-        if (fromUser) play?.seek(pos.toLong())
+        if (fromUser) {
+            DebugMode.assertState(play != null)
+            play?.seek(pos.toLong())
+        }
     }
 
-    override fun onStartTrackingTouch(bar: SeekBar?) {}
-    override fun onStopTrackingTouch(bar: SeekBar?) {}
+    override fun onStartTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
+    override fun onStopTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
 
     private fun prevNext() {
-        with(seek) {
-            prev.visibility =
-                if (((play ?: return@with).isPlaying) or (progress == 0)) View.INVISIBLE
-                else View.VISIBLE
-            next.visibility =
-                if (((play ?: return@with).isPlaying) or (progress == max)) View.INVISIBLE
-                else View.VISIBLE
+        /* When exception occurs in a child activity,
+        and "setDefaultUncaughtExceptionHandler" recreates the activity,
+        and MIDI-file has already been opened (play was not null),
+        for some reason onProgressChanged is called and we end up here,
+        and assert would cause infinite loop: */
+        if (DebugMode.debug) if (play == null) showMsg(R.string.error, "Play == null")
+        play?.run {
+            with(seek) {
+                prev.visibility = if ((isPlaying) or (progress == 0))
+                    View.INVISIBLE else View.VISIBLE
+                next.visibility = if ((isPlaying) or (progress == max))
+                    View.INVISIBLE else View.VISIBLE
+            }
         }
     }
 
     private fun noTracks(): Boolean {
+        DebugMode.assertState(play != null)
         if (play?.numSelTracks() == 0) {
             showError(R.string.justTracks, R.string.trackNotSel)
             drawerLayout.openDrawer(GravityCompat.START)
@@ -412,4 +519,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showError(titleId: Int, msgId: Int) = msgDialog(this, titleId, msgId)
+    private fun showMsg(titleId: Int, msgStr: String) = msgDialog(this, titleId, msgStr)
 }

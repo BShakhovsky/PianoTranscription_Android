@@ -2,11 +2,12 @@
 
 package ru.BShakhovsky.Piano_Transcription.MainUI
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
-import android.os.Process
-import ru.BShakhovsky.Piano_Transcription.BuildConfig
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import ru.BShakhovsky.Piano_Transcription.MainActivity
 
 import java.io.File
@@ -26,21 +27,30 @@ class Crash(private val context: Context) : Thread.UncaughtExceptionHandler {
                         Intent.FLAG_ACTIVITY_NEW_TASK
             )
             putExtra("Crash", "")
-            if (BuildConfig.DEBUG) {
-                StringWriter().also { stack ->
-                    exception.printStackTrace(PrintWriter(stack))
-                    putExtra("Crash", stack.toString())
+            if (DebugMode.debug) {
+                StringWriter().run {
+                    with(exception) {
+                        printStackTrace(PrintWriter(this@run))
+                        putExtra("Crash", localizedMessage)
+                    }
                     FileOutputStream(
                         File(
                             context.getExternalFilesDir("Errors"),
                             "${Calendar.getInstance().time}.txt"
                         )
-                    ).use { it.write(stack.toString().toByteArray()) }
+                    ).use { it.write(toString().toByteArray()) }
                 }
             }
-            context.startActivity(this)
+
+            @Suppress("SpellCheckingInspection")
+            // https://medium.com/@ssaurel/how-to-auto-restart-an-android-
+            // application-after-a-crash-or-a-force-close-error-1a361677c0ce
+            (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)[
+                    AlarmManager.RTC, System.currentTimeMillis() + 100] =
+                PendingIntent.getActivity(
+                    context, 0, this, PendingIntent.FLAG_ONE_SHOT
+                )
         }
-        Process.killProcess(Process.myPid())
-        exitProcess(0)
+        exitProcess(1)
     }
 }

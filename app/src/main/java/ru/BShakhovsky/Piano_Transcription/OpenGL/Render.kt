@@ -11,7 +11,7 @@ import android.os.SystemClock
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
-import ru.BShakhovsky.Piano_Transcription.Assert
+import ru.BShakhovsky.Piano_Transcription.DebugMode
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Model
 import ru.BShakhovsky.Piano_Transcription.Sound
@@ -84,16 +84,17 @@ class Render(
 
     private fun fit() {
         (winX(0f) to winX(Geometry.overallLen)).also { (winLeft, winRight) ->
+            @Suppress("Reformat")
             when {
                 (winLeft.x > 0) and (winRight.x < width) -> {
-                    Assert.state(winLeft.y == winRight.y)
+                    DebugMode.assertState(winLeft.y == winRight.y)
                     x = Geometry.overallLen / 2
                     yz = Geometry.overallLen * .425f // 1 / 2 / sqrt(2) = 0.354
                     model.mats.viewProject(x, yz, yz)
                     zoomOut = false
                 }
-                winLeft.x > 0 -> moveUnlimited(winLeft.x, 0f, winLeft.y)
-                winRight.x < width -> moveUnlimited(winRight.x, width.toFloat(), winRight.y)
+                winLeft.x  > 0      -> moveUnlimited(winLeft .x,    0f,                 winLeft .y)
+                winRight.x < width  -> moveUnlimited(winRight.x,    width.toFloat(),    winRight.y)
             }
         }
     }
@@ -109,14 +110,12 @@ class Render(
         model.mats.viewProject(x, yz, yz)
     }
 
-    private fun winX(worldX: Float): PointF {
-        floatArrayOf(0f, 0f, 0f).also {
-            GLU.gluProject(
-                worldX, Geometry.whiteWid, Geometry.whiteLen, model.mats.view,
-                0, model.mats.projection, 0, intArrayOf(0, 0, width, height), 0, it, 0
-            )
-            return PointF(it[0], it[1])
-        }
+    private fun winX(worldX: Float): PointF = floatArrayOf(0f, 0f, 0f).run {
+        GLU.gluProject(
+            worldX, Geometry.whiteWid, Geometry.whiteLen, model.mats.view,
+            0, model.mats.projection, 0, intArrayOf(0, 0, width, height), 0, this, 0
+        )
+        return PointF(get(0), get(1))
     }
 
     private fun worldXZ(xWin: Float, yWin: Float): PointF {
@@ -131,10 +130,10 @@ class Render(
         }
         worldCords(0f).also { (xNear, yNear, zNear) ->
             worldCords(1f).also { (xFar, yFar, zFar) ->
-                Assert.state((yNear > 0) and (zNear > 0))
+                DebugMode.assertState((yNear > 0) and (zNear > 0))
                 (zFar + (Geometry.whiteWid - yFar) * (zNear - zFar) / (yNear - yFar)).also { z ->
                     @Suppress("LongLine", "Reformat")
-                    return if (yWin > height / 2)                   // (zFar    - yFar * (zNear - zFar) / (yNear - yFar) > 0)
+                    return if (yWin > height / 2)               // (zFar    - yFar * (zNear - zFar) / (yNear - yFar) > 0)
                         if (z > Geometry.blackLen) PointF(
                             xFar + (Geometry.whiteWid                       - yFar) * (xNear - xFar) / (yNear - yFar),
                             z
@@ -160,18 +159,17 @@ class Render(
                     return when {
                         xz.x < Geometry.whiteWid        -> 0
                         xz.x < Geometry.whiteWid * 2    -> 2
-                        else -> 3 + (octave - 1) * 12 + when (
-                            (xz.x / Geometry.whiteWid - 2).toInt() % 7
-                            ) {
+                        else                            -> 3 + (octave - 1) * 12 + when (
+                            (xz.x / Geometry.whiteWid - 2).toInt() % 7) {
                             0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11
                             else -> {
-                                Assert.argument(false)
+                                DebugMode.assertArgument(false)
                                 -1
                             }
                         }
                     }
                 } else (Geometry.whiteWid / 2).also { blackW ->
-                    var cord = xz.x
+                            var cord = xz.x
                     @Suppress("LongLine")
                     when {
                                 cord - Geometry.whiteWid        < -blackW               -> return -1 // 0
@@ -199,7 +197,7 @@ class Render(
                     }
                 }
             }
-            Assert.state(false)
+            DebugMode.assertState(false)
             return -1
         }
     }
@@ -228,7 +226,7 @@ class Render(
             in 0f               ..  width / 3f      -> prev     .performClick()
             in width / 3f       ..  width * 2 / 3f  -> playPause.performClick()
             in width * 2 / 3f   ..  width.toFloat() -> next     .performClick()
-            else -> Assert.argument(false)
+            else -> DebugMode.assertArgument(false)
         }
     }
 
@@ -252,7 +250,7 @@ class Render(
     }
 
     private fun check(note: Int): Boolean {
-        Assert.argument(note in 0..87)
+        DebugMode.assertArgument(note in 0..87)
         return ::model.isInitialized
     }
 }
