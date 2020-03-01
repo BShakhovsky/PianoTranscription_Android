@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/MatchParent"
+    android:baselineAligned="false">
+
+    <include layout="@layout/content_web"
+        android:layout_width="0dp" android:layout_height="match_parent"
+        android:layout_weight="1" />
+
+    <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content" android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/linear_background"
+        android:padding="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/goBack"
+            style="@style/Button"
+            android:text="@string/back"
+
+            app:icon="@drawable/back"
+            app:cornerRadius="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/goForward"
+            style="@style/Button"
+            android:text="@string/forward"
+
+            app:icon="@drawable/forward"
+            app:cornerRadius="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/goHome"
+            style="@style/Button"
+            android:text="@string/home"
+
+            app:icon="@drawable/close"
+            app:cornerRadius="24dp" />
+
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1"
+            tools:ignore="UselessLeaf" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/download"
+            style="@style/Button"
+            android:text="@string/download"
+
+            app:icon="@drawable/download"
+            app:cornerRadius="24dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

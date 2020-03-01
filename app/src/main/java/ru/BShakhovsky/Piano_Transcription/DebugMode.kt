@@ -10,9 +10,6 @@ object DebugMode {
         debug = true // BuildConfig.DEBUG
     }
 
-    fun assertArgument(b: Boolean, msg: String = ""): Unit =
-        if (debug) require(b) { msg } else Unit
-
-    fun assertState(b: Boolean, msg: String = ""): Unit =
-        if (debug) check(b) { msg } else Unit
+    fun assertArgument(b: Boolean, msg: String = ""): Unit = if (debug) require(b) { msg } else Unit
+    fun assertState(b: Boolean, msg: String = ""): Unit = if (debug) check(b) { msg } else Unit
 }

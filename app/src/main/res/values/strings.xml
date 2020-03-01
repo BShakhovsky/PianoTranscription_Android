@@ -32,10 +32,27 @@
     <string name="keyTemp">%1$s %2$d bpm</string>
     <string name="noMidi">not loaded</string>
 
+    WEB SURF
+
+    <string name="notUrl">This is probably not valid URL:\n%1$s</string>
+    <string name="aboutBlank">Could not load the requested web page:\n%1$s</string>
+    <string name="noLink">Video not found, probably you did not click on video link</string>
+    <string name="linkFailed">Could not get download link</string>
+    <string name="copyrightProtected">Streaming data is unplayable,
+        probably because copyright protection is enabled</string>
+    <string name="noAudioStream">Could not found audio stream</string>
+    <string name="notJson">Google returns not valid json if api limit</string>
+
+    Menu
+    <string name="home">Close</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="download">Download</string>
+
     MIDI
 
     Error
-    <string name="notFound">File not found</string>
+    <string name="noFile">File not found</string>
     <string name="badFile">File not supported</string>
     <string name="notMidi">This is not a MIDI-file</string>
     <string name="emptyMidi">Empty Midi</string>
@@ -84,7 +101,7 @@
     <string name="mono">Mono</string>
     <string name="stereo">Stereo</string>
     <string name="invalidChannels">Invalid number of channels</string>
-    <string name="invalid">Invalid</string>
+    <string name="invalid" tools:ignore="UnusedResources">Invalid</string>
 
     USER GUIDE
 

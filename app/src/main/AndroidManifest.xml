@@ -32,6 +32,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+
             <tools:validation testUrl="http://bshakhovsky.github.io" />
             <tools:validation testUrl="https://bshakhovsky.github.io" />
             <!-- Android - Lint - Correctness - App Links Auto Verification Failure
@@ -55,5 +61,10 @@
             android:label="@string/midi" android:theme="@style/AppTheme" />
         <activity android:name=".GuideActivity" android:parentActivityName=".MainActivity"
             android:label="@string/guide" android:theme="@style/AppTheme" />
+
+        <activity android:name=".Web.WebActivity" android:parentActivityName=".MainActivity"
+            android:label="@string/surf" android:theme="@style/AppTheme" />
+
     </application>
+
 </manifest>

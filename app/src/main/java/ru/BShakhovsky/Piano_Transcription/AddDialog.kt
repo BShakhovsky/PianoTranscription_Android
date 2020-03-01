@@ -30,6 +30,8 @@ import kotlinx.android.synthetic.main.dialog_add.midiFile
 import kotlinx.android.synthetic.main.dialog_add.record
 import kotlinx.android.synthetic.main.dialog_add.surf
 
+import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
+
 import java.io.FileDescriptor
 import java.io.IOException
 
@@ -65,7 +67,10 @@ class AddDialog : DialogFragment(), View.OnClickListener {
         DebugMode.assertArgument(view != null)
         DebugMode.assertState((dialog != null) and (activity != null))
         when (view?.id) {
-            R.id.surf -> dialog?.dismiss()
+            R.id.surf -> {
+                startActivity(Intent(activity, WebActivity::class.java))
+                dialog?.dismiss()
+            }
             R.id.mediaFile -> {
                 with(Intent(Intent.ACTION_GET_CONTENT)) {
                     type = "*/*"

@@ -44,8 +44,7 @@ class Primitive(cords: FloatArray, order: IntArray, texArray: FloatArray? = null
                                 y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2
                             ).also { (crossX, crossY, crossZ) ->
                                 sqrt(
-                                    crossX.pow(2) + crossY.pow(2)
-                                            + crossZ.pow(2)
+                                    crossX.pow(2) + crossY.pow(2) + crossZ.pow(2)
                                 ).also { distance ->
                                     for (k in 0..2) {
                                         normArray[i * 9 + k * 3] = crossX / distance

@@ -52,6 +52,7 @@ import ru.BShakhovsky.Piano_Transcription.MainUI.Touch
 import ru.BShakhovsky.Piano_Transcription.Midi.Midi
 import ru.BShakhovsky.Piano_Transcription.Midi.MidiActivity
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
+import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
 
 import java.io.FileNotFoundException
 import java.util.concurrent.Executors
@@ -175,6 +176,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         MobileAds.initialize(this)
         AdBanner(adMain)
+
+        // TODO: onCreate not called after onStop, and intent.extras == null anyway
+        if (intent.hasExtra(Intent.EXTRA_TEXT))
+            with(Intent(this@MainActivity, WebActivity::class.java)) {
+                putExtras(intent)
+                startActivity(this)
+            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -321,7 +329,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         try {
             contentResolver.openInputStream(uri)
         } catch (e: FileNotFoundException) {
-            with(e) { showMsg(R.string.notFound, "${localizedMessage ?: this}\n\n$uri") }
+            with(e) { showMsg(R.string.noFile, "${localizedMessage ?: this}\n\n$uri") }
             return
         }.also { inputStream ->
             DebugMode.assertState(inputStream != null)
