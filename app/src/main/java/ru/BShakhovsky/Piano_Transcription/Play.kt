@@ -95,8 +95,7 @@ class Play(
             curMilSec = Int.MAX_VALUE.toLong()
             var anyPressed = false
             tracks.forEachIndexed { trackNo, track ->
-                @Suppress("Reformat")
-                if (selTracks.contains(trackNo)) with(track.chords) {
+                if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                     if (        curIndices[trackNo]         == size)        return@with
                     if (        curIndices[trackNo]         == -1)          ++curIndices[trackNo]
                     if (this[   curIndices[trackNo]].mSec   < prevMilSec)   ++curIndices[trackNo]
@@ -113,9 +112,8 @@ class Play(
                         }
                         ++curIndices[trackNo]
                     }
-                    if (curIndices[trackNo] != size) curMilSec = minOf(
-                        curMilSec, prevMilSec + 1_000, this[curIndices[trackNo]].mSec
-                    )
+                    if (curIndices[trackNo] != size) curMilSec =
+                        minOf(curMilSec, prevMilSec + 1_000, this[curIndices[trackNo]].mSec)
                 }
             }
             seekBar.progress = curMilSec.toInt()
@@ -137,8 +135,7 @@ class Play(
         curMilSec.also { prevMilSec ->
             curMilSec = 0
             tracks.forEachIndexed { trackNo, track ->
-                @Suppress("Reformat")
-                if (selTracks.contains(trackNo)) with(track.chords) {
+                if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                     if (        curIndices[trackNo]         == -1)          return@with
                     if (        curIndices[trackNo]         == size)        --curIndices[trackNo]
                     if (this[   curIndices[trackNo]].mSec   >= prevMilSec)  --curIndices[trackNo]
@@ -149,8 +146,7 @@ class Play(
             seekBar.progress = curMilSec.toInt()
             var anyPressed = false
             tracks.forEachIndexed { trackNo, track ->
-                @Suppress("Reformat")
-                if (selTracks.contains(trackNo)) with(track.chords) {
+                if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                     if (        curIndices[trackNo]         == -1) return@with
                     if (this[   curIndices[trackNo]].mSec   == curMilSec) {
                         this[   curIndices[trackNo]].notes.forEach { (note, vel) ->

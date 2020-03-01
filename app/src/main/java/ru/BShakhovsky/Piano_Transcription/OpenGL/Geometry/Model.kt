@@ -49,8 +49,7 @@ class Model(context: Context) {
                 drawCotton(cotton, reflectView, reflectVP, refInvTransView, lights)
                 drawKeyboard { key, offset, angle, color ->
                     drawKey(
-                        key, offset, angle, color,
-                        reflectView, reflectVP, refInvTransView, lights
+                        key, offset, angle, color, reflectView, reflectVP, refInvTransView, lights
                     )
                 }
 
@@ -58,6 +57,7 @@ class Model(context: Context) {
                 stencilShader.draw(desk, viewProjection)
                 with(lights) {
                     textureShader.draw(textures, size, true)
+
                     initMainScreen(textures, lights, true)
                     drawDesk(desk, view, viewProjection, invTransView, textures, size + 1)
                 }

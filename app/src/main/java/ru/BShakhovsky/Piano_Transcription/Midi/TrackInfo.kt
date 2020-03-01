@@ -7,6 +7,7 @@ import android.os.Parcelable
 import ru.BShakhovsky.Piano_Transcription.DebugMode
 
 class TrackInfo(var name: String? = null, var instrument: String? = null) : Parcelable {
+
     constructor(parcel: Parcel) : this(parcel.readString()!!, parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int): Unit = with(parcel) {

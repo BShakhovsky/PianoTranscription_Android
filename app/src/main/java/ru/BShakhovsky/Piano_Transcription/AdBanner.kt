@@ -23,9 +23,7 @@ class AdBanner(private val adView: AdView) : AdListener() {
     override fun onAdFailedToLoad(error: Int) {
         super.onAdFailedToLoad(error)
         if (DebugMode.debug) Snackbar.make(
-            adView,
-            @Suppress("Reformat")
-            when (error) {
+            adView, @Suppress("Reformat") when (error) {
                 AdRequest.ERROR_CODE_INTERNAL_ERROR     -> "Ad-banner server: invalid response"
                 AdRequest.ERROR_CODE_INVALID_REQUEST    -> "Ad-banner unit ID incorrect"
                 AdRequest.ERROR_CODE_NETWORK_ERROR      -> "Ad-banner: no internet connection"

@@ -18,9 +18,8 @@ abstract class Shader(context: Context, name: String) {
         fun attachShader(type: Int, glslName: String) = GLES32.glAttachShader(program,
             GLES32.glCreateShader(type).also { shader ->
                 GLES32.glShaderSource(
-                    shader, InputStreamReader(
-                        context.assets.open("Shader/$glslName.glsl")
-                    ).readText()
+                    shader,
+                    InputStreamReader(context.assets.open("Shader/$glslName.glsl")).readText()
                 )
                 GLES32.glCompileShader(shader)
                 if (DebugMode.debug) GLES32.glGetShaderInfoLog(shader).run {

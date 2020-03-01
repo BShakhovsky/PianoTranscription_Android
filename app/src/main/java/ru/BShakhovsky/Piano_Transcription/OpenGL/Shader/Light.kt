@@ -33,8 +33,7 @@ class Light(
             )
 
             FloatArray(4).also { viewCords ->
-                @Suppress("LongLine", "Reformat")
-                for (cords in arrayOf(
+                @Suppress("LongLine", "Reformat") for (cords in arrayOf(
                     floatArrayOf(0f,                                            0f,                     Geometry.whiteLen,      1f),
                     floatArrayOf(0f,                                            Geometry.whiteWid,      Geometry.whiteLen,      1f),
                     floatArrayOf(Geometry.overallLen,                           0f,                     Geometry.whiteLen,      1f),

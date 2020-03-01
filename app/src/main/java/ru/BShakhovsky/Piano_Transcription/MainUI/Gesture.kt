@@ -31,8 +31,9 @@ class Gesture(private val render: Render) : GestureDetector.SimpleOnGestureListe
     ): Boolean {
         DebugMode.assertArgument((event1 != null) and (event2 != null))
         event2?.run {
-            DebugMode.assertArgument(event1?.action == MotionEvent.ACTION_DOWN)
-            DebugMode.assertArgument(action == MotionEvent.ACTION_MOVE)
+            DebugMode.assertArgument(
+                (event1?.action == MotionEvent.ACTION_DOWN) and (action == MotionEvent.ACTION_MOVE)
+            )
             render.move(x + distanceX, x, y + distanceY)
         }
         return true

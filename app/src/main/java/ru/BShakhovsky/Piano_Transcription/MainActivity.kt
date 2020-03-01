@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         Thread.setDefaultUncaughtExceptionHandler(Crash(this))
         if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(R.string.error).apply {
-            if (BuildConfig.DEBUG) setMessage(intent.getStringExtra("Crash"))
+            if (DebugMode.debug) setMessage(intent.getStringExtra("Crash"))
             else setMessage(R.string.crash)
         }.setIcon(R.drawable.info).setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
 
@@ -220,22 +220,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                     else -> {
-                        midi?.run {
-                            DebugMode.assertState((play != null) and (id in 0..tracks.lastIndex))
-                            play?.run {
-                                when {
-                                    isChecked -> addTrack(id)
-                                    isPlaying and (numSelTracks() == 1) -> {
-                                        showError(R.string.justTracks, R.string.trackNotSelPlaying)
-                                        performClick()
-                                        return
-                                    }
-                                    else -> removeTrack(id)
+                        DebugMode.assertState((play != null) and (id in 0..tracks.lastIndex))
+                        play?.run {
+                            when {
+                                isChecked -> addTrack(id)
+                                isPlaying and (numSelTracks() == 1) -> {
+                                    showError(R.string.justTracks, R.string.trackNotSelPlaying)
+                                    performClick()
+                                    return
                                 }
-                                (drawerMenu.menu.findItem(R.id.drawerAll)
-                                    .actionView as Switch).text =
-                                    getString(R.string.tracks, numSelTracks(), tracks.size)
+                                else -> removeTrack(id)
                             }
+                            (drawerMenu.menu.findItem(R.id.drawerAll).actionView as Switch).text =
+                                getString(R.string.tracks, numSelTracks(), tracks.size)
                         }
                     }
                 }
@@ -314,7 +311,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 DebugMode.assertState((data != null) and (data?.data != null))
                 data?.data?.let { openMidi(it) }
             }
-            AddDialog.RequestCode.WRITE_WAV.id, AddDialog.Permission.RECORD_SETTINGS.id ->
+            AddDialog.RequestCode.WRITE_3GP.id, AddDialog.Permission.RECORD_SETTINGS.id ->
                 super.onActivityResult(requestCode, resultCode, data)
             else -> DebugMode.assertArgument(false)
         }
@@ -324,9 +321,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         try {
             contentResolver.openInputStream(uri)
         } catch (e: FileNotFoundException) {
-            with(e) {
-                showMsg(R.string.notFound, "${localizedMessage ?: this}\n\n$uri")
-            }
+            with(e) { showMsg(R.string.notFound, "${localizedMessage ?: this}\n\n$uri") }
             return
         }.also { inputStream ->
             DebugMode.assertState(inputStream != null)
@@ -401,7 +396,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             with(findItem(R.id.drawerTracks).subMenu) {
                 if (enabled) {
                     midi?.tracks?.forEachIndexed { i, track ->
-                        (Switch(this@MainActivity)).run {
+                        Switch(this@MainActivity).run {
                             id = i
                             showText = true
                             textOn = "+"

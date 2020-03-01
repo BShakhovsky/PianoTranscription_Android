@@ -42,7 +42,6 @@ class Texture(context: Context, lights: Array<Light>) {
             GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, this, 0)
             recycle()
         }
-
         DebugMode.assertState(
             GLES32.glCheckFramebufferStatus(GLES32.GL_FRAMEBUFFER)
                     == GLES32.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT

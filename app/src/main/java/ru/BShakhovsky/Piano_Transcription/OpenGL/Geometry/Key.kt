@@ -7,8 +7,7 @@ import kotlin.math.atan
 
 class Key(note: Int) {
 
-    @Suppress("Reformat")
-    companion object {
+    @Suppress("Reformat") companion object {
         enum class KeyType { WHITE_LEFT, WHITE_RIGHT, WHITE_MID, WHITE_FULL, BLACK }
 
         private val aliceBlue   = floatArrayOf(240 / 255f, 248 / 255f, 255 / 255f, 1f)
@@ -17,8 +16,7 @@ class Key(note: Int) {
         private val black       = floatArrayOf(.15f, .15f, .15f, 1f)
     }
 
-    @Suppress("Reformat")
-    val key: KeyType = when (note) {
+    @Suppress("Reformat") val key: KeyType = when (note) {
             0               ->  KeyType.WHITE_LEFT
             87              ->  KeyType.WHITE_FULL
         else -> when ((note + 9) % 12) {
@@ -33,8 +31,7 @@ class Key(note: Int) {
         }
     }
 
-    @Suppress("Reformat")
-    val offset: Float = when (note) {
+    @Suppress("Reformat") val offset: Float = when (note) {
             0, 1    ->  0
             2       ->  1
         else -> when ((note - 3) % 12) {
@@ -66,8 +63,7 @@ class Key(note: Int) {
         else aliceBlue
 
     fun rotate(deltaTime: Long) {
-        @Suppress("Reformat")
-        when {
+        @Suppress("Reformat") when {
             isPressed -> when {
                 isTapped -> when {
                     angle == 0f         -> isTapped = false

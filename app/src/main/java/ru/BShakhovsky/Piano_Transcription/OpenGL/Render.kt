@@ -84,8 +84,7 @@ class Render(
 
     private fun fit() {
         (winX(0f) to winX(Geometry.overallLen)).also { (winLeft, winRight) ->
-            @Suppress("Reformat")
-            when {
+            @Suppress("Reformat") when {
                 (winLeft.x > 0) and (winRight.x < width) -> {
                     DebugMode.assertState(winLeft.y == winRight.y)
                     x = Geometry.overallLen / 2
@@ -93,7 +92,7 @@ class Render(
                     model.mats.viewProject(x, yz, yz)
                     zoomOut = false
                 }
-                winLeft.x  > 0      -> moveUnlimited(winLeft .x,    0f,                 winLeft .y)
+                winLeft .x > 0      -> moveUnlimited(winLeft .x,    0f,                 winLeft .y)
                 winRight.x < width  -> moveUnlimited(winRight.x,    width.toFloat(),    winRight.y)
             }
         }
@@ -154,8 +153,7 @@ class Render(
                 or (xz.y !in 0f..Geometry.whiteLen)
             ) return -1
             ((xz.x / Geometry.whiteWid + 5).toInt() / 7).also { octave ->
-                @Suppress("Reformat")
-                if (xz.y > Geometry.blackLen) {
+                @Suppress("Reformat") if (xz.y > Geometry.blackLen) {
                     return when {
                         xz.x < Geometry.whiteWid        -> 0
                         xz.x < Geometry.whiteWid * 2    -> 2
@@ -170,8 +168,7 @@ class Render(
                     }
                 } else (Geometry.whiteWid / 2).also { blackW ->
                             var cord = xz.x
-                    @Suppress("LongLine")
-                    when {
+                    @Suppress("LongLine") when {
                                 cord - Geometry.whiteWid        < -blackW               -> return -1 // 0
                                 cord - Geometry.whiteWid        <  blackW               -> return       1
                                 cord - Geometry.whiteWid        < Geometry.whiteWid     -> return -1 // 2
@@ -221,8 +218,7 @@ class Render(
     }
 
     private fun skipPlay(xWin: Float) {
-        @Suppress("Reformat")
-        when (xWin) {
+        @Suppress("Reformat") when (xWin) {
             in 0f               ..  width / 3f      -> prev     .performClick()
             in width / 3f       ..  width * 2 / 3f  -> playPause.performClick()
             in width * 2 / 3f   ..  width.toFloat() -> next     .performClick()

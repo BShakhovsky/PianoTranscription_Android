@@ -47,9 +47,7 @@ class Crash(private val context: Context) : Thread.UncaughtExceptionHandler {
             // application-after-a-crash-or-a-force-close-error-1a361677c0ce
             (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)[
                     AlarmManager.RTC, System.currentTimeMillis() + 100] =
-                PendingIntent.getActivity(
-                    context, 0, this, PendingIntent.FLAG_ONE_SHOT
-                )
+                PendingIntent.getActivity(context, 0, this, PendingIntent.FLAG_ONE_SHOT)
         }
         exitProcess(1)
     }

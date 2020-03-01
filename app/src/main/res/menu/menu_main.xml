@@ -16,6 +16,6 @@
     <item android:id="@+id/menuGuide"
         android:title="@string/justGuide"
 
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
 
 </menu>

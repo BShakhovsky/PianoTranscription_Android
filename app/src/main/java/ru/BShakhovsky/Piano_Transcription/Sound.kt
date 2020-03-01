@@ -134,10 +134,11 @@ class Sound(
 
     fun play(note: Int, velocity: Float = 1f) {
         DebugMode.assertArgument(velocity in 0f..1f)
-        sound.play(
+        @Suppress("Reformat") sound.play(
             notes[note],
             velocity * (notes.lastIndex - note) / notes.lastIndex.toFloat(),
-            velocity * note / notes.lastIndex.toFloat(), 1, 0, 1f
+            velocity * note                    / notes.lastIndex.toFloat(),
+            1, 0, 1f
         )
     }
 
