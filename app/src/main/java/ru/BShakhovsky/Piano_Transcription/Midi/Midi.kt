@@ -34,7 +34,7 @@ import com.pdrogfer.mididroid.event.meta.Text
 import com.pdrogfer.mididroid.event.meta.TextualMetaEvent
 import com.pdrogfer.mididroid.event.meta.TrackName
 
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import java.io.InputStream
 import kotlin.math.roundToLong
 
@@ -120,8 +120,9 @@ class Midi(inStream: InputStream, untitled: String) {
                                 )
                             }
                             is ChannelEvent -> when (channel) {
-                                // (!) Should be 10, but there seems to be bug in library
-                                // https://github.com/LeffelMania/android-midi-lib/issues/17
+                                /* TODO: Percussion MIDI channel should be 10 instead of 9,
+                                    but there seems to be bug in library
+                                    https://github.com/LeffelMania/android-midi-lib/issues/17 */
                                 9 -> isPercuss = true
                                 else -> addNote(this, curTrack, curTick)
                             }
@@ -143,7 +144,7 @@ class Midi(inStream: InputStream, untitled: String) {
                             if (!(name.isNullOrEmpty() and instrument.isNullOrEmpty()))
                                 summary.garbage += "${info.name ?: ""} ${info.instrument ?: ""}"
                         }
-                        else -> tracks += this
+                        else -> tracks += curTrack
                     }
                 }
             }

@@ -8,7 +8,7 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import androidx.core.view.GestureDetectorCompat
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
 class Touch(private val render: Render) : View.OnTouchListener {

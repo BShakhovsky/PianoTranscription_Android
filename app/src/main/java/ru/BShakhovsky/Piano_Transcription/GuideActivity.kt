@@ -9,6 +9,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.activity_guide.fabGuide
 import kotlinx.android.synthetic.main.activity_guide.guideBar
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 
 class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -23,7 +24,10 @@ class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
         setFinishOnTouchOutside(true)
 
-        fabGuide.setOnClickListener { Snackbar.make(it, "Share", Snackbar.LENGTH_LONG).show() }
+        fabGuide.setOnClickListener {
+            // TODO: User Guide --> "Share" button
+            Snackbar.make(it, "Replace with your own action", Snackbar.LENGTH_LONG).show()
+        }
     }
 
     override fun onClick(view: View?) {

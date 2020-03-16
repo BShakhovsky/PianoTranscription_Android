@@ -1,6 +1,6 @@
 @file:Suppress("PackageName")
 
-package ru.BShakhovsky.Piano_Transcription
+package ru.BShakhovsky.Piano_Transcription.Utils
 
 object DebugMode {
 

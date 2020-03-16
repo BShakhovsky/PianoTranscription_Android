@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import ru.BShakhovsky.Piano_Transcription.R.raw
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 
 class Sound(
     private val context: Context, private val bar: ProgressBar, private val count: TextView

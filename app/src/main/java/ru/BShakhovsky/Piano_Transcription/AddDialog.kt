@@ -4,12 +4,9 @@ package ru.BShakhovsky.Piano_Transcription
 
 import android.Manifest
 import android.app.Dialog
-
 import android.content.ContentResolver
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-
 import android.icu.util.Calendar
 import android.media.MediaRecorder
 import android.net.Uri
@@ -30,8 +27,9 @@ import kotlinx.android.synthetic.main.dialog_add.midiFile
 import kotlinx.android.synthetic.main.dialog_add.record
 import kotlinx.android.synthetic.main.dialog_add.surf
 
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
 import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
-
 import java.io.FileDescriptor
 import java.io.IOException
 
@@ -46,7 +44,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         DebugMode.assertState(context != null)
-        with(Dialog((context ?: return super.onCreateDialog(savedInstanceState)))) {
+        return Dialog((context ?: return super.onCreateDialog(savedInstanceState))).apply {
             setContentView(R.layout.dialog_add)
 
             DebugMode.assertState(window != null)
@@ -58,8 +56,6 @@ class AddDialog : DialogFragment(), View.OnClickListener {
             arrayOf(surf, mediaFile, midiFile, record).forEach {
                 it.setOnClickListener(this@AddDialog)
             }
-
-            return this
         }
     }
 
@@ -72,22 +68,20 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                 dialog?.dismiss()
             }
             R.id.mediaFile -> {
-                with(Intent(Intent.ACTION_GET_CONTENT)) {
+                activity?.startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
                     type = "*/*"
                     // Don't show list of contacts or timezones:
                     addCategory(Intent.CATEGORY_OPENABLE)
                     putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
-                    activity?.startActivityForResult(this, RequestCode.OPEN_MEDIA.id)
-                }
+                }, RequestCode.OPEN_MEDIA.id)
                 dialog?.dismiss()
             }
             R.id.midiFile -> {
-                with(Intent(Intent.ACTION_GET_CONTENT)) {
+                activity?.startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
                     type = "audio/midi"
                     // Don't show list of contacts or timezones:
                     addCategory(Intent.CATEGORY_OPENABLE)
-                    activity?.startActivityForResult(this, RequestCode.OPEN_MIDI.id)
-                }
+                }, RequestCode.OPEN_MIDI.id)
                 dialog?.dismiss()
             }
             R.id.record ->
@@ -128,10 +122,8 @@ class AddDialog : DialogFragment(), View.OnClickListener {
             }
             RequestCode.WRITE_3GP.id ->
                 if (resultCode != FragmentActivity.RESULT_OK) {
-                    DebugMode.assertState((context != null) and (dialog != null))
-                    context?.let { c ->
-                        MainActivity.msgDialog(c, R.string.warning, R.string.notSaved)
-                    }
+                    DebugMode.assertState(dialog != null)
+                    MessageDialog.show(context, R.string.warning, R.string.notSaved)
                     dialog?.dismiss()
                 } else {
                     DebugMode.assertArgument(data != null)
@@ -162,16 +154,15 @@ class AddDialog : DialogFragment(), View.OnClickListener {
     }
 
     private fun writeWav() {
-        with(Intent(Intent.ACTION_CREATE_DOCUMENT)) {
+        startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             type = "audio/3gp"
             addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
             putExtra(
                 Intent.EXTRA_TITLE,
                 "${getString(R.string.record)} ${Calendar.getInstance().time}.3gp"
             )
-            startActivityForResult(this, RequestCode.WRITE_3GP.id)
-            Toast.makeText(context, R.string.save, Toast.LENGTH_LONG).show()
-        }
+        }, RequestCode.WRITE_3GP.id)
+        Toast.makeText(context, R.string.save, Toast.LENGTH_LONG).show()
     }
 
     private fun add3gpExt(resolver: ContentResolver, uri: Uri, name: String): Uri? {
@@ -185,11 +176,9 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                     startsWith("File already exists: ") and endsWith(".3gp")
                 )
             }
-            context?.let {
-                MainActivity.msgDialog(
-                    it, R.string.micError, getString(R.string.exists, e.localizedMessage)
-                )
-            }
+            MessageDialog.show(
+                context, R.string.micError, getString(R.string.exists, e.localizedMessage)
+            )
         }
         return null
     }
@@ -211,7 +200,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                                 // if (newUri == null) return
                                 resolver.openFileDescriptor(newUri, "w").use { outFile ->
                                     DebugMode.assertState(outFile != null)
-                                    startRecNonNull(outFile?.fileDescriptor ?: return, c)
+                                    startRecNonNull(outFile?.fileDescriptor ?: return)
                                 }
                             }
                         }
@@ -221,7 +210,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
         }
     }
 
-    private fun startRecNonNull(outFile: FileDescriptor, c: Context) {
+    private fun startRecNonNull(outFile: FileDescriptor) {
         record = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
@@ -231,8 +220,8 @@ class AddDialog : DialogFragment(), View.OnClickListener {
             try {
                 prepare()
             } catch (e: IOException) {
-                MainActivity.msgDialog(
-                    c, R.string.micError, getString(R.string.prepError, e.localizedMessage)
+                MessageDialog.show(
+                    context, R.string.micError, getString(R.string.prepError, e.localizedMessage)
                 )
                 release()
                 return
@@ -241,9 +230,8 @@ class AddDialog : DialogFragment(), View.OnClickListener {
 
             DebugMode.assertState((recDlg == null) and (recMsg == null))
             recMsg = RecordMsg(
-                MainActivity.msgDialog(c, R.string.recording, "", R.string.stop) {
-                    dialog?.dismiss()
-                }.apply { recDlg = this }, this, c
+                MessageDialog.show(context, R.string.recording, "", R.string.stop)
+                { dialog?.dismiss() }.apply { recDlg = this }, context, this
             ).apply { start() }
         }
     }

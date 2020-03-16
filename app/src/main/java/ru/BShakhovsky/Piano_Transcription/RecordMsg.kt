@@ -8,6 +8,7 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.os.SystemClock
 import androidx.appcompat.app.AlertDialog
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -15,24 +16,25 @@ import java.util.concurrent.TimeUnit
 
 import kotlin.math.roundToInt
 
-class RecordMsg(private val recDlg: AlertDialog, record: MediaRecorder, context: Context) :
+class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: MediaRecorder) :
     Runnable {
 
-    private var schedule: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+    private var schedule: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val startTime = SystemClock.uptimeMillis()
     private val fmtMsg = record.run {
-        with(context) {
+        DebugMode.assertState(context != null)
+        context?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 DebugMode.assertState(
                     (activeRecordingConfiguration != null)
                             and (activeRecordingConfiguration?.format != null)
                 )
                 activeRecordingConfiguration?.format?.run {
-                    context.getString(
+                    getString(
                         R.string.recFormat,
                         with(sampleRate / 1_000f) {
                             when (this) {
-                                toInt().toFloat() -> "%d".format(this.toInt())
+                                toInt().toFloat() -> "%d".format(toInt())
                                 else -> "%.1f".format(this)
                             }
                         },
@@ -81,15 +83,18 @@ class RecordMsg(private val recDlg: AlertDialog, record: MediaRecorder, context:
     }
 
     override fun run() {
+        /* TODO: Emulator 2.7 Q VGA API 24
+            ScheduledExecutorService called just once, then msg = "0 min : 1 sec" forever
+            However, 3GP-recording duration is correct */
         (SystemClock.uptimeMillis() - startTime).also { milSec ->
-            recDlg.setMessage(
+            DebugMode.assertState(recDlg != null)
+            recDlg?.setMessage(
                 "$fmtMsg\n\nTime: ${milSec / 60_000} min : ${
                 ((milSec % 60_000) / 1_000f).roundToInt()} sec"
             )
         }
-        schedule.schedule(this, 500, TimeUnit.MILLISECONDS)
     }
 
-    fun start(): Unit = schedule.execute(this)
+    fun start(): Unit = run { schedule.scheduleWithFixedDelay(this, 0, 500, TimeUnit.MILLISECONDS) }
     fun stop(): Unit = schedule.shutdown()
 }

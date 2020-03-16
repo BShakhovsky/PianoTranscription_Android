@@ -1,6 +1,7 @@
 <!DOCTYPE resources [<!ENTITY tryAgain ".\nTry again, choose a location and type file name.">]>
 
 <resources xmlns:tools="http://schemas.android.com/tools">
+
     <string name="app_name">Piano Transcription</string>
     <string name="ok">OK</string>
     <string name="stop">Stop</string>
@@ -34,10 +35,11 @@
 
     WEB SURF
 
-    <string name="notUrl">This is probably not valid URL:\n%1$s</string>
+    <string name="notUrl">This might be not a valid URL:\n%1$s</string>
     <string name="aboutBlank">Could not load the requested web page:\n%1$s</string>
-    <string name="noLink">Video not found, probably you did not click on video link</string>
-    <string name="linkFailed">Could not get download link</string>
+    <string name="noLink" tools:ignore="UnusedResources">Video not found,
+        probably you did not click on the video itself</string>
+    <string name="linkFailed" tools:ignore="UnusedResources">Could not get download link</string>
     <string name="copyrightProtected">Streaming data is unplayable,
         probably because copyright protection is enabled</string>
     <string name="noAudioStream">Could not found audio stream</string>
@@ -56,8 +58,8 @@
     <string name="badFile">File not supported</string>
     <string name="notMidi">This is not a MIDI-file</string>
     <string name="emptyMidi">Empty Midi</string>
-    <string name="noTracks">This MIDI-file does not contain any non-percussion notes.\n
-        Nothing to play on piano.</string>
+    <string name="noTracks">This MIDI-file does not contain any non-percussion notes.
+        \nNothing to play on piano.</string>
     <string name="zeroDur">This MIDI-file does not contain any time data.\nCannot play it.</string>
     <string name="trackNotSel">No tracks are chosen</string>
     <string name="trackNotSelPlaying">At least 1 track should
@@ -103,6 +105,25 @@
     <string name="invalidChannels">Invalid number of channels</string>
     <string name="invalid" tools:ignore="UnusedResources">Invalid</string>
 
+    SPECTRUM
+
+    <string name="spectrum">Spectrum</string>
+
+    FFmpeg
+    <string name="probeFail" tools:ignore="UnusedResources">
+        Could not understand what kind of media file it is</string>
+    <string name="probeFmt" tools:ignore="PluralsCandidate, UnusedResources">
+        Duration %1$d sec\nFormat %2$s\n\nMeta data:\n%3$s\n\nStreams:\n%4$s</string>
+    <string name="cancel">Cancel</string>
+    <string name="cancelled">Cancelled by user</string>
+    <string name="decodeSuccess">Successfully decoded media file</string>
+    <string name="decodeFail">Could not decode media file,
+        probably because its format is not supported</string>
+    <string name="memory">Insufficient memory on phone:\n\n%1$s</string>
+    <string name="ffmpegOut">Output from FFmpeg:</string>
+    <string name="waveTitle">Audio wave for the 1st second</string>
+    <string name="specTitle">Log mel-scaled spectrogram</string>
+
     USER GUIDE
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio-file
@@ -119,4 +140,5 @@
         you can use scroll-bar left or right button</string>
     <string name="userGuide7">Or if you want just to play the song in real time,
         press “Play” button</string>
+
 </resources>

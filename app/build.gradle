@@ -8,6 +8,7 @@ android {
     defaultConfig {
         applicationId "ru.BShakhovsky.Piano_Transcription"
         minSdkVersion 24
+        // TODO: for targetSdkVersion 30, Google AdMob fails to load with ERROR_CODE_INTERNAL_ERROR
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -28,9 +29,10 @@ dependencies {
 
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'com.google.android.material:material:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:18.3.0'
+    implementation 'com.google.android.gms:play-services-ads:19.0.0'
     implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation 'com.github.kittinunf.fuel:fuel-android:2.2.1'
     implementation 'com.github.pdrogfer:MidiDroid:v1.1'
+    implementation 'com.arthenica:mobile-ffmpeg-min:4.3.1'
 }

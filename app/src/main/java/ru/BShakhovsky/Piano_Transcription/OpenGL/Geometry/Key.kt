@@ -2,7 +2,7 @@
 
 package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
 
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import kotlin.math.atan
 
 class Key(note: Int) {

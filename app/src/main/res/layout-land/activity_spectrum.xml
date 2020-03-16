@@ -1,0 +1,112 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    style="@style/MatchParent"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:fitsSystemWindows="true">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/spectrumBar"
+            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+            android:background="@drawable/linear_background"
+
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:tools="http://schemas.android.com/tools"
+
+        style="@style/MatchParent"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <TextView android:id="@+id/waveTitle"
+            style="@style/TextTitle"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/black"
+            android:layout_margin="0dp"
+            android:text="@string/waveTitle"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/logScroll"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_weight="2" />
+
+        <ImageView android:id="@+id/rawWave"
+            style="@style/Zero"
+            android:scaleType="fitXY"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/logScroll"
+            app:layout_constraintTop_toBottomOf="@id/waveTitle"
+            app:layout_constraintBottom_toTopOf="@id/spectrumTitle"
+
+            app:layout_constraintHorizontal_weight="2"
+            app:layout_constraintVertical_weight="1"
+
+            tools:ignore="ContentDescription" />
+
+        <TextView android:id="@+id/spectrumTitle"
+            style="@style/TextTitle"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/black"
+            android:layout_margin="0dp"
+            android:text="@string/specTitle"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/logScroll"
+            app:layout_constraintTop_toBottomOf="@id/rawWave"
+            app:layout_constraintBottom_toTopOf="@id/spectrum"
+
+            app:layout_constraintHorizontal_weight="2" />
+
+        <ImageView android:id="@+id/spectrum"
+            style="@style/Zero"
+            android:scaleType="fitXY"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/logScroll"
+            app:layout_constraintTop_toBottomOf="@id/spectrumTitle"
+            app:layout_constraintBottom_toBottomOf="parent"
+
+            app:layout_constraintHorizontal_weight="2"
+            app:layout_constraintVertical_weight="2"
+
+            tools:ignore="ContentDescription" />
+
+        <ScrollView android:id="@+id/logScroll"
+            style="@style/Zero"
+
+            app:layout_constraintStart_toEndOf="@id/spectrum"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/adSpectrum"
+
+            app:layout_constraintHorizontal_weight="1">
+
+            <TextView android:id="@+id/textLog"
+                style="@style/MatchParent"
+                android:textColor="@android:color/black"
+
+                tools:ignore="SelectableText, UnusedIds" />
+
+        </ScrollView>
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adSpectrum"
+            style="@style/WrapContent"
+
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

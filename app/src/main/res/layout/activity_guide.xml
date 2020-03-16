@@ -48,6 +48,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout style="@style/WrapContent" android:orientation="vertical">
+            <!-- TODO: User Guide -> screenshots and text -->
             <TextView  style="@style/Text"  android:text="@string/userGuide1"/>
             <ImageView style="@style/Image" android:background="@drawable/gallery" />
             <TextView  style="@style/Text"  android:text="@string/userGuide2"/>

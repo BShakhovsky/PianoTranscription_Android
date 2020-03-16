@@ -22,9 +22,13 @@ import kotlinx.android.synthetic.main.activity_web.goHome
 import kotlinx.android.synthetic.main.content_web.web
 import kotlinx.android.synthetic.main.content_web.webText
 
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.R
 import java.net.URLDecoder
+
+@Suppress("SpellCheckingInspection")
+// https://github.com/KomeijiKaede/AndroidYoutubeDL
+// /blob/experimental/app/src/main/java/net/teamfruit/androidyoutubedl/utils/Extractor.kt
 
 class WebActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -113,8 +117,7 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
                     Regex("""youtu.be/[\w\-]{11}""").find(url)?.value?.substring(9)
                 else -> null
             }.also { id ->
-                if (id == null)
-                    Snackbar.make(web, R.string.noLink, Snackbar.LENGTH_LONG).show()
+                if (id == null) Snackbar.make(web, R.string.noLink, Snackbar.LENGTH_LONG).show()
                 else "https://www.youtube.com/get_video_info?video_id=$id"
                     .httpGet().response { _, response, result ->
                         when (result) {

@@ -29,7 +29,7 @@ import kotlinx.android.synthetic.main.activity_midi.percuss
 import kotlinx.android.synthetic.main.activity_midi.tempos
 import kotlinx.android.synthetic.main.activity_midi.temposGroup
 
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.R
 import kotlin.math.roundToInt
 
@@ -47,6 +47,7 @@ class MidiActivity : AppCompatActivity(), View.OnClickListener {
         setFinishOnTouchOutside(true)
 
         fabMidi.setOnClickListener { view ->
+            // TODO: Midi Info --> "Share" button
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).show()
         }
 

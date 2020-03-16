@@ -6,7 +6,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.opengl.GLES32
 import android.opengl.GLUtils
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.Light
 import ru.BShakhovsky.Piano_Transcription.R
 

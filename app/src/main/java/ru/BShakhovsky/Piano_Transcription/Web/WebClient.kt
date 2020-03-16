@@ -4,13 +4,13 @@ package ru.BShakhovsky.Piano_Transcription.Web
 
 import android.view.View
 
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebResourceRequest
 
 import android.widget.TextView
 
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.R
 
 class WebClient(private var requestedUrl: String, private var webText: TextView) : WebViewClient() {

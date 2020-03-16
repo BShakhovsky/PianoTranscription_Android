@@ -2,7 +2,6 @@
 
 package ru.BShakhovsky.Piano_Transcription
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
@@ -52,6 +51,9 @@ import ru.BShakhovsky.Piano_Transcription.MainUI.Touch
 import ru.BShakhovsky.Piano_Transcription.Midi.Midi
 import ru.BShakhovsky.Piano_Transcription.Midi.MidiActivity
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
+import ru.BShakhovsky.Piano_Transcription.Spectrum.SpectrumActivity
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
 import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
 
 import java.io.FileNotFoundException
@@ -59,20 +61,6 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
-
-    companion object {
-        fun msgDialog(
-            context: Context, titleId: Int, msgStr: String,
-            okId: Int = R.string.ok, okAction: (() -> Unit) = {}
-        ): AlertDialog = AlertDialog.Builder(context).setTitle(titleId).setMessage(msgStr)
-            .setIcon(R.drawable.info).setPositiveButton(okId) { _, _ -> okAction() }
-            .setCancelable(false).show()
-
-        fun msgDialog(
-            context: Context, titleId: Int, msgId: Int,
-            okId: Int = R.string.ok, okAction: (() -> Unit) = {}
-        ): AlertDialog = msgDialog(context, titleId, context.getString(msgId), okId, okAction)
-    }
 
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
     internal enum class DrawerItem(val id: Int) { CHECK_ALL(-1) }
@@ -86,52 +74,52 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         if (DebugMode.debug) {
             StrictMode.enableDefaults()
-            with(StrictMode.VmPolicy.Builder()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    detectContentUriWithoutPermission()//.detectUntaggedSockets()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { //detectNonSdkApiUsage().
-                        penaltyListener(
-                            Executors.newSingleThreadExecutor(), StrictMode.OnVmViolationListener {
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        it.localizedMessage ?: "Unknown Vm policy violation",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            })
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                            detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
+            StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        detectContentUriWithoutPermission()//.detectUntaggedSockets()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            //detectNonSdkApiUsage().
+                            penaltyListener(
+                                Executors.newSingleThreadExecutor(),
+                                StrictMode.OnVmViolationListener {
+                                    runOnUiThread {
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            it.localizedMessage ?: "Unknown Vm policy violation",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                })
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                                detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
+                        }
                     }
-                }
-                StrictMode.setVmPolicy(//detectAll().detectCleartextNetwork().detectActivityLeaks().
-                    detectFileUriExposure().detectLeakedClosableObjects()
-                        .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
-                        .penaltyLog().build()
-                )
-            }
-            with(StrictMode.ThreadPolicy.Builder()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    detectUnbufferedIo()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        penaltyListener(
-                            Executors.newSingleThreadExecutor(),
-                            StrictMode.OnThreadViolationListener { v ->
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        v.localizedMessage ?: "Unknown Thread policy violation",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            })
+                } //.detectAll().detectCleartextNetwork().detectActivityLeaks().
+                .detectFileUriExposure().detectLeakedClosableObjects()
+                .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
+                .penaltyLog().build()
+            )
+            StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        detectUnbufferedIo()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            penaltyListener(
+                                Executors.newSingleThreadExecutor(),
+                                StrictMode.OnThreadViolationListener { v ->
+                                    runOnUiThread {
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            v.localizedMessage ?: "Unknown Thread policy violation",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                })
+                        }
                     }
-                }
-                StrictMode.setThreadPolicy(//detectAll().detectCustomSlowCalls().detectDiskReads().
-                    detectDiskWrites().detectNetwork().detectResourceMismatches()
-                        .penaltyDialog().penaltyLog().build()
-                )
-            }
+                } //.detectAll().detectCustomSlowCalls().detectDiskReads().
+                .detectDiskWrites().detectNetwork().detectResourceMismatches()
+                .penaltyDialog().penaltyLog().build()
+            )
         }
         Thread.setDefaultUncaughtExceptionHandler(Crash(this))
         if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(R.string.error).apply {
@@ -166,10 +154,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         midiEnabled(false)
         tracksEnabled(false)
-        with(Toggle(this, drawerLayout, mainBar, mainLayout)) {
-            drawerLayout.addDrawerListener(this)
-            syncState()
-        }
+        drawerLayout.addDrawerListener(Toggle(this, drawerLayout, mainBar, mainLayout)
+            .apply { syncState() })
 
         arrayOf<View>(newMedia, playPause, prev, next).forEach { it.setOnClickListener(this) }
         seek.setOnSeekBarChangeListener(this)
@@ -177,12 +163,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MobileAds.initialize(this)
         AdBanner(adMain)
 
-        // TODO: onCreate not called after onStop, and intent.extras == null anyway
-        if (intent.hasExtra(Intent.EXTRA_TEXT))
-            with(Intent(this@MainActivity, WebActivity::class.java)) {
-                putExtras(intent)
-                startActivity(this)
-            }
+        onNewIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        DebugMode.assertArgument(intent != null)
+        intent?.run {
+            if (hasExtra(Intent.EXTRA_TEXT))
+                startActivity(Intent(this@MainActivity, WebActivity::class.java)
+                    .apply { putExtras(intent) })
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -249,15 +240,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun midi() {
-        Intent(this, MidiActivity::class.java).also { intent ->
+        startActivity(Intent(this, MidiActivity::class.java).apply {
             DebugMode.assertState(midi != null)
             midi?.run {
-                intent.putExtra("Summary", summary)
-                intent.putExtra("Tracks", tracks.map { it.info }.toTypedArray())
-                intent.putExtra("Percuss", percuss)
+                putExtra("Summary", summary)
+                putExtra("Tracks", tracks.map { it.info }.toTypedArray())
+                putExtra("Percuss", percuss)
             }
-            startActivity(intent)
-        }
+        })
     }
 
     private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
@@ -297,12 +287,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
-//        if (::render.isInitialized)
         surfaceView.onResume()
     }
 
     override fun onPause() {
-//        if (::render.isInitialized)
         surfaceView.onPause()
         super.onPause()
     }
@@ -312,12 +300,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
                 DebugMode.assertState((data != null) and (data?.data != null))
-                data?.data?.let { openMidi(it) }
+                data?.data?.let { if (!openMidi(it)) spectrum(it) }
             }
             AddDialog.RequestCode.OPEN_MIDI.id -> {
                 if (resultCode != RESULT_OK) return
                 DebugMode.assertState((data != null) and (data?.data != null))
-                data?.data?.let { openMidi(it) }
+                data?.data?.let { if (!openMidi(it)) showError(R.string.badFile, R.string.notMidi) }
             }
             AddDialog.RequestCode.WRITE_3GP.id, AddDialog.Permission.RECORD_SETTINGS.id ->
                 super.onActivityResult(requestCode, resultCode, data)
@@ -325,31 +313,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun openMidi(uri: Uri) {
+    private fun spectrum(uri: Uri) =
+        startActivity(Intent(this, SpectrumActivity::class.java).apply { putExtra("Uri", uri) })
+
+    private fun openMidi(uri: Uri): Boolean {
         try {
             contentResolver.openInputStream(uri)
         } catch (e: FileNotFoundException) {
             with(e) { showMsg(R.string.noFile, "${localizedMessage ?: this}\n\n$uri") }
-            return
+            return true
         }.also { inputStream ->
             DebugMode.assertState(inputStream != null)
             inputStream?.use { inStream ->
                 with(Midi(inStream, getString(R.string.untitled))) {
-                    if (badMidi) {
-                        showError(R.string.badFile, R.string.notMidi)
-                        return
-                    }
+                    if (badMidi) return false
                     midi = this
                     midiEnabled(true)
                     tracksEnabled(false) // needs to know old play.isPlaying
                     when {
                         tracks.isNullOrEmpty() -> {
                             showError(R.string.emptyMidi, R.string.noTracks)
-                            return
+                            return true
                         }
                         dur == 0L -> {
                             showError(R.string.emptyMidi, R.string.zeroDur)
-                            return
+                            return true
                         }
                         else -> {
                             DebugMode.assertState(::render.isInitialized)
@@ -360,6 +348,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         }
+        return true
     }
 
     private fun midiEnabled(enabled: Boolean) {
@@ -404,15 +393,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             with(findItem(R.id.drawerTracks).subMenu) {
                 if (enabled) {
                     midi?.tracks?.forEachIndexed { i, track ->
-                        Switch(this@MainActivity).run {
-                            id = i
-                            showText = true
-                            textOn = "+"
-                            textOff = ""
-                            setOnCheckedChangeListener(this@MainActivity)
-                            with(add(1, i, Menu.NONE, track.info.name)) {
-                                icon = getDrawable(R.drawable.queue)
-                                actionView = this@run
+                        with(add(1, i, Menu.NONE, track.info.name)) {
+                            icon = getDrawable(R.drawable.queue)
+                            actionView = Switch(this@MainActivity).apply {
+                                id = i
+                                showText = true
+                                textOn = "+"
+                                textOff = ""
+                                setOnCheckedChangeListener(this@MainActivity)
                             }
                         }
                     }
@@ -521,6 +509,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return false
     }
 
-    private fun showError(titleId: Int, msgId: Int) = msgDialog(this, titleId, msgId)
-    private fun showMsg(titleId: Int, msgStr: String) = msgDialog(this, titleId, msgStr)
+    private fun showError(titleId: Int, msgId: Int) = MessageDialog.show(this, titleId, msgId)
+    private fun showMsg(titleId: Int, msgStr: String) = MessageDialog.show(this, titleId, msgStr)
 }

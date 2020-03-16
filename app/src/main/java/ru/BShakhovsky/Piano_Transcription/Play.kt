@@ -7,6 +7,7 @@ import android.widget.ImageButton
 import android.widget.SeekBar
 import ru.BShakhovsky.Piano_Transcription.Midi.Midi.Track
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -52,7 +53,7 @@ class Play(
             render.releaseAllKeys()
             newStart(curMilSec)
             DebugMode.assertState(schedule == null)
-            schedule = Executors.newScheduledThreadPool(1)
+            schedule = Executors.newSingleThreadScheduledExecutor()
             DebugMode.assertState(schedule != null)
             schedule?.schedule(this, 0, TimeUnit.MILLISECONDS)
         } else {
@@ -98,10 +99,10 @@ class Play(
                 if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                     if (        curIndices[trackNo]         == size)        return@with
                     if (        curIndices[trackNo]         == -1)          ++curIndices[trackNo]
-                    if (this[   curIndices[trackNo]].mSec   < prevMilSec)   ++curIndices[trackNo]
+                    if (get(    curIndices[trackNo]).mSec   < prevMilSec)   ++curIndices[trackNo]
                     if (        curIndices[trackNo]         == size)        return@with
-                    if (this[   curIndices[trackNo]].mSec   == prevMilSec) {
-                        this[   curIndices[trackNo]].notes.forEach { (note, vel) ->
+                    if (get(    curIndices[trackNo]).mSec   == prevMilSec) {
+                        get(    curIndices[trackNo]).notes.forEach { (note, vel) ->
                             when (vel) {
                                 0f -> render.releaseKey(note)
                                 else -> {
@@ -113,7 +114,7 @@ class Play(
                         ++curIndices[trackNo]
                     }
                     if (curIndices[trackNo] != size) curMilSec =
-                        minOf(curMilSec, prevMilSec + 1_000, this[curIndices[trackNo]].mSec)
+                        minOf(curMilSec, prevMilSec + 1_000, get(curIndices[trackNo]).mSec)
                 }
             }
             seekBar.progress = curMilSec.toInt()
@@ -138,9 +139,9 @@ class Play(
                 if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                     if (        curIndices[trackNo]         == -1)          return@with
                     if (        curIndices[trackNo]         == size)        --curIndices[trackNo]
-                    if (this[   curIndices[trackNo]].mSec   >= prevMilSec)  --curIndices[trackNo]
+                    if (get(    curIndices[trackNo]).mSec   >= prevMilSec)  --curIndices[trackNo]
                     if (        curIndices[trackNo]         != -1)
-                        curMilSec = maxOf(curMilSec, this[curIndices[trackNo]].mSec)
+                        curMilSec = maxOf(curMilSec, get(curIndices[trackNo]).mSec)
                 }
             }
             seekBar.progress = curMilSec.toInt()
@@ -148,8 +149,8 @@ class Play(
             tracks.forEachIndexed { trackNo, track ->
                 if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                     if (        curIndices[trackNo]         == -1) return@with
-                    if (this[   curIndices[trackNo]].mSec   == curMilSec) {
-                        this[   curIndices[trackNo]].notes.forEach { (note, vel) ->
+                    if (get(    curIndices[trackNo]).mSec   == curMilSec) {
+                        get(    curIndices[trackNo]).notes.forEach { (note, vel) ->
                             if (vel != 0f) {
                                 render.pressKey(note, vel)
                                 anyPressed = true

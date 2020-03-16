@@ -11,7 +11,7 @@ import android.os.SystemClock
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
-import ru.BShakhovsky.Piano_Transcription.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
 import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Model
 import ru.BShakhovsky.Piano_Transcription.Sound
@@ -109,12 +109,12 @@ class Render(
         model.mats.viewProject(x, yz, yz)
     }
 
-    private fun winX(worldX: Float): PointF = floatArrayOf(0f, 0f, 0f).run {
+    private fun winX(worldX: Float) = floatArrayOf(0f, 0f, 0f).let {
         GLU.gluProject(
             worldX, Geometry.whiteWid, Geometry.whiteLen, model.mats.view,
-            0, model.mats.projection, 0, intArrayOf(0, 0, width, height), 0, this, 0
+            0, model.mats.projection, 0, intArrayOf(0, 0, width, height), 0, it, 0
         )
-        return PointF(get(0), get(1))
+        PointF(it[0], it[1])
     }
 
     private fun worldXZ(xWin: Float, yWin: Float): PointF {
