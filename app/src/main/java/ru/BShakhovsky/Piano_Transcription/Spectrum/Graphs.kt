@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.graphics.Paint
 
 import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import java.nio.ByteOrder
+import java.nio.channels.FileChannel
 import kotlin.math.absoluteValue
 
 class Graphs {
@@ -19,37 +21,34 @@ class Graphs {
     var waveGraph: Bitmap? = null
         private set
 
-    fun drawWave(rawData: FloatArray): Unit = waveGraph?.let {} ?: Bitmap.createBitmap(
+    fun drawWave(rawData: FileChannel): Unit = waveGraph?.let {} ?: Bitmap.createBitmap(
         RawAudio.sampleRate, waveScale * 2, Bitmap.Config.RGB_565
     ).let { bitmap ->
-        with(rawData) { slice(0 until minOf(bitmap.width, size) - 1) }.also { sliced ->
-            with(Canvas(bitmap)) {
-                drawColor(Color.WHITE)
-                sliced.maxBy { it.absoluteValue }.let {
-                    when {
-                        it == null -> {
-                            DebugMode.assertState(false)
-                            1f
+        with(rawData) {
+            with(FloatArray(minOf(bitmap.width, (size() / 4).toInt()))) {
+                map(FileChannel.MapMode.READ_ONLY, 0, size * 4L)
+                    .order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(this)
+                with(Canvas(bitmap)) {
+                    drawColor(Color.WHITE)
+                    with(maxBy { it.absoluteValue }) {
+                        when (this) {
+                            null -> 1f.also { DebugMode.assertState(false) }
+                            0f -> 1f
+                            else -> absoluteValue.also { DebugMode.assertState(it < 1.44) }
                         }
-                        it == 0f -> 1f
-                        it < 2f -> it
-                        else -> {
-                            DebugMode.assertState(false)
-                            it
+                    }.also { maxWave ->
+                        slice(0 until lastIndex).forEachIndexed { index, value ->
+                            drawLine(
+                                index.toFloat(), value / maxWave * waveScale + waveScale,
+                                index + 1f, get(index + 1) / maxWave * waveScale + waveScale,
+                                Paint().apply { color = Color.BLUE }
+                            )
                         }
-                    }
-                }.also { maxWave ->
-                    sliced.forEachIndexed { index, value ->
-                        drawLine(
-                            index.toFloat(), value / maxWave * waveScale + waveScale,
-                            index + 1f, rawData[index + 1] / maxWave * waveScale + waveScale,
-                            Paint().apply { color = Color.BLUE }
-                        )
                     }
                 }
             }
+            DebugMode.assertState(waveGraph == null, "Unnecessary second bitmap creation")
+            waveGraph = bitmap
         }
-        DebugMode.assertState(waveGraph == null, "Unnecessary second bitmap creation")
-        waveGraph = bitmap
     }
 }

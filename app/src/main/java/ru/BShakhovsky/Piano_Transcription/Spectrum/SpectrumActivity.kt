@@ -20,6 +20,7 @@ import ru.BShakhovsky.Piano_Transcription.AdBanner
 import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.R
 import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
+import java.io.IOException
 
 class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -51,25 +52,38 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
             setNavigationOnClickListener(this@SpectrumActivity)
         }
 
-        with(rawAudio) {
-            with(convertLog) {
+        with(convertLog) {
+            with(rawAudio) {
+                if (rawData == null) {
+                    DebugMode.assertState(graphs.waveGraph == null)
+                    decode()
+                }
+                DebugMode.assertState(!probeLog.isNullOrEmpty())
+                @SuppressLint("SetTextI18n")
+                text = "$probeLog\n\n${ffmpegLog ?: with(PipeTransfer.error) {
+                    when (this) {
+                        is OutOfMemoryError ->
+                            getString(R.string.memoryCopyFile, localizedMessage ?: this)
+                        else -> {
+                            DebugMode.assertState(this is IOException)
+                            this?.localizedMessage ?: toString()
+                        }
+                    }.also { MessageDialog.show(this@SpectrumActivity, R.string.error, it) }
+                }}"
+            }
+
+            rawAudio.rawData?.let {
                 try {
-                    if (rawData == null) {
-                        DebugMode.assertState(graphs.waveGraph == null)
-                        decode()
-                    }
-                    DebugMode.assertState(!probeLog.isNullOrEmpty() and !ffmpegLog.isNullOrEmpty())
-                    @SuppressLint("SetTextI18n")
-                    text = "$probeLog\n\n$ffmpegLog"
+                    graphs.drawWave(it)
                 } catch (e: OutOfMemoryError) {
-                    getString(R.string.memory, e.localizedMessage).also { errMsg ->
-                        text = errMsg
-                        MessageDialog.show(this@SpectrumActivity, R.string.error, errMsg)
+                    getString(R.string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
+                        @SuppressLint("SetTextI18n")
+                        text = "$text\n\n$errMsg"
+                        MessageDialog.show(context, R.string.error, errMsg)
                     }
                 }
             }
         }
-        rawAudio.rawData?.let { graphs.drawWave(it) }
         findViewById<ImageView>(R.id.rawWave).setImageBitmap(graphs.waveGraph)
 
         MobileAds.initialize(this)
@@ -82,29 +96,31 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
             DebugMode.assertState((uri != null) and (contentResolver != null))
             uri?.let { u ->
                 contentResolver?.run {
-                    openInputStream(u).use { inStream ->
-                        DebugMode.assertState(inStream != null)
-                        /* Cannot use non-seekable input pipe, because
-                        for some media formats FFmpeg will write "partial file" error,
-                        and if audio data is located before "codec format chunk",
-                        and FFmpeg cannot seek back, it would not find audio stream.
+                    if (probeLog.isNullOrEmpty()) {
+                        DebugMode.assertState(
+                            ffmpegLog == null, "Wrong order of FFmpeg calls"
+                        )
+                        // For FFprobe we can use non-seekable input pipe:
+                        openFileDescriptor(u, "r").use { inFile ->
+                            DebugMode.assertState(inFile != null)
+                            inFile?.run { probe(fd) }
+                        }
+                    }
+                    clearCache()
+                    if (PipeTransfer.error != null) return
+                    /* For FFmpeg we cannot use non-seekable input pipe, because
+                    for some media formats it will write "partial file" error,
+                    and if audio data is located before "codec format chunk",
+                    then FFmpeg will not be able to seek back, and it will not "find" audio stream.
 
-                        I don't now how to get file path from URI,
-                        so have to temporarily copy it, so that we know its path */
-                        cacheDir.listFiles { _, name -> name.startsWith("FFmpeg_") }
-                            ?.forEach { it.deleteRecursively() }
-                        with(createTempFile(directory = createTempDir("FFmpeg_", ""))) {
-                            deleteOnExit()
-                            inStream?.run { writeBytes(readBytes()) }
-                            if (probeLog.isNullOrEmpty()) {
-                                DebugMode.assertState(
-                                    ffmpegLog == null, "Wrong order of FFmpeg calls"
-                                )
-                                /* For FFprobe we could use input pipe with file descriptor from URI
-                                But we already have path of copied file anyway: */
-                                probe(path)
-                            }
-                            ffmpeg(path)
+                    I don't know how to get file path from URI,
+                    so have to temporarily copy it, so that we know its path */
+                    @Suppress("RedundantWith")
+                    with(createTempFile(directory = createTempDir("FFmpeg_", ""))) {
+                        outputStream().use { PipeTransfer.copyStream(openInputStream(u), it) }
+                        if (PipeTransfer.error == null) {
+                            ffmpeg(this)
+                            DebugMode.assertState(!ffmpegLog.isNullOrEmpty())
                         }
                     }
                 }
@@ -120,7 +136,8 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        DebugMode.assertArgument(menu != null)
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
@@ -145,5 +162,10 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
     override fun onDestroy() {
         super.onDestroy()
         graphs.waveGraph?.recycle()
+        rawAudio.rawData?.close()
+        clearCache()
     }
+
+    private fun clearCache() = cacheDir.listFiles { _, name -> name.startsWith("FFmpeg_") }
+        ?.forEach { it.deleteRecursively() }
 }

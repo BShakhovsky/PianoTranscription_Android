@@ -122,8 +122,8 @@ class AddDialog : DialogFragment(), View.OnClickListener {
             }
             RequestCode.WRITE_3GP.id ->
                 if (resultCode != FragmentActivity.RESULT_OK) {
-                    DebugMode.assertState(dialog != null)
                     MessageDialog.show(context, R.string.warning, R.string.notSaved)
+                    DebugMode.assertState(dialog != null)
                     dialog?.dismiss()
                 } else {
                     DebugMode.assertArgument(data != null)

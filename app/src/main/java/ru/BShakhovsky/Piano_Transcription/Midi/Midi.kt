@@ -35,6 +35,7 @@ import com.pdrogfer.mididroid.event.meta.TextualMetaEvent
 import com.pdrogfer.mididroid.event.meta.TrackName
 
 import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.MinSec
 import java.io.InputStream
 import kotlin.math.roundToLong
 
@@ -42,7 +43,7 @@ class Midi(inStream: InputStream, untitled: String) {
 
     companion object {
         fun minSecStr(context: Context, strId: Int, mSec: Long): String =
-            context.getString(strId, mSec / 60_000, (mSec / 1_000) % 60)
+            context.getString(strId, MinSec.minutes(mSec), MinSec.seconds(mSec))
     }
 
     class Chord(var mSec: Long, val notes: MutableMap<Int, Float>)
@@ -112,9 +113,8 @@ class Midi(inStream: InputStream, untitled: String) {
                                         6 -> majMin("F#", "D#")
                                         7 -> majMin("C#", "A#")
 
-                                        else -> {
+                                        else -> "unknown".also {
                                             DebugMode.assertState(false, "Wrong key signature")
-                                            "unknown"
                                         }
                                     }
                                 )
@@ -149,14 +149,10 @@ class Midi(inStream: InputStream, untitled: String) {
                 }
             }
 
-            if (tempos.isEmpty()) {
-                DebugMode.assertState(false)
-                tempos += 0L to 60_000_000 / 120
-            }
-            if (!tempos.containsKey(0)) {
-                DebugMode.assertState(false)
-                tempos += 0L to 60_000_000 / 120
-            }
+            if (tempos.isEmpty())
+                tempos += (0L to 60_000_000 / 120).also { DebugMode.assertState(false) }
+            if (!tempos.containsKey(0))
+                tempos += (0L to 60_000_000 / 120).also { DebugMode.assertState(false) }
             var (lastTick, lastMicSec) = 0L to 0L
             ticks.keys.forEach { tick ->
                 DebugMode.assertState(tempos.containsKey(lastTick))

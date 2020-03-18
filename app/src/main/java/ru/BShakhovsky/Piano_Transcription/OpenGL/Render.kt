@@ -60,7 +60,7 @@ class Render(
             if (zoomTime != 0L) zoom(1 - .0006f * (SystemClock.uptimeMillis() - zoomTime))
             zoomTime = SystemClock.uptimeMillis()
         }
-        with(model) {
+        @Suppress("RedundantWith") with(model) {
             draw(width, height)
             geom.keys.forEach { it.rotate(SystemClock.uptimeMillis() - prevTime) }
             prevTime = SystemClock.uptimeMillis()
@@ -160,10 +160,7 @@ class Render(
                         else                            -> 3 + (octave - 1) * 12 + when (
                             (xz.x / Geometry.whiteWid - 2).toInt() % 7) {
                             0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11
-                            else -> {
-                                DebugMode.assertArgument(false)
-                                -1
-                            }
+                            else -> (-1).also { DebugMode.assertArgument(false) }
                         }
                     }
                 } else (Geometry.whiteWid / 2).also { blackW ->
@@ -194,8 +191,7 @@ class Render(
                     }
                 }
             }
-            DebugMode.assertState(false)
-            return -1
+            return (-1).also { DebugMode.assertState(false) }
         }
     }
 
@@ -245,8 +241,6 @@ class Render(
         sound.stop(note)
     }
 
-    private fun check(note: Int): Boolean {
-        DebugMode.assertArgument(note in 0..87)
-        return ::model.isInitialized
-    }
+    private fun check(note: Int) =
+        ::model.isInitialized.also { DebugMode.assertArgument(note in 0..87) }
 }

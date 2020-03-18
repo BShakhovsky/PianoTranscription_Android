@@ -1,4 +1,5 @@
-<!DOCTYPE resources [<!ENTITY tryAgain ".\nTry again, choose a location and type file name.">]>
+<!DOCTYPE resources [<!ENTITY tryAgain  ".\nTry again, choose a location and type file name.">
+                     <!ENTITY memory    "Insufficient memory on phone.\n">]>
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
@@ -42,7 +43,7 @@
     <string name="linkFailed" tools:ignore="UnusedResources">Could not get download link</string>
     <string name="copyrightProtected">Streaming data is unplayable,
         probably because copyright protection is enabled</string>
-    <string name="noAudioStream">Could not found audio stream</string>
+    <string name="noAudioStream">Could not find audio stream</string>
     <string name="notJson">Google returns not valid json if api limit</string>
 
     Menu
@@ -113,13 +114,16 @@
     <string name="probeFail" tools:ignore="UnusedResources">
         Could not understand what kind of media file it is</string>
     <string name="probeFmt" tools:ignore="PluralsCandidate, UnusedResources">
-        Duration %1$d sec\nFormat %2$s\n\nMeta data:\n%3$s\n\nStreams:\n%4$s</string>
+        Duration %1$d min : %2$d sec\nFormat %3$s\n\nMeta data:\n%4$s\n\nStreams:\n%5$s</string>
     <string name="cancel">Cancel</string>
     <string name="cancelled">Cancelled by user</string>
     <string name="decodeSuccess">Successfully decoded media file</string>
     <string name="decodeFail">Could not decode media file,
         probably because its format is not supported</string>
-    <string name="memory">Insufficient memory on phone:\n\n%1$s</string>
+    <string name="memoryCopyFile" tools:ignore="UnusedResources">
+        &memory;Could not read media file:\n\n%1$s</string>
+    <string name="memoryDecode">&memory;Could not decode media file:\n\n%1$s</string>
+    <string name="memoryRawGraph">&memory;Could not draw audio wave graph:\n\n%1$s</string>
     <string name="ffmpegOut">Output from FFmpeg:</string>
     <string name="waveTitle">Audio wave for the 1st second</string>
     <string name="specTitle">Log mel-scaled spectrogram</string>

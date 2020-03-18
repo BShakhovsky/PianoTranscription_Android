@@ -8,17 +8,14 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
 class Zoom(private val render: Render) : ScaleGestureDetector.OnScaleGestureListener {
 
-    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
-        DebugMode.assertArgument(detector != null)
-        return true
-    }
+    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean =
+        true.also { DebugMode.assertArgument(detector != null) }
 
     override fun onScaleEnd(detector: ScaleGestureDetector?): Unit =
         DebugMode.assertArgument(detector != null)
 
-    override fun onScale(detector: ScaleGestureDetector?): Boolean {
+    override fun onScale(detector: ScaleGestureDetector?): Boolean = true.also {
         DebugMode.assertArgument(detector != null)
         detector?.run { render.zoom(scaleFactor) }
-        return true
     }
 }

@@ -88,16 +88,14 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
         web.restoreState(savedInstanceState)
     }
 
-    override fun onClick(view: View?) {
+    override fun onClick(view: View?): Unit = with(web) {
         DebugMode.assertArgument(view != null)
-        with(web) {
-            when (view?.id) {
-                R.id.goHome -> super.onBackPressed()
-                R.id.goBack -> if (canGoBack()) goBack()
-                R.id.goForward -> if (canGoForward()) goForward()
-                R.id.download -> tryDownload()
-                else -> DebugMode.assertState(false)
-            }
+        when (view?.id) {
+            R.id.goHome -> super.onBackPressed()
+            R.id.goBack -> if (canGoBack()) goBack()
+            R.id.goForward -> if (canGoForward()) goForward()
+            R.id.download -> tryDownload()
+            else -> DebugMode.assertState(false)
         }
     }
 

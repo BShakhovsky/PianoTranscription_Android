@@ -24,10 +24,7 @@ class Key(note: Int) {
             4, 11           ->  KeyType.WHITE_RIGHT
             2, 7, 9         ->  KeyType.WHITE_MID
             1, 3, 6, 8, 10  ->  KeyType.BLACK
-            else -> {
-                DebugMode.assertArgument(false)
-                                KeyType.WHITE_FULL
-            }
+            else            ->  KeyType.WHITE_FULL.also { DebugMode.assertArgument(false) }
         }
     }
 
@@ -42,10 +39,7 @@ class Key(note: Int) {
             7, 8    ->  6
             9, 10   ->  7
             11      ->  8
-            else -> {
-                DebugMode.assertArgument(false)
-                        0
-            }
+            else    ->  0.also { DebugMode.assertArgument(false) }
         } + (note - 3) / 12 * 7
     } * Geometry.whiteWid
 

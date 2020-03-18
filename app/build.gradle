@@ -8,8 +8,10 @@ android {
     defaultConfig {
         applicationId "ru.BShakhovsky.Piano_Transcription"
         minSdkVersion 24
-        // TODO: for targetSdkVersion 30, Google AdMob fails to load with ERROR_CODE_INTERNAL_ERROR
-        targetSdkVersion 29
+        /* TODO: Pixel 3 XL API R (30), for targetSdkVersion 30
+            Google AdMob fails to load with ERROR_CODE_INTERNAL_ERROR
+            for target Sdk Version 29 it loads fine */
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

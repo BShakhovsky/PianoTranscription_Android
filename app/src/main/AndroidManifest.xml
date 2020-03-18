@@ -43,13 +43,13 @@
             <!-- Android - Lint - Correctness - App Links Auto Verification Failure
             http://bshakhovsky.github.io/.well-known/assetlinks.json
             has incorrect JSON syntax -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" android:host="bshakhovsky.github.io" />
             </intent-filter>
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -63,7 +63,10 @@
             android:label="@string/guide" android:theme="@style/AppTheme" />
 
         <activity android:name=".Web.WebActivity" android:parentActivityName=".MainActivity"
-            android:label="@string/surf" android:theme="@style/AppTheme" />
+            android:label="@string/surf" android:theme="@style/AppTheme">
+            <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
+                android:value="true" />
+        </activity>
 
         <activity android:name=".Spectrum.SpectrumActivity" android:parentActivityName=".MainActivity"
             android:label="@string/spectrum" android:theme="@style/AppTheme"

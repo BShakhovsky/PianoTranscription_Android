@@ -9,12 +9,11 @@ import android.os.Build
 import android.os.SystemClock
 import androidx.appcompat.app.AlertDialog
 import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.BShakhovsky.Piano_Transcription.Utils.MinSec
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-
-import kotlin.math.roundToInt
 
 class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: MediaRecorder) :
     Runnable {
@@ -42,10 +41,8 @@ class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: Med
                             when {
                                 channelCount == 1 -> R.string.mono
                                 channelCount > 1 -> R.string.stereo
-                                else -> {
-                                    DebugMode.assertState(false)
-                                    R.string.invalidChannels
-                                }
+                                else -> R.string.invalidChannels
+                                    .also { DebugMode.assertState(false) }
                             }
                         ), @Suppress("Reformat") when (encoding) {
                             AudioFormat.ENCODING_AAC_ELD        -> "AAC ELD"
@@ -67,14 +64,10 @@ class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: Med
                             AudioFormat.ENCODING_PCM_16BIT      -> "PCM 16 bit"
                             AudioFormat.ENCODING_PCM_8BIT       -> "PCM 8 bit"
                             AudioFormat.ENCODING_PCM_FLOAT      -> "PCM Float"
-                            AudioFormat.ENCODING_INVALID -> {
-                                DebugMode.assertState(false)
-                                getString(R.string.invalid)
-                            }
-                            else -> {
-                                DebugMode.assertState(false)
-                                getString(R.string.invalid)
-                            }
+                            AudioFormat.ENCODING_INVALID    -> getString(R.string.invalid)
+                                .also { DebugMode.assertState(false) }
+                            else                            -> getString(R.string.invalid)
+                                .also { DebugMode.assertState(false) }
                         }
                     )
                 } ?: ""
@@ -89,8 +82,7 @@ class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: Med
         (SystemClock.uptimeMillis() - startTime).also { milSec ->
             DebugMode.assertState(recDlg != null)
             recDlg?.setMessage(
-                "$fmtMsg\n\nTime: ${milSec / 60_000} min : ${
-                ((milSec % 60_000) / 1_000f).roundToInt()} sec"
+                "$fmtMsg\n\nTime: ${MinSec.minutes(milSec)} min : ${MinSec.seconds(milSec)} sec"
             )
         }
     }

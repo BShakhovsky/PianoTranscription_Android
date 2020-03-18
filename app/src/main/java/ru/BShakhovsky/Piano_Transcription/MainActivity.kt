@@ -65,8 +65,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
     internal enum class DrawerItem(val id: Int) { CHECK_ALL(-1) }
 
-    private lateinit var mainMenu: Menu
     private lateinit var render: Render
+
+    private var mainMenu: Menu? = null
 
     private var midi: Midi? = null
     private var play: Play? = null
@@ -97,8 +98,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } //.detectAll().detectCleartextNetwork().detectActivityLeaks().
                 .detectFileUriExposure().detectLeakedClosableObjects()
                 .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
-                .penaltyLog().build()
-            )
+                .penaltyLog().build())
             StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         detectUnbufferedIo()
@@ -118,8 +118,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 } //.detectAll().detectCustomSlowCalls().detectDiskReads().
                 .detectDiskWrites().detectNetwork().detectResourceMismatches()
-                .penaltyDialog().penaltyLog().build()
-            )
+                .penaltyDialog().penaltyLog().build())
         }
         Thread.setDefaultUncaughtExceptionHandler(Crash(this))
         if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(R.string.error).apply {
@@ -176,7 +175,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        DebugMode.assertArgument(menu != null)
         menuInflater.inflate(R.menu.menu_main, menu)
         mainMenu = menu
         return true
@@ -252,19 +252,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
 
-    private fun checkGroup(groupId: Int, itemId: Int) = when (groupId) {
-        0 -> {
-            DebugMode.assertArgument(itemId == R.id.drawerAll)
-            false
+    private fun checkGroup(groupId: Int, itemId: Int) = @Suppress("Reformat") when (groupId) {
+        0                       -> false.also { DebugMode.assertArgument(itemId == R.id.drawerAll) }
+        DrawerGroup.TRACKS.id   -> true.also {
+            DebugMode.assertState(midi != null)
+            midi?.run { DebugMode.assertArgument(itemId in 0..tracks.lastIndex) }
         }
-        DrawerGroup.TRACKS.id -> {
-            DebugMode.assertArgument(itemId in 0..midi!!.tracks.lastIndex)
-            true
-        }
-        else -> {
-            DebugMode.assertArgument(false)
-            false
-        }
+        else                    -> false.also { DebugMode.assertArgument(false) }
     }
 
     override fun onBackPressed() {
@@ -352,7 +346,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun midiEnabled(enabled: Boolean) {
-        if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuMidi).isVisible = enabled
+        mainMenu?.run { findItem(R.id.menuMidi).isVisible = enabled }
         with(drawerMenu.menu.findItem(R.id.drawerMidi)) {
             isEnabled = enabled
             (actionView as TextView).also { t ->
@@ -372,7 +366,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun tracksEnabled(enabled: Boolean) {
-        if (::mainMenu.isInitialized) mainMenu.findItem(R.id.menuTracks).isVisible = enabled
+        mainMenu?.run { findItem(R.id.menuTracks).isVisible = enabled }
         control.visibility = if (enabled) View.VISIBLE else View.GONE
         if (enabled) {
             DebugMode.assertState((midi != null) and (midi?.tracks != null))
