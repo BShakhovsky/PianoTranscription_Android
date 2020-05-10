@@ -56,24 +56,24 @@ class Key(note: Int) {
         else if (key == KeyType.BLACK) black
         else aliceBlue
 
-    fun rotate(deltaTime: Long) {
-        @Suppress("Reformat") when {
-            isPressed -> when {
+    fun rotate(deltaTime: Long): Unit = @Suppress("Reformat") when {
+            isPressed   -> when {
                 isTapped -> when {
-                    angle == 0f         -> isTapped = false
                     angle >  0          -> decAngle(deltaTime)
+                    else                -> isTapped = false
                 }
                     angle <  maxAngle   -> incAngle(deltaTime)
+                    else                -> {}
             }
-            !isPressed -> when {
+            else        -> when {
                 isTapped -> when {
-                    angle == maxAngle   -> isTapped = false
                     angle <  maxAngle   -> incAngle(deltaTime)
+                    else                -> isTapped = false
                 }
                     angle >  0          -> decAngle(deltaTime)
+                    else                -> {}
             }
         }
-    }
 
     private fun incAngle(deltaTime: Long) {
         angle = (angle + .15f * deltaTime).coerceAtMost(maxAngle)

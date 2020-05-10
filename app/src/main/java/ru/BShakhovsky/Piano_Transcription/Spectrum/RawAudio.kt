@@ -52,83 +52,66 @@ class RawAudio(private val context: Context) {
         }
     }
 
-    fun ffmpeg(inFile: File) {
-        DebugMode.assertState(rawData == null, "Unnecessary second FFmpeg call")
+    fun ffmpeg(inFile: File): Unit = createTempFile(directory = inFile.parentFile).let {
         // Raw audio float array of more than 10 minutes causes Out of Memory,
-        // so, save to temp file instead of byte array:
-        createTempFile(directory = inFile.parentFile).run {
-            outputStream().use { outStream ->
-                PipeTransfer(outStream).also { thread ->
-                    thread.pipeTo().use { outPipe ->
-                        FFmpeg.cancel()
-                        thread.start()
+        // so, save to temp file instead of byte array
+        DebugMode.assertState(rawData == null, "Unnecessary second FFmpeg call")
+        PipeTransfer(it).also { thread ->
+            thread.pipeOut().use { outPipe ->
+                FFmpeg.cancel()
+                thread.start()
 
-                        when (FFmpeg.execute(
-                            "-i ${inFile.path} -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
-                        )) {
-                            Config.RETURN_CODE_CANCEL -> {
-                                ffmpegLog = "\n\n${context.getString(R.string.cancelled)}"
-                                MessageDialog.show(context, R.string.cancel, R.string.cancelled)
-                                deleteTempDir(inFile)
-                            }
-
-                            Config.RETURN_CODE_SUCCESS -> {
-                                decodeSuccess(this)
-//                                deleteTempDir(inFile)
-                                inFile.delete()
-                            }
-
-                            else -> {
-                                decodeFail()
-                                deleteTempDir(inFile)
-                            }
-                        }
+                when (FFmpeg.execute(
+                    "-i ${inFile.path} -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
+                )) {
+                    Config.RETURN_CODE_CANCEL -> {
+                        ffmpegLog = "\n\n${context.getString(R.string.cancelled)}"
+                        MessageDialog.show(context, R.string.cancel, R.string.cancelled)
+                        deleteTempDir(inFile)
                     }
-                }
-            }
-            DebugMode.assertState(!ffmpegLog.isNullOrEmpty())
-        }
-    }
 
-    private fun decodeSuccess(outArray: File) {
-        DebugMode.assertState(PipeTransfer.error == null)
-        RandomAccessFile(outArray, "r").channel.let { rData ->
-            with(context) {
-                ffmpegLog = getString(R.string.decodeSuccess)
-                if (rData.size() == 0L) {
-                    ffmpegLog += "\n${getString(R.string.noAudioStream)}\n${
-                    getString(R.string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
+                    Config.RETURN_CODE_SUCCESS -> {
+                        decodeSuccess(it)
+                        // deleteTempDir(inFile)
+                        inFile.delete()
+                    }
 
-                    MessageDialog.show(context, R.string.error, R.string.noAudioStream)
-                } else rawData = rData
-            }
-        }
-    }
-
-    private fun decodeFail() {
-        with(context) {
-            with(PipeTransfer.error) {
-                when (this) {
-                    null -> getString(R.string.decodeFail)
-                    is OutOfMemoryError ->
-                        getString(R.string.memoryDecode, localizedMessage ?: this)
                     else -> {
-                        DebugMode.assertState(this is IOException)
-                        localizedMessage ?: toString()
+                        decodeFail()
+                        deleteTempDir(inFile)
                     }
                 }
-            }.also { errMsg ->
-                ffmpegLog = "$errMsg\n\n${getString(R.string.ffmpegOut)
-                }\n\n${Config.getLastCommandOutput()}"
-                MessageDialog.show(context, R.string.error, errMsg)
             }
+        }
+        DebugMode.assertState(!ffmpegLog.isNullOrEmpty())
+    }
+
+    private fun decodeSuccess(outArray: File) = with(context) {
+        DebugMode.assertState(PipeTransfer.error == null)
+        ffmpegLog = getString(R.string.decodeSuccess)
+        with(RandomAccessFile(outArray, "r").channel) {
+            if (size() == 0L) {
+                ffmpegLog += "\n${getString(R.string.noAudioStream)}\n${
+                getString(R.string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
+                MessageDialog.show(context, R.string.error, R.string.noAudioStream)
+            } else rawData = this
         }
     }
 
-    private fun deleteTempDir(file: File) {
-        file.parentFile.also { fileDir ->
-            DebugMode.assertState(fileDir != null)
-            fileDir?.deleteRecursively()
-        }
+    private fun decodeFail() = with(context) {
+        ffmpegLog = "${with(PipeTransfer.error) {
+            when (this) {
+                null -> getString(R.string.decodeFail)
+                is OutOfMemoryError -> getString(R.string.memoryDecode, localizedMessage ?: this)
+                else -> (localizedMessage ?: toString())
+                    .also { DebugMode.assertState(this is IOException) }
+            }
+        }.also { MessageDialog.show(context, R.string.error, it) }}\n\n${
+        getString(R.string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
+    }
+
+    private fun deleteTempDir(file: File) = file.parentFile.let {
+        DebugMode.assertState(it != null)
+        it?.deleteRecursively()
     }
 }

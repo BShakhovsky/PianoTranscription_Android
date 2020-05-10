@@ -30,20 +30,18 @@ class Play(
     private var startMilSec = 0L
     private var startTime = 0L
 
-    override fun run() {
-        nextChord().also { (_, stop) ->
-            if (stop) {
-                seek(0)
-                // performClick() does not work, probably because this is not UI-thread:
-                playPause.callOnClick()
-            } else {
-                DebugMode.assertState(schedule != null)
-                schedule?.schedule(
-                    this,
-                    maxOf(0, curMilSec - startMilSec + startTime - SystemClock.uptimeMillis()),
-                    TimeUnit.MILLISECONDS
-                )
-            }
+    override fun run(): Unit = nextChord().let { (_, stop) ->
+        if (stop) {
+            seek(0)
+            // performClick() does not work, probably because this is not UI-thread:
+            playPause.callOnClick()
+        } else {
+            DebugMode.assertState(schedule != null)
+            schedule?.schedule(
+                this,
+                maxOf(0, curMilSec - startMilSec + startTime - SystemClock.uptimeMillis()),
+                TimeUnit.MILLISECONDS
+            )
         }
     }
 
@@ -90,76 +88,72 @@ class Play(
         startTime = SystemClock.uptimeMillis()
     }
 
-    fun nextChord(): Pair<Boolean, Boolean> {
+    fun nextChord(): Pair<Boolean, Boolean> = curMilSec.let { prevMilSec ->
         DebugMode.assertState(selTracks.isNotEmpty())
-        curMilSec.also { prevMilSec ->
-            curMilSec = Int.MAX_VALUE.toLong()
-            var anyPressed = false
-            tracks.forEachIndexed { trackNo, track ->
-                if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
-                    if (        curIndices[trackNo]         == size)        return@with
-                    if (        curIndices[trackNo]         == -1)          ++curIndices[trackNo]
-                    if (get(    curIndices[trackNo]).mSec   < prevMilSec)   ++curIndices[trackNo]
-                    if (        curIndices[trackNo]         == size)        return@with
-                    if (get(    curIndices[trackNo]).mSec   == prevMilSec) {
-                        get(    curIndices[trackNo]).notes.forEach { (note, vel) ->
-                            when (vel) {
-                                0f -> render.releaseKey(note)
-                                else -> {
-                                    render.pressKey(note, vel)
-                                    anyPressed = true
-                                }
-                            }
-                        }
-                        ++curIndices[trackNo]
-                    }
-                    if (curIndices[trackNo] != size) curMilSec =
-                        minOf(curMilSec, prevMilSec + 1_000, get(curIndices[trackNo]).mSec)
-                }
-            }
-            seekBar.progress = curMilSec.toInt()
-
-            var stop = true
-            tracks.forEachIndexed { trackNo, track ->
-                if (selTracks.contains(trackNo) and (curIndices[trackNo] < track.chords.size)) {
-                    stop = false
-                    return@forEachIndexed
-                }
-            }
-
-            return anyPressed to stop
-        }
-    }
-
-    fun prevChord(): Boolean {
-        DebugMode.assertState(selTracks.isNotEmpty())
-        curMilSec.also { prevMilSec ->
-            curMilSec = 0
-            tracks.forEachIndexed { trackNo, track ->
-                if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
-                    if (        curIndices[trackNo]         == -1)          return@with
-                    if (        curIndices[trackNo]         == size)        --curIndices[trackNo]
-                    if (get(    curIndices[trackNo]).mSec   >= prevMilSec)  --curIndices[trackNo]
-                    if (        curIndices[trackNo]         != -1)
-                        curMilSec = maxOf(curMilSec, get(curIndices[trackNo]).mSec)
-                }
-            }
-            seekBar.progress = curMilSec.toInt()
-            var anyPressed = false
-            tracks.forEachIndexed { trackNo, track ->
-                if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
-                    if (        curIndices[trackNo]         == -1) return@with
-                    if (get(    curIndices[trackNo]).mSec   == curMilSec) {
-                        get(    curIndices[trackNo]).notes.forEach { (note, vel) ->
-                            if (vel != 0f) {
+        curMilSec = Int.MAX_VALUE.toLong()
+        var anyPressed = false
+        tracks.forEachIndexed { trackNo, track ->
+            if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
+                if (        curIndices[trackNo]         == size)        return@with
+                if (        curIndices[trackNo]         == -1)          ++curIndices[trackNo]
+                if (get(    curIndices[trackNo]).mSec   < prevMilSec)   ++curIndices[trackNo]
+                if (        curIndices[trackNo]         == size)        return@with
+                if (get(    curIndices[trackNo]).mSec   == prevMilSec) {
+                    get(    curIndices[trackNo]).notes.forEach { (note, vel) ->
+                        when (vel) {
+                            0f -> render.releaseKey(note)
+                            else -> {
                                 render.pressKey(note, vel)
                                 anyPressed = true
                             }
                         }
                     }
+                    ++curIndices[trackNo]
+                }
+                if (curIndices[trackNo] != size) curMilSec =
+                    minOf(curMilSec, prevMilSec + 1_000, get(curIndices[trackNo]).mSec)
+            }
+        }
+        seekBar.progress = curMilSec.toInt()
+
+        var stop = true
+        tracks.forEachIndexed { trackNo, track ->
+            if (selTracks.contains(trackNo) and (curIndices[trackNo] < track.chords.size)) {
+                stop = false
+                return@forEachIndexed
+            }
+        }
+
+        anyPressed to stop
+    }
+
+    fun prevChord(): Boolean = curMilSec.let { prevMilSec ->
+        DebugMode.assertState(selTracks.isNotEmpty())
+        curMilSec = 0
+        tracks.forEachIndexed { trackNo, track ->
+            if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
+                if (        curIndices[trackNo]         == -1)          return@with
+                if (        curIndices[trackNo]         == size)        --curIndices[trackNo]
+                if (get(    curIndices[trackNo]).mSec   >= prevMilSec)  --curIndices[trackNo]
+                if (        curIndices[trackNo]         != -1)
+                    curMilSec = maxOf(curMilSec, get(curIndices[trackNo]).mSec)
+            }
+        }
+        seekBar.progress = curMilSec.toInt()
+        var anyPressed = false
+        tracks.forEachIndexed { trackNo, track ->
+            if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
+                if (        curIndices[trackNo]         == -1) return@with
+                if (get(    curIndices[trackNo]).mSec   == curMilSec) {
+                    get(    curIndices[trackNo]).notes.forEach { (note, vel) ->
+                        if (vel != 0f) {
+                            render.pressKey(note, vel)
+                            anyPressed = true
+                        }
+                    }
                 }
             }
-            return anyPressed
         }
+        anyPressed
     }
 }

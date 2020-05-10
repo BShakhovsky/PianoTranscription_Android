@@ -178,9 +178,9 @@ class Midi(inStream: InputStream, untitled: String) {
         }!!.chords.last().mSec
     }
 
-    private fun addNote(event: MidiEvent, curTrack: Track, curTick: Long) {
+    private fun addNote(event: MidiEvent, curTrack: Track, curTick: Long) =
         (if (curTrack.chords.isEmpty()) true
-        else curTrack.chords.last().mSec != curTick).also { newChord ->
+        else curTrack.chords.last().mSec != curTick).let { newChord ->
             with(event) {
                 when (this) {
                     is NoteOn -> when {
@@ -205,5 +205,4 @@ class Midi(inStream: InputStream, untitled: String) {
                 }
             }
         }
-    }
 }

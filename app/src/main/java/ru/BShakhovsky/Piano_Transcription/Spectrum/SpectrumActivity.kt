@@ -20,9 +20,14 @@ import ru.BShakhovsky.Piano_Transcription.AdBanner
 import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.R
 import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
+import java.io.FileNotFoundException
 import java.io.IOException
 
 class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
+
+    companion object {
+        private const val cachePref = "FFmpeg_"
+    }
 
     private lateinit var convertLog: TextView
 
@@ -52,8 +57,8 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
             setNavigationOnClickListener(this@SpectrumActivity)
         }
 
-        with(convertLog) {
-            with(rawAudio) {
+        with(rawAudio) {
+            with(convertLog) {
                 if (rawData == null) {
                     DebugMode.assertState(graphs.waveGraph == null)
                     decode()
@@ -68,13 +73,11 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
                             DebugMode.assertState(this is IOException)
                             this?.localizedMessage ?: toString()
                         }
-                    }.also { MessageDialog.show(this@SpectrumActivity, R.string.error, it) }
+                    }.also { MessageDialog.show(context, R.string.error, it) }
                 }}"
-            }
 
-            rawAudio.rawData?.let {
                 try {
-                    graphs.drawWave(it)
+                    rawData?.let { graphs.drawWave(it) }
                 } catch (e: OutOfMemoryError) {
                     getString(R.string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
                         @SuppressLint("SetTextI18n")
@@ -96,32 +99,37 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
             DebugMode.assertState((uri != null) and (contentResolver != null))
             uri?.let { u ->
                 contentResolver?.run {
-                    if (probeLog.isNullOrEmpty()) {
-                        DebugMode.assertState(
-                            ffmpegLog == null, "Wrong order of FFmpeg calls"
-                        )
-                        // For FFprobe we can use non-seekable input pipe:
-                        openFileDescriptor(u, "r").use { inFile ->
-                            DebugMode.assertState(inFile != null)
-                            inFile?.run { probe(fd) }
+                    try {
+                        if (probeLog.isNullOrEmpty()) {
+                            DebugMode.assertState(ffmpegLog == null, "Wrong order of FFmpeg calls")
+                            // For FFprobe we can use non-seekable input pipe:
+                            openFileDescriptor(u, "r").use { inFile ->
+                                DebugMode.assertState(inFile != null)
+                                inFile?.run { probe(fd) }
+                            }
                         }
-                    }
-                    clearCache()
-                    if (PipeTransfer.error != null) return
-                    /* For FFmpeg we cannot use non-seekable input pipe, because
-                    for some media formats it will write "partial file" error,
-                    and if audio data is located before "codec format chunk",
-                    then FFmpeg will not be able to seek back, and it will not "find" audio stream.
+                        clearCache()
+                        if (PipeTransfer.error != null) return
+                        /* For FFmpeg we cannot use non-seekable input pipe, because
+                        for some media formats it will write "partial file" error,
+                        and if audio data is located before "codec format chunk",
+                        then FFmpeg will not be able to seek back,
+                        and it will not "find" audio stream.
 
-                    I don't know how to get file path from URI,
-                    so have to temporarily copy it, so that we know its path */
-                    @Suppress("RedundantWith")
-                    with(createTempFile(directory = createTempDir("FFmpeg_", ""))) {
-                        outputStream().use { PipeTransfer.copyStream(openInputStream(u), it) }
-                        if (PipeTransfer.error == null) {
-                            ffmpeg(this)
-                            DebugMode.assertState(!ffmpegLog.isNullOrEmpty())
+                        I don't know how to get file path from URI,
+                        so have to temporarily copy it, so that we know its path */
+                        createTempFile(directory = createTempDir(cachePref, "")).let {
+                            PipeTransfer.streamToFile(openInputStream(u), it)
+                            if (PipeTransfer.error == null) {
+                                ffmpeg(it)
+                                DebugMode.assertState(!ffmpegLog.isNullOrEmpty())
+                            }
                         }
+                    } catch (e: FileNotFoundException) {
+                        MessageDialog.show(
+                            this@SpectrumActivity, R.string.noFile,
+                            "${e.localizedMessage ?: e}\n\n$uri"
+                        )
                     }
                 }
             }
@@ -136,23 +144,22 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
         menuInflater.inflate(R.menu.menu_main, menu)
-        return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menuGuide -> {
-                // TODO: Spectrum --> "Guide" menu
-                Snackbar.make(convertLog, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .show()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        super.onOptionsItemSelected(item).also {
+            when (item.itemId) {
+                R.id.menuGuide -> {
+                    // TODO: Spectrum --> "Guide" menu
+                    Snackbar.make(convertLog, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .show()
+                }
+                else -> DebugMode.assertArgument(false)
             }
-            else -> DebugMode.assertArgument(false)
         }
-        return true
-    }
 
     override fun onStop() {
         super.onStop()
@@ -166,6 +173,6 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
         clearCache()
     }
 
-    private fun clearCache() = cacheDir.listFiles { _, name -> name.startsWith("FFmpeg_") }
+    private fun clearCache() = cacheDir.listFiles { _, name -> name.startsWith(cachePref) }
         ?.forEach { it.deleteRecursively() }
 }

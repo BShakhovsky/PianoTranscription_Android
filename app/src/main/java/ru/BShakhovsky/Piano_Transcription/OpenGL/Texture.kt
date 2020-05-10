@@ -52,8 +52,7 @@ class Texture(context: Context, lights: Array<Light>) {
 
     fun bindTexture(i: Int): Unit = GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, texture[i])
 
-    fun resizeReflection(width: Int, height: Int) {
-        size(width, height)
+    fun resizeReflection(width: Int, height: Int): Unit = size(width, height).also {
         DebugMode.assertState(
             GLES32.glCheckFramebufferStatus(GLES32.GL_FRAMEBUFFER) == GLES32.GL_FRAMEBUFFER_COMPLETE
         )
@@ -71,20 +70,9 @@ class Texture(context: Context, lights: Array<Light>) {
         )
     }
 
-    private fun parameteri() {
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_LINEAR // or NEAREST
-        )
-/*
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR // or NEAREST
-        )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_CLAMP_TO_BORDER // or EDGE
-        )
-        GLES32.glTexParameteri(
-            GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_CLAMP_TO_BORDER // or EDGE
-        )
-*/
-    }
+    private fun parameteri() = GLES32.glTexParameteri(
+        GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_LINEAR // or NEAREST
+    )/* GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR // or NEAREST
+        GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_CLAMP_TO_BORDER // or EDGE
+        GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_CLAMP_TO_BORDER // or EDGE */
 }

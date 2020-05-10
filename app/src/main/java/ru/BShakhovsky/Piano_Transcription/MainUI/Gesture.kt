@@ -9,13 +9,12 @@ import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
 
 class Gesture(private val render: Render) : GestureDetector.SimpleOnGestureListener() {
 
-    override fun onSingleTapUp(event: MotionEvent?): Boolean {
+    override fun onSingleTapUp(event: MotionEvent?): Boolean = super.onSingleTapUp(event).also {
         DebugMode.assertArgument(event != null)
         event?.run {
             DebugMode.assertArgument(action == MotionEvent.ACTION_UP)
             render.tap(x, y)
         }
-        return true
     }
 
     override fun onLongPress(event: MotionEvent?) {
@@ -28,7 +27,7 @@ class Gesture(private val render: Render) : GestureDetector.SimpleOnGestureListe
 
     override fun onScroll(
         event1: MotionEvent?, event2: MotionEvent?, distanceX: Float, distanceY: Float
-    ): Boolean {
+    ): Boolean = super.onScroll(event1, event2, distanceX, distanceY).also {
         DebugMode.assertArgument((event1 != null) and (event2 != null))
         event2?.run {
             DebugMode.assertArgument(
@@ -36,6 +35,5 @@ class Gesture(private val render: Render) : GestureDetector.SimpleOnGestureListe
             )
             render.move(x + distanceX, x, y + distanceY)
         }
-        return true
     }
 }

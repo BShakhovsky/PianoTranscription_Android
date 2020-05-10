@@ -75,34 +75,30 @@ class Render(
         fit()
     }
 
-    fun zoom(scale: Float) {
-        (winX(0f) to winX(Geometry.overallLen)).also { (winLeft, winRight) ->
+    fun zoom(scale: Float): Unit =
+        (winX(0f) to winX(Geometry.overallLen)).let { (winLeft, winRight) ->
             if ((scale > 1) or (winLeft.x < 0) or (winRight.x > width)) zoomUnlimited(scale)
             if (scale < 1) fit()
         }
-    }
 
-    private fun fit() {
-        (winX(0f) to winX(Geometry.overallLen)).also { (winLeft, winRight) ->
-            @Suppress("Reformat") when {
-                (winLeft.x > 0) and (winRight.x < width) -> {
-                    DebugMode.assertState(winLeft.y == winRight.y)
-                    x = Geometry.overallLen / 2
-                    yz = Geometry.overallLen * .425f // 1 / 2 / sqrt(2) = 0.354
-                    model.mats.viewProject(x, yz, yz)
-                    zoomOut = false
-                }
-                winLeft .x > 0      -> moveUnlimited(winLeft .x,    0f,                 winLeft .y)
-                winRight.x < width  -> moveUnlimited(winRight.x,    width.toFloat(),    winRight.y)
+    private fun fit() = (winX(0f) to winX(Geometry.overallLen)).let { (winLeft, winRight) ->
+        @Suppress("Reformat") when {
+            (winLeft.x > 0) and (winRight.x < width) -> {
+                DebugMode.assertState(winLeft.y == winRight.y)
+                x = Geometry.overallLen / 2
+                yz = Geometry.overallLen * .425f // 1 / 2 / sqrt(2) = 0.354
+                model.mats.viewProject(x, yz, yz)
+                zoomOut = false
             }
+            winLeft .x > 0      -> moveUnlimited(winLeft .x,    0f,                 winLeft .y)
+            winRight.x < width  -> moveUnlimited(winRight.x,    width.toFloat(),    winRight.y)
         }
     }
 
-    private fun moveUnlimited(xStart: Float, xEnd: Float, yStart: Float) {
-        x = (x + worldXZ(xStart, yStart).x - worldXZ(xEnd, yStart).x)
-            .coerceAtLeast(0f).coerceAtMost(Geometry.overallLen)
-        model.mats.viewProject(x, yz, yz)
-    }
+    private fun moveUnlimited(xStart: Float, xEnd: Float, yStart: Float) = model.mats.viewProject(
+        (x + worldXZ(xStart, yStart).x - worldXZ(xEnd, yStart).x)
+            .coerceAtLeast(0f).coerceAtMost(Geometry.overallLen).also { x = it }, yz, yz
+    )
 
     private fun zoomUnlimited(scale: Float) {
         yz = (yz / scale).coerceAtLeast(Geometry.whiteLen).coerceAtMost(Geometry.overallLen)
@@ -147,71 +143,66 @@ class Render(
         }
     }
 
-    private fun winToKey(xWin: Float, yWin: Float): Int {
-        worldXZ(xWin, yWin).also { xz ->
-            if ((xz.y == 0f) or (xz.x !in 0f..Geometry.overallLen)
-                or (xz.y !in 0f..Geometry.whiteLen)
-            ) return -1
-            ((xz.x / Geometry.whiteWid + 5).toInt() / 7).also { octave ->
-                @Suppress("Reformat") if (xz.y > Geometry.blackLen) {
-                    return when {
-                        xz.x < Geometry.whiteWid        -> 0
-                        xz.x < Geometry.whiteWid * 2    -> 2
-                        else                            -> 3 + (octave - 1) * 12 + when (
-                            (xz.x / Geometry.whiteWid - 2).toInt() % 7) {
-                            0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11
-                            else -> (-1).also { DebugMode.assertArgument(false) }
-                        }
+    private fun winToKey(xWin: Float, yWin: Float) = worldXZ(xWin, yWin).let { xz ->
+        if ((xz.y == 0f) or (xz.x !in 0f..Geometry.overallLen) or (xz.y !in 0f..Geometry.whiteLen))
+            -1
+        else ((xz.x / Geometry.whiteWid + 5).toInt() / 7).let { octave ->
+            @Suppress("Reformat") if (xz.y > Geometry.blackLen) {
+                when {
+                    xz.x < Geometry.whiteWid        -> 0
+                    xz.x < Geometry.whiteWid * 2    -> 2
+                    else                            -> 3 + (octave - 1) * 12 + when (
+                        (xz.x / Geometry.whiteWid - 2).toInt() % 7) {
+                        0 -> 0 1 -> 2 2 -> 4 3 -> 5 4 -> 7 5 -> 9 6 -> 11
+                        else -> (-1).also { DebugMode.assertArgument(false) }
                     }
-                } else (Geometry.whiteWid / 2).also { blackW ->
-                            var cord = xz.x
-                    @Suppress("LongLine") when {
-                                cord - Geometry.whiteWid        < -blackW               -> return -1 // 0
-                                cord - Geometry.whiteWid        <  blackW               -> return       1
-                                cord - Geometry.whiteWid        < Geometry.whiteWid     -> return -1 // 2
-                                cord + Geometry.whiteWid        > Geometry.overallLen   -> return       87
-                        else -> {
-                                cord = (cord - Geometry.whiteWid * 2) %
-                                        (Geometry.whiteWid * 7) - Geometry.whiteWid
-                            when {
-                                cord                            < -blackW               -> return -1 // (octave - 1) * 12 + 3
-                                cord                            <  blackW               -> return       (octave - 1) * 12 + 4
-                                cord - Geometry.whiteWid        < -blackW               -> return -1 // (octave - 1) * 12 + 5
-                                cord - Geometry.whiteWid        <  blackW               -> return       (octave - 1) * 12 + 6
-                                cord - Geometry.whiteWid        < Geometry.whiteWid     -> return -1 // (octave - 1) * 12 + 7
-                                cord - Geometry.whiteWid * 3    < -blackW               -> return -1 // (octave - 1) * 12 + 8
-                                cord - Geometry.whiteWid * 3    <  blackW               -> return       (octave - 1) * 12 + 9
-                                cord - Geometry.whiteWid * 4    < -blackW               -> return -1 // (octave - 1) * 12 + 10
-                                cord - Geometry.whiteWid * 4    <  blackW               -> return       (octave - 1) * 12 + 11
-                                cord - Geometry.whiteWid * 5    < -blackW               -> return -1 // (octave - 1) * 12 + 12
-                                cord - Geometry.whiteWid * 5    <  blackW               -> return       (octave - 1) * 12 + 13
-                                cord - Geometry.whiteWid * 5    < Geometry.whiteWid     -> return -1 // (octave - 1) * 12 + 14
-                            }
+                }
+            } else (Geometry.whiteWid / 2).let { blackW ->
+                        var cord = xz.x
+                when {
+                            cord - Geometry.whiteWid        < -blackW               -> -1 // 0
+                            cord - Geometry.whiteWid        <  blackW               ->       1
+                            cord - Geometry.whiteWid        < Geometry.whiteWid     -> -1 // 2
+                            cord + Geometry.whiteWid        > Geometry.overallLen   ->       87
+                    else -> {
+                            cord = (cord - Geometry.whiteWid * 2) %
+                                    (Geometry.whiteWid * 7) - Geometry.whiteWid
+                        @Suppress("LongLine") when {
+                            cord                            < -blackW               -> -1 // (octave - 1) * 12 + 3
+                            cord                            <  blackW               ->       (octave - 1) * 12 + 4
+                            cord - Geometry.whiteWid        < -blackW               -> -1 // (octave - 1) * 12 + 5
+                            cord - Geometry.whiteWid        <  blackW               ->       (octave - 1) * 12 + 6
+                            cord - Geometry.whiteWid        < Geometry.whiteWid     -> -1 // (octave - 1) * 12 + 7
+                            cord - Geometry.whiteWid * 3    < -blackW               -> -1 // (octave - 1) * 12 + 8
+                            cord - Geometry.whiteWid * 3    <  blackW               ->       (octave - 1) * 12 + 9
+                            cord - Geometry.whiteWid * 4    < -blackW               -> -1 // (octave - 1) * 12 + 10
+                            cord - Geometry.whiteWid * 4    <  blackW               ->       (octave - 1) * 12 + 11
+                            cord - Geometry.whiteWid * 5    < -blackW               -> -1 // (octave - 1) * 12 + 12
+                            cord - Geometry.whiteWid * 5    <  blackW               ->       (octave - 1) * 12 + 13
+                            cord - Geometry.whiteWid * 5    < Geometry.whiteWid     -> -1 // (octave - 1) * 12 + 14
+                            else -> (-1).also { DebugMode.assertState(false) }
                         }
                     }
                 }
             }
-            return (-1).also { DebugMode.assertState(false) }
         }
     }
 
-    fun tap(xWin: Float, yWin: Float) {
-        if (yWin < height / 2) skipPlay(xWin) else winToKey(xWin, yWin).also {
+    fun tap(xWin: Float, yWin: Float): Unit =
+        if (yWin < height / 2) skipPlay(xWin) else winToKey(xWin, yWin).let {
             if (it != -1) {
                 model.geom.keys[it].isTapped = true
                 sound.play(it)
             }
         }
-    }
 
-    fun longTap(xWin: Float, yWin: Float) {
-        if (yWin < height / 2) skipPlay(xWin) else winToKey(xWin, yWin).also {
+    fun longTap(xWin: Float, yWin: Float): Unit =
+        if (yWin < height / 2) skipPlay(xWin) else winToKey(xWin, yWin).let {
             if (it != -1) {
                 with(model.geom.keys[it]) { isPressed = !isPressed }
                 sound.play(it)
             }
         }
-    }
 
     private fun skipPlay(xWin: Float) {
         @Suppress("Reformat") when (xWin) {

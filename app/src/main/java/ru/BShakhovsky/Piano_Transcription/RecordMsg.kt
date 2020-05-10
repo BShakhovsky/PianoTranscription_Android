@@ -75,16 +75,14 @@ class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: Med
         }
     }
 
-    override fun run() {
-        /* TODO: Emulator 2.7 Q VGA API 24
-            ScheduledExecutorService called just once, then msg = "0 min : 1 sec" forever
-            However, 3GP-recording duration is correct */
-        (SystemClock.uptimeMillis() - startTime).also { milSec ->
-            DebugMode.assertState(recDlg != null)
-            recDlg?.setMessage(
-                "$fmtMsg\n\nTime: ${MinSec.minutes(milSec)} min : ${MinSec.seconds(milSec)} sec"
-            )
-        }
+    /* TODO: Emulator 2.7 Q VGA API 24
+        ScheduledExecutorService called just once, then msg = "0 min : 1 sec" forever
+        However, 3GP-recording duration is correct */
+    override fun run(): Unit = (SystemClock.uptimeMillis() - startTime).let { milSec ->
+        DebugMode.assertState(recDlg != null)
+        recDlg?.setMessage(
+            "$fmtMsg\n\nTime: ${MinSec.minutes(milSec)} min : ${MinSec.seconds(milSec)} sec"
+        )
     }
 
     fun start(): Unit = run { schedule.scheduleWithFixedDelay(this, 0, 500, TimeUnit.MILLISECONDS) }

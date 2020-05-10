@@ -76,51 +76,50 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (DebugMode.debug) {
             StrictMode.enableDefaults()
             StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        detectContentUriWithoutPermission()//.detectUntaggedSockets()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            //detectNonSdkApiUsage().
-                            penaltyListener(
-                                Executors.newSingleThreadExecutor(),
-                                StrictMode.OnVmViolationListener {
-                                    runOnUiThread {
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            it.localizedMessage ?: "Unknown Vm policy violation",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                })
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                                detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
-                        }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    detectContentUriWithoutPermission()//.detectUntaggedSockets()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { //detectNonSdkApiUsage().
+                        penaltyListener(
+                            Executors.newSingleThreadExecutor(),
+                            StrictMode.OnVmViolationListener {
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        it.localizedMessage ?: "Unknown Vm policy violation",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            })
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                            detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
                     }
-                } //.detectAll().detectCleartextNetwork().detectActivityLeaks().
+                }
+            } //.detectAll().detectCleartextNetwork().detectActivityLeaks().
                 .detectFileUriExposure().detectLeakedClosableObjects()
                 .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
                 .penaltyLog().build())
             StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        detectUnbufferedIo()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            penaltyListener(
-                                Executors.newSingleThreadExecutor(),
-                                StrictMode.OnThreadViolationListener { v ->
-                                    runOnUiThread {
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            v.localizedMessage ?: "Unknown Thread policy violation",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                })
-                        }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    detectUnbufferedIo()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        penaltyListener(
+                            Executors.newSingleThreadExecutor(),
+                            StrictMode.OnThreadViolationListener { v ->
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        v.localizedMessage ?: "Unknown Thread policy violation",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            })
                     }
-                } //.detectAll().detectCustomSlowCalls().detectDiskReads().
+                }
+            } //.detectAll().detectCustomSlowCalls().detectDiskReads().
                 .detectDiskWrites().detectNetwork().detectResourceMismatches()
                 .penaltyDialog().penaltyLog().build())
         }
-        Thread.setDefaultUncaughtExceptionHandler(Crash(this))
+        if (DebugMode.debug) Thread.setDefaultUncaughtExceptionHandler(Crash(this))
         if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(R.string.error).apply {
             if (DebugMode.debug) setMessage(intent.getStringExtra("Crash"))
             else setMessage(R.string.crash)
@@ -169,30 +168,74 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onNewIntent(intent)
         DebugMode.assertArgument(intent != null)
         intent?.run {
-            if (hasExtra(Intent.EXTRA_TEXT))
-                startActivity(Intent(this@MainActivity, WebActivity::class.java)
-                    .apply { putExtras(intent) })
+            when (action) {
+                Intent.ACTION_MAIN -> DebugMode.assertState(
+                    (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
+                            and (type == null) and (data == null) and (dataString == null)
+                            and (extras == null) and (clipData == null)
+                )
+
+                Intent.ACTION_VIEW -> DebugMode.assertState(
+                    (categories.size in arrayOf(1, 2)) and (hasCategory(Intent.CATEGORY_DEFAULT)
+                            or hasCategory(Intent.CATEGORY_BROWSABLE))
+                            and (type == null) and (data != null) and (dataString in arrayOf(
+                        "http://bshakhovsky.github.io", "https://bshakhovsky.github.io"
+                    )) and (extras == null) and (clipData == null)
+                )
+
+                Intent.ACTION_SEND -> {
+                    if (categories != null) DebugMode.assertState(
+                        (categories.size == 1) and hasCategory(Intent.CATEGORY_DEFAULT)
+                    )
+                    DebugMode.assertState(
+                        (data == null) and (dataString == null)
+                                and (extras != null) and (clipData != null)
+                    )
+                    clipData?.run {
+                        DebugMode.assertState((itemCount == 1) and (description != null))
+                        description?.run {
+                            DebugMode.assertState(mimeTypeCount == 1)
+                            if (type == "text/plain") {
+                                DebugMode.assertState(
+                                    (getMimeType(0) == "text/plain") and hasExtra(Intent.EXTRA_TEXT)
+                                )
+                                startActivity(Intent(this@MainActivity, WebActivity::class.java)
+                                    .apply { putExtras(intent) })
+                            } else {
+                                DebugMode.assertState(
+                                    (type != null)
+                                            and (type?.substringBefore('/')
+                                            in arrayOf("audio", "video"))
+                                            and (getMimeType(0).substringBefore('/')
+                                            in arrayOf("audio", "video")) and (getItemAt(0) != null)
+                                )
+                                getItemAt(0)?.run { openMedia(uri) }
+                            }
+                        }
+                    }
+                }
+
+                else -> DebugMode.assertState(false)
+            }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
-        menuInflater.inflate(R.menu.menu_main, menu)
-        mainMenu = menu
-        return true
+        menuInflater.inflate(R.menu.menu_main, menu.also { mainMenu = it })
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menuTracks -> drawerLayout.openDrawer(GravityCompat.START)
-            R.id.menuMidi -> midi()
-            R.id.menuGuide -> guide()
-            else -> DebugMode.assertArgument(false)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        super.onOptionsItemSelected(item).also {
+            when (item.itemId) {
+                R.id.menuTracks -> drawerLayout.openDrawer(GravityCompat.START)
+                R.id.menuMidi -> midi()
+                R.id.menuGuide -> guide()
+                else -> DebugMode.assertArgument(false)
+            }
         }
-        return true
-    }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+    override fun onNavigationItemSelected(item: MenuItem): Boolean = true.also {
         when (item.itemId) {
             R.id.drawerMidi -> midi()
             R.id.drawerGuide -> guide()
@@ -203,7 +246,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         drawerLayout.closeDrawer(GravityCompat.START)
-        return true
     }
 
     override fun onCheckedChanged(button: CompoundButton?, checked: Boolean) {
@@ -239,16 +281,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun midi() {
-        startActivity(Intent(this, MidiActivity::class.java).apply {
-            DebugMode.assertState(midi != null)
-            midi?.run {
-                putExtra("Summary", summary)
-                putExtra("Tracks", tracks.map { it.info }.toTypedArray())
-                putExtra("Percuss", percuss)
-            }
-        })
-    }
+    private fun midi() = startActivity(Intent(this, MidiActivity::class.java).apply {
+        DebugMode.assertState(midi != null)
+        midi?.run {
+            putExtra("Summary", summary)
+            putExtra("Tracks", tracks.map { it.info }.toTypedArray())
+            putExtra("Percuss", percuss)
+        }
+    })
 
     private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
 
@@ -261,12 +301,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else                    -> false.also { DebugMode.assertArgument(false) }
     }
 
-    override fun onBackPressed() {
-        with(drawerLayout) {
-            GravityCompat.START.also {
-                if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed()
-            }
-        }
+    override fun onBackPressed(): Unit = with(drawerLayout) {
+        GravityCompat.START.let { if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed() }
     }
 
     override fun onStart() {
@@ -294,7 +330,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
                 DebugMode.assertState((data != null) and (data?.data != null))
-                data?.data?.let { if (!openMidi(it)) spectrum(it) }
+                data?.data?.let { openMedia(it) }
             }
             AddDialog.RequestCode.OPEN_MIDI.id -> {
                 if (resultCode != RESULT_OK) return
@@ -310,62 +346,59 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun spectrum(uri: Uri) =
         startActivity(Intent(this, SpectrumActivity::class.java).apply { putExtra("Uri", uri) })
 
+    private fun openMedia(uri: Uri) {
+        if (!openMidi(uri)) spectrum(uri)
+    }
+
     private fun openMidi(uri: Uri): Boolean {
         try {
-            contentResolver.openInputStream(uri)
-        } catch (e: FileNotFoundException) {
-            with(e) { showMsg(R.string.noFile, "${localizedMessage ?: this}\n\n$uri") }
-            return true
-        }.also { inputStream ->
-            DebugMode.assertState(inputStream != null)
-            inputStream?.use { inStream ->
-                with(Midi(inStream, getString(R.string.untitled))) {
-                    if (badMidi) return false
-                    midi = this
-                    midiEnabled(true)
-                    tracksEnabled(false) // needs to know old play.isPlaying
-                    when {
-                        tracks.isNullOrEmpty() -> {
-                            showError(R.string.emptyMidi, R.string.noTracks)
-                            return true
-                        }
-                        dur == 0L -> {
-                            showError(R.string.emptyMidi, R.string.zeroDur)
-                            return true
-                        }
-                        else -> {
-                            DebugMode.assertState(::render.isInitialized)
-                            play = Play(render, tracks, playPause, seek)
-                            tracksEnabled(true)
+            contentResolver.openInputStream(uri).let { inputStream ->
+                DebugMode.assertState(inputStream != null)
+                inputStream?.use { inStream ->
+                    with(Midi(inStream, getString(R.string.untitled))) {
+                        if (badMidi) return false
+
+                        midi = this
+                        midiEnabled(true)
+                        tracksEnabled(false) // needs to know old play.isPlaying
+                        when {
+                            tracks.isNullOrEmpty() ->
+                                showError(R.string.emptyMidi, R.string.noTracks)
+                            dur == 0L -> showError(R.string.emptyMidi, R.string.zeroDur)
+                            else -> {
+                                DebugMode.assertState(::render.isInitialized)
+                                play = Play(render, tracks, playPause, seek)
+                                tracksEnabled(true)
+                            }
                         }
                     }
                 }
             }
+        } catch (e: FileNotFoundException) {
+            showMsg(R.string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
         }
         return true
     }
 
-    private fun midiEnabled(enabled: Boolean) {
+    private fun midiEnabled(enabled: Boolean) = with(drawerMenu.menu.findItem(R.id.drawerMidi)) {
         mainMenu?.run { findItem(R.id.menuMidi).isVisible = enabled }
-        with(drawerMenu.menu.findItem(R.id.drawerMidi)) {
-            isEnabled = enabled
-            (actionView as TextView).also { t ->
-                if (enabled) {
-                    DebugMode.assertState((midi != null) and (midi?.summary != null))
-                    midi?.summary?.run {
-                        t.text = getString(
-                            R.string.keyTemp,
-                            if (keys.isNullOrEmpty()) "" else keys.first().key,
-                            if (tempos.isNullOrEmpty()) 0 else tempos.first().bpm.toInt()
-                        )
-                    }
-                } else t.text = getString(R.string.noMidi)
-                font(t, enabled)
-            }
+        isEnabled = enabled
+        (actionView as TextView).let { t ->
+            if (enabled) {
+                DebugMode.assertState((midi != null) and (midi?.summary != null))
+                midi?.summary?.run {
+                    t.text = getString(
+                        R.string.keyTemp,
+                        if (keys.isNullOrEmpty()) "" else keys.first().key,
+                        if (tempos.isNullOrEmpty()) 0 else tempos.first().bpm.toInt()
+                    )
+                }
+            } else t.text = getString(R.string.noMidi)
+            font(t, enabled)
         }
     }
 
-    private fun tracksEnabled(enabled: Boolean) {
+    private fun tracksEnabled(enabled: Boolean) = with(drawerMenu.menu) {
         mainMenu?.run { findItem(R.id.menuTracks).isVisible = enabled }
         control.visibility = if (enabled) View.VISIBLE else View.GONE
         if (enabled) {
@@ -383,33 +416,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            DebugMode.assertState(play != null)
             play?.run { if (isPlaying) playPause.performClick() }
         }
-        with(drawerMenu.menu) {
-            with(findItem(R.id.drawerTracks).subMenu) {
-                if (enabled) {
-                    midi?.tracks?.forEachIndexed { i, track ->
-                        with(add(1, i, Menu.NONE, track.info.name)) {
-                            icon = getDrawable(R.drawable.queue)
-                            actionView = Switch(this@MainActivity).apply {
-                                id = i
-                                showText = true
-                                textOn = "+"
-                                textOff = ""
-                                setOnCheckedChangeListener(this@MainActivity)
-                            }
+        with(findItem(R.id.drawerTracks).subMenu) {
+            if (enabled) {
+                midi?.tracks?.forEachIndexed { i, track ->
+                    with(add(1, i, Menu.NONE, track.info.name)) {
+                        icon = getDrawable(R.drawable.queue)
+                        actionView = Switch(this@MainActivity).apply {
+                            id = i
+                            showText = true
+                            textOn = "+"
+                            textOff = ""
+                            setOnCheckedChangeListener(this@MainActivity)
                         }
                     }
-                } else removeGroup(DrawerGroup.TRACKS.id)
-            }
-            with(findItem(R.id.drawerAll)) {
+                }
+            } else removeGroup(DrawerGroup.TRACKS.id)
+        }
+        with(findItem(R.id.drawerAll)) {
+            isEnabled = enabled
+            with(actionView as Switch) {
                 isEnabled = enabled
-                with(actionView as Switch) {
-                    isEnabled = enabled
-                    text = getString(R.string.tracks, 0, if (enabled) midi?.tracks?.size else 0)
-                    font(this, enabled)
-                    if (enabled) {
-                        toggle()
-                        if (!isChecked) toggle()
-                    }
+                text = getString(R.string.tracks, 0, if (enabled) midi?.tracks?.size else 0)
+                font(this, enabled)
+                if (enabled) {
+                    toggle()
+                    if (!isChecked) toggle()
                 }
             }
         }

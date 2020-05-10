@@ -121,16 +121,14 @@ class Sound(
         )
     }
 
-    override fun onLoadComplete(sound: SoundPool?, note: Int, status: Int) {
+    override fun onLoadComplete(sound: SoundPool?, note: Int, status: Int): Unit = with(loaded) {
         DebugMode.assertArgument(sound != null)
-        with(loaded) {
-            DebugMode.assertState(!contains(note) and (size in 0..87) and (status == 0))
-            add(note)
-            bar.progress = size
-            bar.secondaryProgress = (size + 88) / 2
-            count.text = context.getString(R.string.loadSound, size)
-            if (size == 88) arrayOf(bar, count).forEach { it.visibility = View.GONE }
-        }
+        DebugMode.assertState(!contains(note) and (size in 0..87) and (status == 0))
+        add(note)
+        bar.progress = size
+        bar.secondaryProgress = (size + 88) / 2
+        count.text = context.getString(R.string.loadSound, size)
+        if (size == 88) arrayOf(bar, count).forEach { it.visibility = View.GONE }
     }
 
     fun play(note: Int, velocity: Float = 1f) {

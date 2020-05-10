@@ -99,9 +99,8 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onBackPressed() {
+    override fun onBackPressed(): Unit =
         with(web) { if (canGoBack()) goBack() else super.onBackPressed() }
-    }
 
     private fun tryDownload() {
         DebugMode.assertState(web.url != null)
@@ -131,41 +130,37 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun startDownload(response: Response) {
-        try {
-            var playerResponse = ""
-            for (p in response.toString().split('&'))
-                p.split('=').also { if (it[0] == "player_response") playerResponse = it[1] }
-            val parsedJson = Gson().fromJson(
-                URLDecoder.decode(playerResponse, "UTF-8"), PlayerResponse::class.java
-            )
-            if (parsedJson == null) {
+    private fun startDownload(response: Response) = try {
+        var playerResponse = ""
+        for (p in response.toString().split('&'))
+            p.split('=').also { if (it[0] == "player_response") playerResponse = it[1] }
+        val parsedJson =
+            Gson().fromJson(URLDecoder.decode(playerResponse, "UTF-8"), PlayerResponse::class.java)
+        when {
+            parsedJson == null ->
                 Snackbar.make(web, R.string.copyrightProtected, Snackbar.LENGTH_LONG).show()
-                return
-            }
-            // if (parsedJson.playabilityStatus.status == "UNPLAYABLE") {
-            if (parsedJson.streamingData == null) {
+            // parsedJson.playabilityStatus.status == "UNPLAYABLE" ->
+            parsedJson.streamingData == null ->
                 Snackbar.make(web, R.string.copyrightProtected, Snackbar.LENGTH_LONG).show()
-                return
+            else -> {
+                var maxITag = 0
+                var bestQualityAudioFormat: AdaptiveFormat? = null
+                for (adaptiveFormat in parsedJson.streamingData.adaptiveFormats)
+                    if ((adaptiveFormat.mimeType.startsWith("audio"))
+                        and (adaptiveFormat.itag >= maxITag)
+                    ) {
+                        maxITag = adaptiveFormat.itag
+                        bestQualityAudioFormat = adaptiveFormat
+                    }
+
+                Snackbar.make(
+                    // Uri.parse(bestQualityAudioFormat.url).toString()
+                    web, bestQualityAudioFormat?.url
+                        ?: getString(R.string.noAudioStream), Snackbar.LENGTH_LONG
+                ).show()
             }
-
-            var maxITag = 0
-            var bestQualityAudioFormat: AdaptiveFormat? = null
-            for (adaptiveFormat in parsedJson.streamingData.adaptiveFormats)
-                if ((adaptiveFormat.mimeType.startsWith("audio"))
-                    and (adaptiveFormat.itag >= maxITag)
-                ) {
-                    maxITag = adaptiveFormat.itag
-                    bestQualityAudioFormat = adaptiveFormat
-                }
-
-            Snackbar.make(
-                // Uri.parse(bestQualityAudioFormat.url).toString()
-                web, bestQualityAudioFormat?.url
-                    ?: getString(R.string.noAudioStream), Snackbar.LENGTH_LONG
-            ).show()
-        } catch (e: JsonSyntaxException) {
-            Snackbar.make(web, R.string.notJson, Snackbar.LENGTH_LONG).show()
         }
+    } catch (e: JsonSyntaxException) {
+        Snackbar.make(web, R.string.notJson, Snackbar.LENGTH_LONG).show()
     }
 }

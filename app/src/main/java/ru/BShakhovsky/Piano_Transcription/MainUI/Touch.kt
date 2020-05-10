@@ -17,7 +17,7 @@ class Touch(private val render: Render) : View.OnTouchListener {
     private var gesture: GestureDetectorCompat? = null
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+    override fun onTouch(view: View?, event: MotionEvent?): Boolean = true.also {
         DebugMode.assertArgument((view != null) and (event != null))
         with(view as GLSurfaceView) {
             if (zoom == null) zoom = ScaleGestureDetector(context, Zoom(render))
@@ -30,6 +30,5 @@ class Touch(private val render: Render) : View.OnTouchListener {
 
             requestRender()
         }
-        return true
     }
 }

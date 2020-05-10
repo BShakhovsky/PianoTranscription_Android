@@ -8,12 +8,6 @@ import java.nio.FloatBuffer
 
 object Utils {
 
-    fun allocFloat(cords: FloatArray): FloatBuffer =
-        ByteBuffer.allocateDirect(cords.size * 4).run {
-            order(ByteOrder.nativeOrder())
-            asFloatBuffer().apply {
-                put(cords)
-                position(0)
-            }
-        }
+    fun allocFloat(cords: FloatArray): FloatBuffer = ByteBuffer.allocateDirect(cords.size * 4)
+        .order(ByteOrder.nativeOrder()).asFloatBuffer().put(cords).apply { position(0) }
 }

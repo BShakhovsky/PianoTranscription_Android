@@ -27,10 +27,12 @@ import kotlinx.android.synthetic.main.dialog_add.midiFile
 import kotlinx.android.synthetic.main.dialog_add.record
 import kotlinx.android.synthetic.main.dialog_add.surf
 
+import ru.BShakhovsky.Piano_Transcription.Spectrum.SpectrumActivity
 import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
 import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
 import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
 import java.io.FileDescriptor
+import java.io.FileNotFoundException
 import java.io.IOException
 
 class AddDialog : DialogFragment(), View.OnClickListener {
@@ -38,6 +40,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
     enum class RequestCode(val id: Int) { OPEN_MEDIA(10), OPEN_MIDI(11), WRITE_3GP(12) }
     enum class Permission(val id: Int) { RECORD(20), RECORD_SETTINGS(21) }
 
+    private var recFile: Uri? = null
     private var record: MediaRecorder? = null
     private var recDlg: AlertDialog? = null
     private var recMsg: RecordMsg? = null
@@ -153,35 +156,28 @@ class AddDialog : DialogFragment(), View.OnClickListener {
         }
     }
 
-    private fun writeWav() {
-        startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            type = "audio/3gp"
-            addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-            putExtra(
-                Intent.EXTRA_TITLE,
-                "${getString(R.string.record)} ${Calendar.getInstance().time}.3gp"
-            )
-        }, RequestCode.WRITE_3GP.id)
+    private fun writeWav() = startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+        type = "audio/3gp"
+        addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
+        putExtra(
+            Intent.EXTRA_TITLE, "${getString(R.string.record)} ${Calendar.getInstance().time}.3gp"
+        )
         Toast.makeText(context, R.string.save, Toast.LENGTH_LONG).show()
-    }
+    }, RequestCode.WRITE_3GP.id)
 
-    private fun add3gpExt(resolver: ContentResolver, uri: Uri, name: String): Uri? {
-        if (name.endsWith(".3gp")) return uri
-        try {
-            return DocumentsContract.renameDocument(resolver, uri, "$name.3gp")
+    private fun add3gpExt(resolver: ContentResolver, uri: Uri, name: String) =
+        if (name.endsWith(".3gp")) uri else try {
+            DocumentsContract.renameDocument(resolver, uri, "$name.3gp")
         } catch (e: IllegalStateException) {
-            DebugMode.assertState(!e.localizedMessage.isNullOrEmpty())
-            e.localizedMessage?.run {
-                DebugMode.assertState(
-                    startsWith("File already exists: ") and endsWith(".3gp")
-                )
+            e.localizedMessage.let {
+                DebugMode.assertState(!it.isNullOrEmpty())
+                it?.run {
+                    DebugMode.assertState(startsWith("File already exists: ") and endsWith(".3gp"))
+                }
+                MessageDialog.show(context, R.string.micError, getString(R.string.exists, it))
             }
-            MessageDialog.show(
-                context, R.string.micError, getString(R.string.exists, e.localizedMessage)
-            )
+            null
         }
-        return null
-    }
 
     private fun startRec(uri: Uri?) {
         DebugMode.assertArgument(uri != null)
@@ -198,9 +194,17 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                             add3gpExt(resolver, u, n)?.let { newUri ->
                                 // DebugMode.assertState(newUri != null) // null if file exists
                                 // if (newUri == null) return
-                                resolver.openFileDescriptor(newUri, "w").use { outFile ->
-                                    DebugMode.assertState(outFile != null)
-                                    startRecNonNull(outFile?.fileDescriptor ?: return)
+                                try {
+                                    resolver.openFileDescriptor(newUri, "w").use { outFile ->
+                                        DebugMode.assertState(outFile != null)
+                                        recFile = newUri
+                                        startRecNonNull(outFile?.fileDescriptor ?: return)
+                                    }
+                                } catch (e: FileNotFoundException) {
+                                    MessageDialog.show(
+                                        context, R.string.noFile,
+                                        "${e.localizedMessage ?: e}\n\n$uri"
+                                    )
                                 }
                             }
                         }
@@ -224,11 +228,12 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                     context, R.string.micError, getString(R.string.prepError, e.localizedMessage)
                 )
                 release()
+                recFile = null
                 return
             }
             start()
 
-            DebugMode.assertState((recDlg == null) and (recMsg == null))
+            DebugMode.assertState((recDlg == null) and (recMsg == null) and (recFile != null))
             recMsg = RecordMsg(
                 MessageDialog.show(context, R.string.recording, "", R.string.stop)
                 { dialog?.dismiss() }.apply { recDlg = this }, context, this
@@ -254,5 +259,10 @@ class AddDialog : DialogFragment(), View.OnClickListener {
         }
         recDlg?.dismiss()
         recDlg = null
+
+        recFile?.let {
+            startActivity(Intent(context, SpectrumActivity::class.java)
+                .apply { putExtra("Uri", it) })
+        }
     }
 }
