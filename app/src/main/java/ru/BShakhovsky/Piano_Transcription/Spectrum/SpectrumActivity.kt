@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Spectrum
+package ru.bshakhovsky.piano_transcription.spectrum
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
@@ -16,10 +14,15 @@ import androidx.appcompat.widget.Toolbar
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
-import ru.BShakhovsky.Piano_Transcription.AdBanner
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.R
-import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
+
+import ru.bshakhovsky.piano_transcription.R.id
+import ru.bshakhovsky.piano_transcription.R.layout.activity_spectrum
+import ru.bshakhovsky.piano_transcription.R.menu.menu_main
+import ru.bshakhovsky.piano_transcription.R.string
+
+import ru.bshakhovsky.piano_transcription.AdBanner
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.MessageDialog
 import java.io.FileNotFoundException
 import java.io.IOException
 
@@ -47,10 +50,10 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun createLayout() {
-        setContentView(R.layout.activity_spectrum)
-        convertLog = findViewById(R.id.textLog)
+        setContentView(activity_spectrum)
+        convertLog = findViewById(id.textLog)
 
-        with(findViewById<Toolbar>(R.id.spectrumBar)) {
+        with(findViewById<Toolbar>(id.spectrumBar)) {
             setSupportActionBar(this)
             DebugMode.assertState(supportActionBar != null)
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -68,29 +71,29 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
                 text = "$probeLog\n\n${ffmpegLog ?: with(PipeTransfer.error) {
                     when (this) {
                         is OutOfMemoryError ->
-                            getString(R.string.memoryCopyFile, localizedMessage ?: this)
+                            getString(string.memoryCopyFile, localizedMessage ?: this)
                         else -> {
                             DebugMode.assertState(this is IOException)
                             this?.localizedMessage ?: toString()
                         }
-                    }.also { MessageDialog.show(context, R.string.error, it) }
+                    }.also { MessageDialog.show(context, string.error, it) }
                 }}"
 
                 try {
                     rawData?.let { graphs.drawWave(it) }
                 } catch (e: OutOfMemoryError) {
-                    getString(R.string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
+                    getString(string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
                         @SuppressLint("SetTextI18n")
                         text = "$text\n\n$errMsg"
-                        MessageDialog.show(context, R.string.error, errMsg)
+                        MessageDialog.show(context, string.error, errMsg)
                     }
                 }
             }
         }
-        findViewById<ImageView>(R.id.rawWave).setImageBitmap(graphs.waveGraph)
+        findViewById<ImageView>(id.rawWave).setImageBitmap(graphs.waveGraph)
 
         MobileAds.initialize(this)
-        AdBanner(findViewById(R.id.adSpectrum))
+        AdBanner(findViewById(id.adSpectrum))
     }
 
     private fun decode(): Unit = with(rawAudio) {
@@ -127,7 +130,7 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
                         }
                     } catch (e: FileNotFoundException) {
                         MessageDialog.show(
-                            this@SpectrumActivity, R.string.noFile,
+                            this@SpectrumActivity, string.noFile,
                             "${e.localizedMessage ?: e}\n\n$uri"
                         )
                     }
@@ -146,13 +149,13 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(menu_main, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
-                R.id.menuGuide -> {
+                id.menuGuide -> {
                     // TODO: Spectrum --> "Guide" menu
                     Snackbar.make(convertLog, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .show()

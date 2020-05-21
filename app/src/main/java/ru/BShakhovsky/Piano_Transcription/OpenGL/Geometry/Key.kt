@@ -1,8 +1,6 @@
-@file:Suppress("PackageName")
+package ru.bshakhovsky.piano_transcription.openGL.geometry
 
-package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
-
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import kotlin.math.atan
 
 class Key(note: Int) {

@@ -1,14 +1,12 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.MainUI
+package ru.bshakhovsky.piano_transcription.mainUI
 
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.MainActivity
+import ru.bshakhovsky.piano_transcription.MainActivity
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.io.File
 import java.io.FileOutputStream

@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Utils
+package ru.bshakhovsky.piano_transcription.utils
 
 import kotlin.math.roundToInt
 

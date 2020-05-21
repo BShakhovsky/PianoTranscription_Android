@@ -1,13 +1,11 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import android.os.SystemClock
 import android.widget.ImageButton
 import android.widget.SeekBar
-import ru.BShakhovsky.Piano_Transcription.Midi.Midi.Track
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.midi.Midi.Track
+import ru.bshakhovsky.piano_transcription.openGL.Render
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService

@@ -1,11 +1,9 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.MainUI
+package ru.bshakhovsky.piano_transcription.mainUI
 
 import android.view.GestureDetector
 import android.view.MotionEvent
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
+import ru.bshakhovsky.piano_transcription.openGL.Render
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class Gesture(private val render: Render) : GestureDetector.SimpleOnGestureListener() {
 

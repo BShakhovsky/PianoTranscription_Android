@@ -1,11 +1,9 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL.Shader
+package ru.bshakhovsky.piano_transcription.openGL.shader
 
 import android.content.Context
 import android.opengl.GLES32
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Texture
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Utils
+import ru.bshakhovsky.piano_transcription.openGL.Texture
+import ru.bshakhovsky.piano_transcription.openGL.Utils
 
 class TextureShader(context: Context) : Shader(context, "2D") {
 

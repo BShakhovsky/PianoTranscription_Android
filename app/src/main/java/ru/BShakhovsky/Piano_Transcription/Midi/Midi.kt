@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Midi
+package ru.bshakhovsky.piano_transcription.midi
 
 import android.content.Context
 
@@ -34,8 +32,8 @@ import com.pdrogfer.mididroid.event.meta.Text
 import com.pdrogfer.mididroid.event.meta.TextualMetaEvent
 import com.pdrogfer.mididroid.event.meta.TrackName
 
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.Utils.MinSec
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.MinSec
 import java.io.InputStream
 import kotlin.math.roundToLong
 

@@ -1,12 +1,10 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL.Shader
+package ru.bshakhovsky.piano_transcription.openGL.shader
 
 import android.content.Context
 import android.opengl.GLES32
 import android.opengl.GLException
 import android.opengl.Matrix
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import java.io.InputStreamReader
 
 abstract class Shader(context: Context, name: String) {

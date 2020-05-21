@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import android.content.Intent
 import android.graphics.Typeface
@@ -45,16 +43,16 @@ import kotlinx.android.synthetic.main.activity_main.soundBar
 import kotlinx.android.synthetic.main.activity_main.soundCount
 import kotlinx.android.synthetic.main.activity_main.surfaceView
 
-import ru.BShakhovsky.Piano_Transcription.MainUI.Crash
-import ru.BShakhovsky.Piano_Transcription.MainUI.Toggle
-import ru.BShakhovsky.Piano_Transcription.MainUI.Touch
-import ru.BShakhovsky.Piano_Transcription.Midi.Midi
-import ru.BShakhovsky.Piano_Transcription.Midi.MidiActivity
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
-import ru.BShakhovsky.Piano_Transcription.Spectrum.SpectrumActivity
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
-import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
+import ru.bshakhovsky.piano_transcription.mainUI.Crash
+import ru.bshakhovsky.piano_transcription.mainUI.Toggle
+import ru.bshakhovsky.piano_transcription.mainUI.Touch
+import ru.bshakhovsky.piano_transcription.midi.Midi
+import ru.bshakhovsky.piano_transcription.midi.MidiActivity
+import ru.bshakhovsky.piano_transcription.openGL.Render
+import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.web.WebActivity
 
 import java.io.FileNotFoundException
 import java.util.concurrent.Executors

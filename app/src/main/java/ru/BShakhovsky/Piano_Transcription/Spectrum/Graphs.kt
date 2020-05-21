@@ -1,13 +1,11 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Spectrum
+package ru.bshakhovsky.piano_transcription.spectrum
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 import kotlin.math.absoluteValue

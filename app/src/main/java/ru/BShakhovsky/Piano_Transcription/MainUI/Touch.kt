@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.MainUI
+package ru.bshakhovsky.piano_transcription.mainUI
 
 import android.annotation.SuppressLint
 import android.opengl.GLSurfaceView
@@ -8,8 +6,8 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import androidx.core.view.GestureDetectorCompat
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Render
+import ru.bshakhovsky.piano_transcription.openGL.Render
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class Touch(private val render: Render) : View.OnTouchListener {
 

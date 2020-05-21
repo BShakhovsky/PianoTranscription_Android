@@ -1,9 +1,7 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Spectrum
+package ru.bshakhovsky.piano_transcription.spectrum
 
 import android.os.ParcelFileDescriptor
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import java.io.File
 import java.io.InputStream
 import kotlin.math.pow

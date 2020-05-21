@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Web
+package ru.bshakhovsky.piano_transcription.web
 
 import android.view.View
 
@@ -10,8 +8,9 @@ import android.webkit.WebViewClient
 
 import android.widget.TextView
 
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.R
+import ru.bshakhovsky.piano_transcription.R.string.aboutBlank
+
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class WebClient(private var requestedUrl: String, private var webText: TextView) : WebViewClient() {
 
@@ -29,7 +28,7 @@ class WebClient(private var requestedUrl: String, private var webText: TextView)
         DebugMode.assertArgument((view != null) and (url != null))
         if (url == "about:blank") with(webText) {
             visibility = View.VISIBLE
-            text = context.getString(R.string.aboutBlank, requestedUrl)
+            text = context.getString(aboutBlank, requestedUrl)
         }
     }
 }

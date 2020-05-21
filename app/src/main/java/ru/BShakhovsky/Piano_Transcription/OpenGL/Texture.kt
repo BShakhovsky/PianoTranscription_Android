@@ -1,14 +1,14 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL
+package ru.bshakhovsky.piano_transcription.openGL
 
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.opengl.GLES32
 import android.opengl.GLUtils
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.Light
-import ru.BShakhovsky.Piano_Transcription.R
+
+import ru.bshakhovsky.piano_transcription.R.drawable.desk
+
+import ru.bshakhovsky.piano_transcription.openGL.shader.Light
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class Texture(context: Context, lights: Array<Light>) {
 
@@ -36,7 +36,7 @@ class Texture(context: Context, lights: Array<Light>) {
             )
             parameteri()
         }
-        with(BitmapFactory.decodeResource(context.resources, R.drawable.desk)) {
+        with(BitmapFactory.decodeResource(context.resources, desk)) {
             bindTexture(texture.lastIndex)
             parameteri()
             GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, this, 0)

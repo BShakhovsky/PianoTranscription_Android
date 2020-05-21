@@ -1,14 +1,14 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import android.content.Context
 import android.media.SoundPool
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
-import ru.BShakhovsky.Piano_Transcription.R.raw
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+
+import ru.bshakhovsky.piano_transcription.R.raw
+
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class Sound(
     private val context: Context, private val bar: ProgressBar, private val count: TextView

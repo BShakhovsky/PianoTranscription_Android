@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ru.BShakhovsky.Piano_Transcription">
+    package="ru.bshakhovsky.piano_transcription">
 
     <uses-permission-sdk-23 android:name="android.permission.RECORD_AUDIO"
         android:required="false" />
@@ -53,18 +53,18 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".Midi.MidiActivity" android:parentActivityName=".MainActivity"
+        <activity android:name=".midi.MidiActivity" android:parentActivityName=".MainActivity"
             android:label="@string/midi" android:theme="@style/AppTheme" />
         <activity android:name=".GuideActivity" android:parentActivityName=".MainActivity"
             android:label="@string/guide" android:theme="@style/AppTheme" />
 
-        <activity android:name=".Web.WebActivity" android:parentActivityName=".MainActivity"
+        <activity android:name=".web.WebActivity" android:parentActivityName=".MainActivity"
             android:label="@string/surf" android:theme="@style/AppTheme">
             <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
                 android:value="true" />
         </activity>
 
-        <activity android:name=".Spectrum.SpectrumActivity" android:parentActivityName=".MainActivity"
+        <activity android:name=".spectrum.SpectrumActivity" android:parentActivityName=".MainActivity"
             android:label="@string/spectrum" android:theme="@style/AppTheme"
             android:configChanges="orientation|screenSize|uiMode" />
 

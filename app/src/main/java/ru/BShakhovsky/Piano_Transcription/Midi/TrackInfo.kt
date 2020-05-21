@@ -1,10 +1,8 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Midi
+package ru.bshakhovsky.piano_transcription.midi
 
 import android.os.Parcel
 import android.os.Parcelable
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class TrackInfo(var name: String? = null, var instrument: String? = null) : Parcelable {
 

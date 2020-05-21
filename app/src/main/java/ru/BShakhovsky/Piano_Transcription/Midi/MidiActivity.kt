@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Midi
+package ru.bshakhovsky.piano_transcription.midi
 
 import android.os.Bundle
 import android.view.View
@@ -29,15 +27,17 @@ import kotlinx.android.synthetic.main.activity_midi.percuss
 import kotlinx.android.synthetic.main.activity_midi.tempos
 import kotlinx.android.synthetic.main.activity_midi.temposGroup
 
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.R
+import ru.bshakhovsky.piano_transcription.R.layout.activity_midi
+import ru.bshakhovsky.piano_transcription.R.string
+
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import kotlin.math.roundToInt
 
 class MidiActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_midi)
+        setContentView(activity_midi)
 
         setSupportActionBar(midiBar)
         DebugMode.assertState(supportActionBar != null)
@@ -60,14 +60,13 @@ class MidiActivity : AppCompatActivity(), View.OnClickListener {
 
                     if (s.keys.isEmpty()) removeView(keysGroup)
                     else keys.text = s.keys.joinToString("\n") {
-                        with(it) { "${Midi.minSecStr(context, R.string.timeCur, milSec)} $key" }
+                        with(it) { "${Midi.minSecStr(context, string.timeCur, milSec)} $key" }
                     }
                     if (s.tempos.isEmpty()) removeView(temposGroup)
                     else tempos.text = s.tempos.joinToString("\n") {
                         with(it) {
-                            "${Midi.minSecStr(
-                                context, R.string.timeCur, milSec
-                            )} BPM ${bpm.roundToInt()}"
+                            "${Midi.minSecStr(context, string.timeCur, milSec)
+                            } BPM ${bpm.roundToInt()}"
                         }
                     }
 

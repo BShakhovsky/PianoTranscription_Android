@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Web
+package ru.bshakhovsky.piano_transcription.web
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -22,8 +20,11 @@ import kotlinx.android.synthetic.main.activity_web.goHome
 import kotlinx.android.synthetic.main.content_web.web
 import kotlinx.android.synthetic.main.content_web.webText
 
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.R
+import ru.bshakhovsky.piano_transcription.R.layout.activity_web
+import ru.bshakhovsky.piano_transcription.R // id
+import ru.bshakhovsky.piano_transcription.R.string
+
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import java.net.URLDecoder
 
 @Suppress("SpellCheckingInspection")
@@ -51,7 +52,7 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_web)
+        setContentView(activity_web)
 
         with(web) {
             @SuppressLint("SetJavaScriptEnabled")
@@ -66,7 +67,7 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
                 (if (this == null) "https://youtu.be"
                 else get(Intent.EXTRA_TEXT).toString().also {
                     if (!intent.hasExtra(Intent.EXTRA_SUBJECT)) Snackbar.make(
-                        web, getString(R.string.notUrl, it), Snackbar.LENGTH_LONG
+                        web, getString(string.notUrl, it), Snackbar.LENGTH_LONG
                     ).show()
                 }).also {
                     webViewClient = WebClient(it, webText)
@@ -114,12 +115,12 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
                     Regex("""youtu.be/[\w\-]{11}""").find(url)?.value?.substring(9)
                 else -> null
             }.also { id ->
-                if (id == null) Snackbar.make(web, R.string.noLink, Snackbar.LENGTH_LONG).show()
+                if (id == null) Snackbar.make(web, string.noLink, Snackbar.LENGTH_LONG).show()
                 else "https://www.youtube.com/get_video_info?video_id=$id"
                     .httpGet().response { _, response, result ->
                         when (result) {
                             is Result.Failure -> {
-                                Snackbar.make(web, R.string.linkFailed, Snackbar.LENGTH_LONG).show()
+                                Snackbar.make(web, string.linkFailed, Snackbar.LENGTH_LONG).show()
                                 return@response
                             }
                             is Result.Success -> startDownload(response)
@@ -138,10 +139,10 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
             Gson().fromJson(URLDecoder.decode(playerResponse, "UTF-8"), PlayerResponse::class.java)
         when {
             parsedJson == null ->
-                Snackbar.make(web, R.string.copyrightProtected, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(web, string.copyrightProtected, Snackbar.LENGTH_LONG).show()
             // parsedJson.playabilityStatus.status == "UNPLAYABLE" ->
             parsedJson.streamingData == null ->
-                Snackbar.make(web, R.string.copyrightProtected, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(web, string.copyrightProtected, Snackbar.LENGTH_LONG).show()
             else -> {
                 var maxITag = 0
                 var bestQualityAudioFormat: AdaptiveFormat? = null
@@ -156,11 +157,11 @@ class WebActivity : AppCompatActivity(), View.OnClickListener {
                 Snackbar.make(
                     // Uri.parse(bestQualityAudioFormat.url).toString()
                     web, bestQualityAudioFormat?.url
-                        ?: getString(R.string.noAudioStream), Snackbar.LENGTH_LONG
+                        ?: getString(string.noAudioStream), Snackbar.LENGTH_LONG
                 ).show()
             }
         }
     } catch (e: JsonSyntaxException) {
-        Snackbar.make(web, R.string.notJson, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(web, string.notJson, Snackbar.LENGTH_LONG).show()
     }
 }

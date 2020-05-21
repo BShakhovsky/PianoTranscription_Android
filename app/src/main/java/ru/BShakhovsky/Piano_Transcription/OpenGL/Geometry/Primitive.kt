@@ -1,9 +1,7 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
+package ru.bshakhovsky.piano_transcription.openGL.geometry
 
 import android.opengl.GLES32
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Utils
+import ru.bshakhovsky.piano_transcription.openGL.Utils
 import java.nio.FloatBuffer
 import kotlin.math.pow
 import kotlin.math.sqrt

@@ -1,15 +1,13 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
+package ru.bshakhovsky.piano_transcription.openGL.geometry
 
 import android.content.Context
 import android.opengl.GLES32
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Texture
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.DepthShader
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.Light
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.MainShader
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.TextureShader
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Shader.StencilShader
+import ru.bshakhovsky.piano_transcription.openGL.Texture
+import ru.bshakhovsky.piano_transcription.openGL.shader.DepthShader
+import ru.bshakhovsky.piano_transcription.openGL.shader.Light
+import ru.bshakhovsky.piano_transcription.openGL.shader.MainShader
+import ru.bshakhovsky.piano_transcription.openGL.shader.TextureShader
+import ru.bshakhovsky.piano_transcription.openGL.shader.StencilShader
 
 class Model(context: Context) {
 

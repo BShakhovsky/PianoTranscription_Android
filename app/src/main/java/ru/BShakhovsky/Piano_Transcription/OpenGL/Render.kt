@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL
+package ru.bshakhovsky.piano_transcription.openGL
 
 import android.content.Context
 import android.graphics.PointF
@@ -11,10 +9,10 @@ import android.os.SystemClock
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Geometry
-import ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry.Model
-import ru.BShakhovsky.Piano_Transcription.Sound
+import ru.bshakhovsky.piano_transcription.Sound
+import ru.bshakhovsky.piano_transcription.openGL.geometry.Geometry
+import ru.bshakhovsky.piano_transcription.openGL.geometry.Model
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 

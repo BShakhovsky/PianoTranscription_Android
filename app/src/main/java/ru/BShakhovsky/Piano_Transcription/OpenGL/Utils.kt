@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL
+package ru.bshakhovsky.piano_transcription.openGL
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

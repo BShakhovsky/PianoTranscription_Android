@@ -1,12 +1,10 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.material.snackbar.Snackbar
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class AdBanner(private val adView: AdView) : AdListener() {
 

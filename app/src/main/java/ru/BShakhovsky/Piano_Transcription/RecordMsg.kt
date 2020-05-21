@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import android.content.Context
 import android.media.AudioFormat
@@ -8,8 +6,8 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.os.SystemClock
 import androidx.appcompat.app.AlertDialog
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.Utils.MinSec
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.MinSec
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService

@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.OpenGL.Geometry
+package ru.bshakhovsky.piano_transcription.openGL.geometry
 
 import android.opengl.Matrix
 

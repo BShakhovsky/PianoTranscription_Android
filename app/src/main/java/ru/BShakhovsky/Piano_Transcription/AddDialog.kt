@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import android.Manifest
 import android.app.Dialog
@@ -27,10 +25,10 @@ import kotlinx.android.synthetic.main.dialog_add.midiFile
 import kotlinx.android.synthetic.main.dialog_add.record
 import kotlinx.android.synthetic.main.dialog_add.surf
 
-import ru.BShakhovsky.Piano_Transcription.Spectrum.SpectrumActivity
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
-import ru.BShakhovsky.Piano_Transcription.Web.WebActivity
+import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.web.WebActivity
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
 import java.io.IOException

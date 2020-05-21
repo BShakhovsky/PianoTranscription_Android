@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Midi
+package ru.bshakhovsky.piano_transcription.midi
 
 import android.os.Parcel
 import android.os.Parcelable

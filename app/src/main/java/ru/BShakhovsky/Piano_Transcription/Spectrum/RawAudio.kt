@@ -1,15 +1,15 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription.Spectrum
+package ru.bshakhovsky.piano_transcription.spectrum
 
 import android.content.Context
 import com.arthenica.mobileffmpeg.Config
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.arthenica.mobileffmpeg.FFprobe
-import ru.BShakhovsky.Piano_Transcription.R
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
-import ru.BShakhovsky.Piano_Transcription.Utils.MessageDialog
-import ru.BShakhovsky.Piano_Transcription.Utils.MinSec
+
+import ru.bshakhovsky.piano_transcription.R.string
+
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.utils.MinSec
 
 import java.io.File
 import java.io.IOException
@@ -40,9 +40,9 @@ class RawAudio(private val context: Context) {
         probeLog = with(FFprobe.getMediaInformation("pipe:$fd")) {
             context.run {
                 @Suppress("IfThenToElvis")
-                if (this@with == null) getString(R.string.probeFail) // e.g. midi
+                if (this@with == null) getString(string.probeFail) // e.g. midi
                 else (duration ?: 0).let { dur ->
-                    getString(R.string.probeFmt, MinSec.minutes(dur), MinSec.seconds(dur), format,
+                    getString(string.probeFmt, MinSec.minutes(dur), MinSec.seconds(dur), format,
                         with(metadataEntries) {
                             if (isEmpty()) "N/A"
                             else joinToString("\n") { with(it) { "$key:\t$value" } }
@@ -65,8 +65,8 @@ class RawAudio(private val context: Context) {
                     "-i ${inFile.path} -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
                 )) {
                     Config.RETURN_CODE_CANCEL -> {
-                        ffmpegLog = "\n\n${context.getString(R.string.cancelled)}"
-                        MessageDialog.show(context, R.string.cancel, R.string.cancelled)
+                        ffmpegLog = "\n\n${context.getString(string.cancelled)}"
+                        MessageDialog.show(context, string.cancel, string.cancelled)
                         deleteTempDir(inFile)
                     }
 
@@ -88,12 +88,12 @@ class RawAudio(private val context: Context) {
 
     private fun decodeSuccess(outArray: File) = with(context) {
         DebugMode.assertState(PipeTransfer.error == null)
-        ffmpegLog = getString(R.string.decodeSuccess)
+        ffmpegLog = getString(string.decodeSuccess)
         with(RandomAccessFile(outArray, "r").channel) {
             if (size() == 0L) {
-                ffmpegLog += "\n${getString(R.string.noAudioStream)}\n${
-                getString(R.string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
-                MessageDialog.show(context, R.string.error, R.string.noAudioStream)
+                ffmpegLog += "\n${getString(string.noAudioStream)}\n${
+                getString(string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
+                MessageDialog.show(context, string.error, string.noAudioStream)
             } else rawData = this
         }
     }
@@ -101,13 +101,13 @@ class RawAudio(private val context: Context) {
     private fun decodeFail() = with(context) {
         ffmpegLog = "${with(PipeTransfer.error) {
             when (this) {
-                null -> getString(R.string.decodeFail)
-                is OutOfMemoryError -> getString(R.string.memoryDecode, localizedMessage ?: this)
+                null -> getString(string.decodeFail)
+                is OutOfMemoryError -> getString(string.memoryDecode, localizedMessage ?: this)
                 else -> (localizedMessage ?: toString())
                     .also { DebugMode.assertState(this is IOException) }
             }
-        }.also { MessageDialog.show(context, R.string.error, it) }}\n\n${
-        getString(R.string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
+        }.also { MessageDialog.show(context, string.error, it) }}\n\n${
+        getString(string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
     }
 
     private fun deleteTempDir(file: File) = file.parentFile.let {

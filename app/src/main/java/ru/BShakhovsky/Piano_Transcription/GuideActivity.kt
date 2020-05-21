@@ -1,6 +1,4 @@
-@file:Suppress("PackageName")
-
-package ru.BShakhovsky.Piano_Transcription
+package ru.bshakhovsky.piano_transcription
 
 import android.os.Bundle
 import android.view.View
@@ -9,7 +7,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.activity_guide.fabGuide
 import kotlinx.android.synthetic.main.activity_guide.guideBar
-import ru.BShakhovsky.Piano_Transcription.Utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
