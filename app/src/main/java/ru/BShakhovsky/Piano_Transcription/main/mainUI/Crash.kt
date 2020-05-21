@@ -1,11 +1,12 @@
-package ru.bshakhovsky.piano_transcription.mainUI
+package ru.bshakhovsky.piano_transcription.main.mainUI
 
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
-import ru.bshakhovsky.piano_transcription.MainActivity
+
+import ru.bshakhovsky.piano_transcription.main.MainActivity
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.io.File

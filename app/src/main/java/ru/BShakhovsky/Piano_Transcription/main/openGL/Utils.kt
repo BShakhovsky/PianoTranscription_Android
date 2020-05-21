@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.openGL
+package ru.bshakhovsky.piano_transcription.main.openGL
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

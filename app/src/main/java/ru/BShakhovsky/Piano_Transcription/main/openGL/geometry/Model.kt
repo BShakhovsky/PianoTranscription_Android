@@ -1,13 +1,14 @@
-package ru.bshakhovsky.piano_transcription.openGL.geometry
+package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
 import android.content.Context
 import android.opengl.GLES32
-import ru.bshakhovsky.piano_transcription.openGL.Texture
-import ru.bshakhovsky.piano_transcription.openGL.shader.DepthShader
-import ru.bshakhovsky.piano_transcription.openGL.shader.Light
-import ru.bshakhovsky.piano_transcription.openGL.shader.MainShader
-import ru.bshakhovsky.piano_transcription.openGL.shader.TextureShader
-import ru.bshakhovsky.piano_transcription.openGL.shader.StencilShader
+
+import ru.bshakhovsky.piano_transcription.main.openGL.shader.DepthShader
+import ru.bshakhovsky.piano_transcription.main.openGL.shader.Light
+import ru.bshakhovsky.piano_transcription.main.openGL.shader.MainShader
+import ru.bshakhovsky.piano_transcription.main.openGL.shader.TextureShader
+import ru.bshakhovsky.piano_transcription.main.openGL.shader.StencilShader
+import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 
 class Model(context: Context) {
 

@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.openGL.shader
+package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.content.Context
 import android.opengl.GLES32

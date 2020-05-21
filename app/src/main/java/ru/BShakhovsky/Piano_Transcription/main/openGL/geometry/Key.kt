@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.openGL.geometry
+package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import kotlin.math.atan
@@ -15,29 +15,29 @@ class Key(note: Int) {
     }
 
     @Suppress("Reformat") val key: KeyType = when (note) {
-            0               ->  KeyType.WHITE_LEFT
-            87              ->  KeyType.WHITE_FULL
+            0               -> KeyType.WHITE_LEFT
+            87              -> KeyType.WHITE_FULL
         else -> when ((note + 9) % 12) {
-            0, 5            ->  KeyType.WHITE_LEFT
-            4, 11           ->  KeyType.WHITE_RIGHT
-            2, 7, 9         ->  KeyType.WHITE_MID
-            1, 3, 6, 8, 10  ->  KeyType.BLACK
-            else            ->  KeyType.WHITE_FULL.also { DebugMode.assertArgument(false) }
+            0, 5            -> KeyType.WHITE_LEFT
+            4, 11           -> KeyType.WHITE_RIGHT
+            2, 7, 9         -> KeyType.WHITE_MID
+            1, 3, 6, 8, 10  -> KeyType.BLACK
+            else            -> KeyType.WHITE_FULL.also { DebugMode.assertArgument(false) }
         }
     }
 
     @Suppress("Reformat") val offset: Float = when (note) {
-            0, 1    ->  0
-            2       ->  1
+            0, 1    -> 0
+            2       -> 1
         else -> when ((note - 3) % 12) {
-            0, 1    ->  2
-            2, 3    ->  3
-            4       ->  4
-            5, 6    ->  5
-            7, 8    ->  6
-            9, 10   ->  7
-            11      ->  8
-            else    ->  0.also { DebugMode.assertArgument(false) }
+            0, 1    -> 2
+            2, 3    -> 3
+            4       -> 4
+            5, 6    -> 5
+            7, 8    -> 6
+            9, 10   -> 7
+            11      -> 8
+            else    -> 0.also { DebugMode.assertArgument(false) }
         } + (note - 3) / 12 * 7
     } * Geometry.whiteWid
 
@@ -55,23 +55,23 @@ class Key(note: Int) {
         else aliceBlue
 
     fun rotate(deltaTime: Long): Unit = @Suppress("Reformat") when {
-            isPressed   -> when {
-                isTapped -> when {
-                    angle >  0          -> decAngle(deltaTime)
-                    else                -> isTapped = false
-                }
-                    angle <  maxAngle   -> incAngle(deltaTime)
-                    else                -> {}
+        isPressed   -> when {
+            isTapped -> when {
+                angle >  0          -> decAngle(deltaTime)
+                else                -> isTapped = false
             }
-            else        -> when {
-                isTapped -> when {
-                    angle <  maxAngle   -> incAngle(deltaTime)
-                    else                -> isTapped = false
-                }
-                    angle >  0          -> decAngle(deltaTime)
-                    else                -> {}
-            }
+                angle <  maxAngle   -> incAngle(deltaTime)
+                else                -> {}
         }
+        else        -> when {
+            isTapped -> when {
+                angle <  maxAngle   -> incAngle(deltaTime)
+                else                -> isTapped = false
+            }
+                angle >  0          -> decAngle(deltaTime)
+                else                -> {}
+        }
+    }
 
     private fun incAngle(deltaTime: Long) {
         angle = (angle + .15f * deltaTime).coerceAtMost(maxAngle)

@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.mainUI
+package ru.bshakhovsky.piano_transcription.main.mainUI
 
 import android.app.Activity
 import android.view.View

@@ -1,8 +1,8 @@
-package ru.bshakhovsky.piano_transcription.openGL.shader
+package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.content.Context
 import android.opengl.GLES32
-import ru.bshakhovsky.piano_transcription.openGL.geometry.Primitive
+import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 
 class StencilShader(context: Context) : Shader(context, "Stencil") {
 

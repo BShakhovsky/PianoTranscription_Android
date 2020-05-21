@@ -1,9 +1,10 @@
-package ru.bshakhovsky.piano_transcription.openGL.shader
+package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.content.Context
 import android.opengl.GLES32
-import ru.bshakhovsky.piano_transcription.openGL.Texture
-import ru.bshakhovsky.piano_transcription.openGL.Utils
+
+import ru.bshakhovsky.piano_transcription.main.openGL.Texture
+import ru.bshakhovsky.piano_transcription.main.openGL.Utils
 
 class TextureShader(context: Context) : Shader(context, "2D") {
 

@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription
+package ru.bshakhovsky.piano_transcription.main
 
 import android.content.Context
 import android.media.SoundPool
@@ -7,6 +7,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 
 import ru.bshakhovsky.piano_transcription.R.raw
+import ru.bshakhovsky.piano_transcription.R.string.loadSound
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
@@ -127,7 +128,7 @@ class Sound(
         add(note)
         bar.progress = size
         bar.secondaryProgress = (size + 88) / 2
-        count.text = context.getString(R.string.loadSound, size)
+        count.text = context.getString(loadSound, size)
         if (size == 88) arrayOf(bar, count).forEach { it.visibility = View.GONE }
     }
 

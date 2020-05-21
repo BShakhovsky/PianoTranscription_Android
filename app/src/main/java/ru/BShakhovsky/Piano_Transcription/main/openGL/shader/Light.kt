@@ -1,7 +1,7 @@
-package ru.bshakhovsky.piano_transcription.openGL.shader
+package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.opengl.Matrix
-import ru.bshakhovsky.piano_transcription.openGL.geometry.Geometry
+import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Geometry
 
 class Light(
     val lightDir: FloatArray, index: Int, mainShader: Shader, shadowReversed: Boolean = false

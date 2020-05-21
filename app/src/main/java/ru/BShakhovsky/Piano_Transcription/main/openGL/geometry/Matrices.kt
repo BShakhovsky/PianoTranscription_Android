@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.openGL.geometry
+package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
 import android.opengl.Matrix
 

@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription
+package ru.bshakhovsky.piano_transcription.addDialog
 
 import android.Manifest
 import android.app.Dialog
@@ -25,10 +25,15 @@ import kotlinx.android.synthetic.main.dialog_add.midiFile
 import kotlinx.android.synthetic.main.dialog_add.record
 import kotlinx.android.synthetic.main.dialog_add.surf
 
+import ru.bshakhovsky.piano_transcription.R // id
+import ru.bshakhovsky.piano_transcription.R.layout.dialog_add
+import ru.bshakhovsky.piano_transcription.R.string
+
 import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.MessageDialog
 import ru.bshakhovsky.piano_transcription.web.WebActivity
+
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -46,7 +51,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         DebugMode.assertState(context != null)
         return Dialog((context ?: return super.onCreateDialog(savedInstanceState))).apply {
-            setContentView(R.layout.dialog_add)
+            setContentView(dialog_add)
 
             DebugMode.assertState(window != null)
             window?.run {
@@ -123,7 +128,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
             }
             RequestCode.WRITE_3GP.id ->
                 if (resultCode != FragmentActivity.RESULT_OK) {
-                    MessageDialog.show(context, R.string.warning, R.string.notSaved)
+                    MessageDialog.show(context, string.warning, string.notSaved)
                     DebugMode.assertState(dialog != null)
                     dialog?.dismiss()
                 } else {
@@ -138,8 +143,8 @@ class AddDialog : DialogFragment(), View.OnClickListener {
     private fun settings() {
         DebugMode.assertState((dialog != null) and (dialog?.record != null))
         dialog?.record?.let {
-            Snackbar.make(it, R.string.grantRec, Snackbar.LENGTH_LONG)
-                .setAction(R.string.settings) {
+            Snackbar.make(it, string.grantRec, Snackbar.LENGTH_LONG)
+                .setAction(string.settings) {
                     DebugMode.assertState(context != null)
                     context?.run {
                         startActivityForResult(
@@ -149,7 +154,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                             ), Permission.RECORD_SETTINGS.id
                         )
                     }
-                    Toast.makeText(context, R.string.grantRec, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, string.grantRec, Toast.LENGTH_LONG).show()
                 }.show()
         }
     }
@@ -158,9 +163,9 @@ class AddDialog : DialogFragment(), View.OnClickListener {
         type = "audio/3gp"
         addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
         putExtra(
-            Intent.EXTRA_TITLE, "${getString(R.string.record)} ${Calendar.getInstance().time}.3gp"
+            Intent.EXTRA_TITLE, "${getString(string.record)} ${Calendar.getInstance().time}.3gp"
         )
-        Toast.makeText(context, R.string.save, Toast.LENGTH_LONG).show()
+        Toast.makeText(context, string.save, Toast.LENGTH_LONG).show()
     }, RequestCode.WRITE_3GP.id)
 
     private fun add3gpExt(resolver: ContentResolver, uri: Uri, name: String) =
@@ -172,7 +177,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                 it?.run {
                     DebugMode.assertState(startsWith("File already exists: ") and endsWith(".3gp"))
                 }
-                MessageDialog.show(context, R.string.micError, getString(R.string.exists, it))
+                MessageDialog.show(context, string.micError, getString(string.exists, it))
             }
             null
         }
@@ -200,8 +205,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                                     }
                                 } catch (e: FileNotFoundException) {
                                     MessageDialog.show(
-                                        context, R.string.noFile,
-                                        "${e.localizedMessage ?: e}\n\n$uri"
+                                        context, string.noFile, "${e.localizedMessage ?: e}\n\n$uri"
                                     )
                                 }
                             }
@@ -223,7 +227,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                 prepare()
             } catch (e: IOException) {
                 MessageDialog.show(
-                    context, R.string.micError, getString(R.string.prepError, e.localizedMessage)
+                    context, string.micError, getString(string.prepError, e.localizedMessage)
                 )
                 release()
                 recFile = null
@@ -233,7 +237,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
 
             DebugMode.assertState((recDlg == null) and (recMsg == null) and (recFile != null))
             recMsg = RecordMsg(
-                MessageDialog.show(context, R.string.recording, "", R.string.stop)
+                MessageDialog.show(context, string.recording, "", string.stop)
                 { dialog?.dismiss() }.apply { recDlg = this }, context, this
             ).apply { start() }
         }

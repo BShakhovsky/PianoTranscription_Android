@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.openGL
+package ru.bshakhovsky.piano_transcription.main.openGL
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -7,7 +7,7 @@ import android.opengl.GLUtils
 
 import ru.bshakhovsky.piano_transcription.R.drawable.desk
 
-import ru.bshakhovsky.piano_transcription.openGL.shader.Light
+import ru.bshakhovsky.piano_transcription.main.openGL.shader.Light
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class Texture(context: Context, lights: Array<Light>) {

@@ -1,7 +1,8 @@
-package ru.bshakhovsky.piano_transcription.mainUI
+package ru.bshakhovsky.piano_transcription.main.mainUI
 
 import android.view.ScaleGestureDetector
-import ru.bshakhovsky.piano_transcription.openGL.Render
+
+import ru.bshakhovsky.piano_transcription.main.openGL.Render
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class Zoom(private val render: Render) : ScaleGestureDetector.OnScaleGestureListener {
