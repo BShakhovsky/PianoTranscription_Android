@@ -3,8 +3,8 @@ package ru.bshakhovsky.piano_transcription.main.openGL.shader
 import android.content.Context
 import android.opengl.GLES32
 
-import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
+import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 
 class MainShader(context: Context) : Shader(context, "Main") {
 

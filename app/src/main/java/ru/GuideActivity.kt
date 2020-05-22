@@ -7,6 +7,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.activity_guide.fabGuide
 import kotlinx.android.synthetic.main.activity_guide.guideBar
+
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class GuideActivity : AppCompatActivity(), View.OnClickListener {

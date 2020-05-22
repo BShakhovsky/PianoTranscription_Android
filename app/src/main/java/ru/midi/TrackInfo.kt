@@ -2,6 +2,7 @@ package ru.bshakhovsky.piano_transcription.midi
 
 import android.os.Parcel
 import android.os.Parcelable
+
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 class TrackInfo(var name: String? = null, var instrument: String? = null) : Parcelable {

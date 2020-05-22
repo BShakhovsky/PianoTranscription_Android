@@ -31,6 +31,7 @@ import ru.bshakhovsky.piano_transcription.R.layout.activity_midi
 import ru.bshakhovsky.piano_transcription.R.string
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+
 import kotlin.math.roundToInt
 
 class MidiActivity : AppCompatActivity(), View.OnClickListener {

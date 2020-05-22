@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 import kotlin.math.absoluteValue

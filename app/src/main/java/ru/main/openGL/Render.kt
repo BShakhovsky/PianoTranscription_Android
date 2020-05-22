@@ -10,9 +10,9 @@ import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 
-import ru.bshakhovsky.piano_transcription.main.Sound
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Geometry
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Model
+import ru.bshakhovsky.piano_transcription.main.Sound
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import javax.microedition.khronos.egl.EGLConfig

@@ -4,8 +4,8 @@ import android.os.SystemClock
 import android.widget.ImageButton
 import android.widget.SeekBar
 
-import ru.bshakhovsky.piano_transcription.midi.Midi.Track
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
+import ru.bshakhovsky.piano_transcription.midi.Midi.Track
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.util.concurrent.Executors

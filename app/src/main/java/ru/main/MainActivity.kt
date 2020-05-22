@@ -51,9 +51,9 @@ import ru.bshakhovsky.piano_transcription.R.layout.activity_main
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
 
+import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.AdBanner
 import ru.bshakhovsky.piano_transcription.GuideActivity
-import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.main.mainUI.Crash
 import ru.bshakhovsky.piano_transcription.main.mainUI.Toggle
 import ru.bshakhovsky.piano_transcription.main.mainUI.Touch
