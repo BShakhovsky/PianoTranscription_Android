@@ -1,13 +1,13 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
-import android.content.Context
+import android.content.res.AssetManager
 import android.opengl.GLES32
 import android.opengl.GLException
 import android.opengl.Matrix
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import java.io.InputStreamReader
 
-abstract class Shader(context: Context, name: String) {
+abstract class Shader(assets: AssetManager, name: String) {
 
     protected val pos: Int
     private val program = GLES32.glCreateProgram()
@@ -16,8 +16,7 @@ abstract class Shader(context: Context, name: String) {
         fun attachShader(type: Int, glslName: String) = GLES32.glAttachShader(program,
             GLES32.glCreateShader(type).also { shader ->
                 GLES32.glShaderSource(
-                    shader,
-                    InputStreamReader(context.assets.open("Shader/$glslName.glsl")).readText()
+                    shader, InputStreamReader(assets.open("Shader/$glslName.glsl")).readText()
                 )
                 GLES32.glCompileShader(shader)
                 if (DebugMode.debug) GLES32.glGetShaderInfoLog(shader).run {

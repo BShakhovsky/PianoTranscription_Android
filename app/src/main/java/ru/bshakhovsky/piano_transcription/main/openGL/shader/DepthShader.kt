@@ -1,12 +1,12 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
-import android.content.Context
+import android.content.res.AssetManager
 import android.opengl.GLES32
 
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 
-class DepthShader(context: Context) : Shader(context, "Shadow") {
+class DepthShader(assets: AssetManager) : Shader(assets, "Shadow") {
 
     private val depthMVO = uniform("mvo")
 

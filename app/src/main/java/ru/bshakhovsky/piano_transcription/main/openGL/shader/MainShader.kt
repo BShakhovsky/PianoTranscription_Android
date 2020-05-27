@@ -1,12 +1,12 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
-import android.content.Context
+import android.content.res.AssetManager
 import android.opengl.GLES32
 
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 
-class MainShader(context: Context) : Shader(context, "Main") {
+class MainShader(assets: AssetManager) : Shader(assets, "Main") {
 
     private val norm = attribute("norm")
     private val color = uniform("color")

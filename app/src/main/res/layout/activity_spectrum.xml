@@ -1,75 +1,86 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout>
+    <data>
+        <variable name="audioModel" type="ru.bshakhovsky.piano_transcription.spectrum.RawAudio" />
+        <variable name="graphsModel" type="ru.bshakhovsky.piano_transcription.spectrum.Graphs" />
+    </data>
 
-    style="@style/MatchParent"
-    android:fitsSystemWindows="true">
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        style="@style/MatchParent"
         android:fitsSystemWindows="true">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/spectrumBar"
-            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/linear_background"
-
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <LinearLayout xmlns:tools="http://schemas.android.com/tools"
-        style="@style/MatchParent"
-        android:orientation="vertical"
-        android:layout_marginTop="?attr/actionBarSize">
-
-        <TextView android:id="@+id/waveTitle"
-            style="@style/TextTitle"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@android:color/black"
-            android:layout_margin="0dp"
-            android:text="@string/waveTitle" />
-
-        <ImageView android:id="@+id/rawWave"
-            android:layout_width="match_parent" android:layout_height="0dp"
-            android:layout_weight="1"
-            android:scaleType="fitXY"
-
-            tools:ignore="ContentDescription" />
-
-        <TextView android:id="@+id/spectrumTitle"
-            style="@style/TextTitle"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@android:color/black"
-            android:layout_margin="0dp"
-            android:text="@string/specTitle" />
-
-        <ImageView android:id="@+id/spectrum"
-            android:layout_width="match_parent" android:layout_height="0dp"
-            android:layout_weight="2"
-            android:scaleType="fitXY"
-
-            tools:ignore="ContentDescription" />
-
-        <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
-            android:layout_weight="2">
-
-            <TextView android:id="@+id/textLog"
-                style="@style/MatchParent"
-                android:textColor="@android:color/black"
-
-                tools:ignore="SelectableText, UnusedIds" />
-
-        </ScrollView>
-
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/adSpectrum"
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:fitsSystemWindows="true">
 
-            app:adSize="BANNER"
-            app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/spectrumBar"
+                android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+                android:background="@drawable/linear_background"
 
-    </LinearLayout>
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <LinearLayout xmlns:tools="http://schemas.android.com/tools"
+            style="@style/MatchParent"
+            android:orientation="vertical"
+            android:layout_marginTop="?attr/actionBarSize">
+
+            <TextView android:id="@+id/waveTitle"
+                style="@style/TextTitle"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black"
+                android:layout_margin="0dp"
+                android:text="@string/waveTitle" />
+
+            <ImageView android:id="@+id/rawWave"
+                android:layout_width="match_parent" android:layout_height="0dp"
+                android:layout_weight="1"
+                android:scaleType="fitXY"
+
+                android:src="@{graphsModel.waveGraph}"
+
+                tools:ignore="ContentDescription" />
+
+            <TextView android:id="@+id/spectrumTitle"
+                style="@style/TextTitle"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black"
+                android:layout_margin="0dp"
+                android:text="@string/specTitle" />
+
+            <ImageView android:id="@+id/spectrum"
+                android:layout_width="match_parent" android:layout_height="0dp"
+                android:layout_weight="2"
+                android:scaleType="fitXY"
+
+                tools:ignore="ContentDescription" />
+
+            <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+                android:layout_weight="2">
+
+                <TextView android:id="@+id/textLog"
+                    style="@style/MatchParent"
+                    android:textColor="@android:color/black"
+
+                    android:text="@{audioModel.ffmpegLog}"
+
+                    tools:ignore="SelectableText, UnusedIds" />
+
+            </ScrollView>
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adSpectrum"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+
+                app:adSize="BANNER"
+                app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+
+        </LinearLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

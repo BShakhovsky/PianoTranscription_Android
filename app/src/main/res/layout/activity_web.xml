@@ -1,61 +1,75 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/MatchParent"
-    android:orientation="vertical">
+<layout>
+    <data>
+        <variable name="webModel" type="ru.bshakhovsky.piano_transcription.web.WebModel" />
+    </data>
 
-    <include layout="@layout/content_web"
-        android:layout_width="match_parent" android:layout_height="0dp"
-        android:layout_weight="1" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        style="@style/MatchParent"
+        android:orientation="vertical">
 
-    <GridLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:background="@drawable/linear_background"
-        android:padding="8dp">
+        <include layout="@layout/content_web"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goHome"
-            style="@style/Button"
-            android:layout_width="0dp"
-            android:layout_columnWeight="1"
-            android:text="@string/home"
-            android:layout_marginEnd="8dp"
+        <GridLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:background="@drawable/linear_background"
+            android:padding="8dp">
 
-            app:icon="@drawable/close"
-            app:cornerRadius="24dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/goHome"
+                style="@style/Button"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:text="@string/home"
+                android:layout_marginEnd="8dp"
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/download"
-            style="@style/Button"
-            android:layout_width="0dp"
-            android:layout_columnWeight="1"
-            android:text="@string/download"
-            android:layout_marginStart="8dp"
+                android:onClick="@{() -> webModel.home()}"
 
-            app:icon="@drawable/download"
-            app:cornerRadius="24dp" />
+                app:icon="@drawable/close"
+                app:cornerRadius="24dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goBack"
-            style="@style/Button"
-            android:layout_width="0dp"
-            android:layout_columnWeight="1"
-            android:text="@string/back"
-            android:layout_marginEnd="8dp"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/download"
+                style="@style/Button"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:text="@string/download"
+                android:layout_marginStart="8dp"
 
-            app:icon="@drawable/back"
-            app:cornerRadius="24dp" />
+                android:onClick="@{() -> webModel.request()}"
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goForward"
-            style="@style/Button"
-            android:layout_width="0dp"
-            android:layout_columnWeight="1"
-            android:text="@string/forward"
-            android:layout_marginStart="8dp"
+                app:icon="@drawable/download"
+                app:cornerRadius="24dp" />
 
-            app:icon="@drawable/forward"
-            app:cornerRadius="24dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/goBack"
+                style="@style/Button"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:text="@string/back"
+                android:layout_marginEnd="8dp"
 
-    </GridLayout>
+                android:onClick="@{() -> webModel.back()}"
 
-</LinearLayout>
+                app:icon="@drawable/back"
+                app:cornerRadius="24dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/goForward"
+                style="@style/Button"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:text="@string/forward"
+                android:layout_marginStart="8dp"
+
+                android:onClick="@{() -> webModel.forward()}"
+
+                app:icon="@drawable/forward"
+                app:cornerRadius="24dp" />
+
+        </GridLayout>
+
+    </LinearLayout>
+</layout>

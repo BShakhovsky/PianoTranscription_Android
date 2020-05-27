@@ -1,31 +1,41 @@
 package ru.bshakhovsky.piano_transcription.main.openGL
 
-import android.content.Context
+import android.content.res.AssetManager
+import android.content.res.Resources
 import android.graphics.PointF
 import android.opengl.GLES32
 import android.opengl.GLSurfaceView
 import android.opengl.GLU
 import android.os.SystemClock
 import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.TextView
 
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+
+import ru.bshakhovsky.piano_transcription.main.mainUI.Touch
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Geometry
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Model
 import ru.bshakhovsky.piano_transcription.main.Sound
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class Render(
-    private val context: Context, private val playPause: ImageButton,
-    private val prev: ImageButton, private val next: ImageButton,
-    soundBar: ProgressBar, soundCount: TextView
-) : GLSurfaceView.Renderer {
+    lifecycle: Lifecycle, a: AssetManager, res: Resources, surface: GLSurfaceView,
+    play: ImageButton, prv: ImageButton, nxt: ImageButton, private val sound: Sound
+) : GLSurfaceView.Renderer, LifecycleObserver {
+
+    private val assets = WeakPtr(lifecycle, a)
+    private val resources = WeakPtr(lifecycle, res)
+    private val surfaceView = WeakPtr(lifecycle, surface)
+    private val playPause = WeakPtr(lifecycle, play)
+    private val prev = WeakPtr(lifecycle, prv)
+    private val next = WeakPtr(lifecycle, nxt)
 
     private lateinit var model: Model
-    private val sound = Sound(context, soundBar, soundCount)
 
     private var width = 0
     private var height = 0
@@ -36,11 +46,26 @@ class Render(
 
     private var prevTime = 0L
 
+    init {
+        lifecycle.addObserver(this)
+        with(surfaceView.get()) {
+            setEGLContextClientVersion(3)
+            setRenderer(this@Render)
+            setOnTouchListener(Touch(this@Render))
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private fun pause() = surfaceView.get().onPause()
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun resume() = surfaceView.get().onResume()
+
     override fun onSurfaceCreated(glUnused: GL10?, config: EGLConfig?) {
         GLES32.glEnable(GLES32.GL_DEPTH_TEST)
         GLES32.glEnable(GLES32.GL_CULL_FACE)
         GLES32.glBlendFunc(GLES32.GL_SRC_ALPHA, GLES32.GL_ONE_MINUS_SRC_ALPHA)
-        model = Model(context)
+        model = Model(assets.get(), resources.get())
     }
 
     override fun onSurfaceChanged(glUnused: GL10?, newWidth: Int, newHeight: Int) {
@@ -206,9 +231,9 @@ class Render(
 
     private fun skipPlay(xWin: Float) {
         @Suppress("Reformat") when (xWin) {
-            in 0f               ..  width / 3f      -> prev     .performClick()
-            in width / 3f       ..  width * 2 / 3f  -> playPause.performClick()
-            in width * 2 / 3f   ..  width.toFloat() -> next     .performClick()
+            in 0f               ..  width / 3f      -> prev     .get().performClick()
+            in width / 3f       ..  width * 2 / 3f  -> playPause.get().performClick()
+            in width * 2 / 3f   ..  width.toFloat() -> next     .get().performClick()
             else -> DebugMode.assertArgument(false)
         }
     }

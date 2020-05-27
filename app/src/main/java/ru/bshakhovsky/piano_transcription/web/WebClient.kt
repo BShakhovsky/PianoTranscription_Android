@@ -7,12 +7,17 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 
 import android.widget.TextView
+import androidx.lifecycle.Lifecycle
 
 import ru.bshakhovsky.piano_transcription.R.string.aboutBlank
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
-class WebClient(private var requestedUrl: String, private var webText: TextView) : WebViewClient() {
+class WebClient(lifecycle: Lifecycle, wt: TextView, private var requestedUrl: String) :
+    WebViewClient() {
+
+    private val webText = WeakPtr(lifecycle, wt)
 
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         DebugMode.assertArgument((view != null) and (request != null))
@@ -26,7 +31,7 @@ class WebClient(private var requestedUrl: String, private var webText: TextView)
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
         DebugMode.assertArgument((view != null) and (url != null))
-        if (url == "about:blank") with(webText) {
+        if (url == "about:blank") with(webText.get()) {
             visibility = View.VISIBLE
             text = context.getString(aboutBlank, requestedUrl)
         }

@@ -7,7 +7,6 @@
     <string name="ok">OK</string>
     <string name="stop">Stop</string>
     <string name="error" tools:ignore="DuplicateStrings">Error</string>
-    <string name="crash">App crashed and restarted</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
     DIALOG ADD

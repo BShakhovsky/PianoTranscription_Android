@@ -1,12 +1,12 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
-import android.content.Context
+import android.content.res.AssetManager
 import android.opengl.GLES32
 
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 import ru.bshakhovsky.piano_transcription.main.openGL.Utils
 
-class TextureShader(context: Context) : Shader(context, "2D") {
+class TextureShader(assets: AssetManager) : Shader(assets, "2D") {
 
     companion object {
         fun sendTexture(

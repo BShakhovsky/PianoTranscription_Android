@@ -3,10 +3,7 @@ package ru.bshakhovsky.piano_transcription.main
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
-
-import android.os.Build
 import android.os.Bundle
-import android.os.StrictMode
 
 import android.view.Gravity
 import android.view.Menu
@@ -17,31 +14,24 @@ import android.widget.CompoundButton
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+
+import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.material.navigation.NavigationView
 
 import kotlinx.android.synthetic.main.activity_main.adMain
-import kotlinx.android.synthetic.main.activity_main.control
-import kotlinx.android.synthetic.main.activity_main.curTime
 import kotlinx.android.synthetic.main.activity_main.drawerLayout
 import kotlinx.android.synthetic.main.activity_main.drawerMenu
-import kotlinx.android.synthetic.main.activity_main.durTime
 import kotlinx.android.synthetic.main.activity_main.mainBar
 import kotlinx.android.synthetic.main.activity_main.mainLayout
-import kotlinx.android.synthetic.main.activity_main.newMedia
-import kotlinx.android.synthetic.main.activity_main.next
-import kotlinx.android.synthetic.main.activity_main.playPause
-import kotlinx.android.synthetic.main.activity_main.prev
 import kotlinx.android.synthetic.main.activity_main.seek
-import kotlinx.android.synthetic.main.activity_main.soundBar
-import kotlinx.android.synthetic.main.activity_main.soundCount
-import kotlinx.android.synthetic.main.activity_main.surfaceView
 
 import ru.bshakhovsky.piano_transcription.R.color.colorAccent
 import ru.bshakhovsky.piano_transcription.R.drawable
@@ -50,101 +40,73 @@ import ru.bshakhovsky.piano_transcription.R.id
 import ru.bshakhovsky.piano_transcription.R.layout.activity_main
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
+import ru.bshakhovsky.piano_transcription.databinding.ActivityMainBinding
 
-import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.AdBanner
+import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.GuideActivity
-import ru.bshakhovsky.piano_transcription.main.mainUI.Crash
 import ru.bshakhovsky.piano_transcription.main.mainUI.Toggle
-import ru.bshakhovsky.piano_transcription.main.mainUI.Touch
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
 import ru.bshakhovsky.piano_transcription.midi.Midi
 import ru.bshakhovsky.piano_transcription.midi.MidiActivity
 import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
+
+import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
+
 import ru.bshakhovsky.piano_transcription.web.WebActivity
 
 import java.io.FileNotFoundException
-import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-    CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+    CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
 
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
     internal enum class DrawerItem(val id: Int) { CHECK_ALL(-1) }
 
+    private lateinit var policy: StrictPolicy
+
+    private lateinit var binding: ActivityMainBinding
+
+    private lateinit var model: MainModel
+    private lateinit var sound: Sound
+
+    private lateinit var play: Play
     private lateinit var render: Render
+
+    private var midi: Midi? = null
 
     private var mainMenu: Menu? = null
 
-    private var midi: Midi? = null
-    private var play: Play? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         if (DebugMode.debug) {
-            StrictMode.enableDefaults()
-            StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    detectContentUriWithoutPermission()//.detectUntaggedSockets()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { //detectNonSdkApiUsage().
-                        penaltyListener(
-                            Executors.newSingleThreadExecutor(),
-                            StrictMode.OnVmViolationListener {
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        it.localizedMessage ?: "Unknown Vm policy violation",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            })
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                            detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
-                    }
-                }
-            } //.detectAll().detectCleartextNetwork().detectActivityLeaks().
-                .detectFileUriExposure().detectLeakedClosableObjects()
-                .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
-                .penaltyLog().build())
-            StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    detectUnbufferedIo()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        penaltyListener(
-                            Executors.newSingleThreadExecutor(),
-                            StrictMode.OnThreadViolationListener { v ->
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        v.localizedMessage ?: "Unknown Thread policy violation",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            })
-                    }
-                }
-            } //.detectAll().detectCustomSlowCalls().detectDiskReads().
-                .detectDiskWrites().detectNetwork().detectResourceMismatches()
-                .penaltyDialog().penaltyLog().build())
+            policy = StrictPolicy(lifecycle, this)
+            Thread.setDefaultUncaughtExceptionHandler(Crash(getExternalFilesDir("Errors")))
         }
-        if (DebugMode.debug) Thread.setDefaultUncaughtExceptionHandler(Crash(this))
-        if (intent.hasExtra("Crash")) AlertDialog.Builder(this).setTitle(string.error).apply {
-            if (DebugMode.debug) setMessage(intent.getStringExtra("Crash"))
-            else setMessage(string.crash)
-        }.setIcon(drawable.info).setPositiveButton("Ok") { _, _ -> }.setCancelable(false).show()
 
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        setContentView(activity_main)
-        setSupportActionBar(mainBar)
 
-        with(surfaceView) {
-            setEGLContextClientVersion(3)
-            render = Render(context, playPause, prev, next, soundBar, soundCount)
-            setRenderer(render)
-            setOnTouchListener(Touch(render))
+        binding = DataBindingUtil.setContentView(this, activity_main)
+        model = ViewModelProvider(this).get(MainModel::class.java)
+            .apply { initialize(lifecycle, supportFragmentManager) }
+        sound = ViewModelProvider(this).get(Sound::class.java)
+            .apply { load(applicationContext, lifecycle) }
+        with(binding) {
+            mainModel = model
+            soundModel = sound
+            render =
+                Render(lifecycle, assets, resources, surfaceView, playPause, prev, next, sound)
+            play = ViewModelProvider(this@MainActivity).get(Play::class.java)
+                .apply { initialize(lifecycle, this@MainActivity, drawerLayout, render) }
+            playModel = play
+
+            lifecycleOwner = this@MainActivity
         }
+
+        setSupportActionBar(mainBar)
 
         drawerMenu.setNavigationItemSelectedListener(this)
         with(drawerMenu.menu) {
@@ -161,14 +123,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         midiEnabled(false)
         tracksEnabled(false)
-        drawerLayout.addDrawerListener(Toggle(this, drawerLayout, mainBar, mainLayout)
-            .apply { syncState() })
 
-        arrayOf<View>(newMedia, playPause, prev, next).forEach { it.setOnClickListener(this) }
+        drawerLayout.addDrawerListener(Toggle(lifecycle, mainLayout, this, drawerLayout, mainBar)
+            .apply { syncState() })
         seek.setOnSeekBarChangeListener(this)
 
-        MobileAds.initialize(this)
-        AdBanner(adMain)
+        MobileAds.initialize(applicationContext)
+        if (DebugMode.debug) MobileAds.setRequestConfiguration(
+            RequestConfiguration.Builder().setTestDeviceIds(
+                listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
+            ).build()
+        )
+        AdBanner(lifecycle, adMain)
 
         onNewIntent(intent)
     }
@@ -181,7 +147,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Intent.ACTION_MAIN -> DebugMode.assertState(
                     (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
                             and (type == null) and (data == null) and (dataString == null)
-                            and (extras == null) and (clipData == null)
+//                            and (extras == null) // not null when launched from main menu
+                            and (clipData == null)
                 )
 
                 Intent.ACTION_VIEW -> DebugMode.assertState(
@@ -270,11 +237,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                     else -> {
-                        DebugMode.assertState((play != null) and (id in 0..tracks.lastIndex))
-                        play?.run {
+                        DebugMode.assertState(id in 0..tracks.lastIndex)
+                        with(play) {
+                            DebugMode.assertState(isPlaying.value != null)
                             when {
                                 isChecked -> addTrack(id)
-                                isPlaying and (numSelTracks() == 1) -> {
+                                (isPlaying.value ?: return@with) and (numSelTracks() == 1) -> {
                                     showError(string.justTracks, string.trackNotSelPlaying)
                                     performClick()
                                     return
@@ -312,26 +280,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onBackPressed(): Unit = with(drawerLayout) {
         GravityCompat.START.let { if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed() }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (!(play ?: return).isPlaying) playPause.performClick()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if ((play ?: return).isPlaying) playPause.performClick()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        surfaceView.onResume()
-    }
-
-    override fun onPause() {
-        surfaceView.onPause()
-        super.onPause()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -376,7 +324,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             dur == 0L -> showError(string.emptyMidi, string.zeroDur)
                             else -> {
                                 DebugMode.assertState(::render.isInitialized)
-                                play = Play(render, tracks, playPause, seek)
+                                play.newMidi(tracks, dur.toInt())
                                 tracksEnabled(true)
                             }
                         }
@@ -384,7 +332,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         } catch (e: FileNotFoundException) {
-            showMsg(string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
+            MessageDialog.show(this, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
         }
         return true
     }
@@ -409,24 +357,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun tracksEnabled(enabled: Boolean) = with(drawerMenu.menu) {
         mainMenu?.run { findItem(id.menuTracks).isVisible = enabled }
-        control.visibility = if (enabled) View.VISIBLE else View.GONE
-        if (enabled) {
-            DebugMode.assertState((midi != null) and (midi?.tracks != null))
-            midi?.run {
-                durTime.text = Midi.minSecStr(this@MainActivity, string.timeOf, dur)
-                seek.max = dur.toInt()
-            }
-        } else {
-            seek.progress = 0
-            prev.visibility = View.GONE
-            next.visibility = View.VISIBLE
-            // Null for at least first two calls,
-            // then after created for the first time, never becomes null:
-//            DebugMode.assertState(play != null)
-            play?.run { if (isPlaying) playPause.performClick() }
-        }
+        model.contVis.value = if (enabled) View.VISIBLE else View.GONE
         with(findItem(id.drawerTracks).subMenu) {
             if (enabled) {
+                DebugMode.assertState((midi != null) and (midi?.tracks != null))
                 midi?.tracks?.forEachIndexed { i, track ->
                     with(add(1, i, Menu.NONE, track.info.name)) {
                         icon = getDrawable(drawable.queue)
@@ -450,7 +384,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (enabled) {
                     toggle()
                     if (!isChecked) toggle()
-                }
+                } else play.stop()
             }
         }
     }
@@ -458,92 +392,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun font(t: TextView, enabled: Boolean) =
         t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
 
-    override fun onClick(view: View?) {
-        DebugMode.assertArgument(view != null)
-        view?.run {
-            when (id) {
-                R.id.newMedia -> AddDialog()
-                    .show(supportFragmentManager, "Dialog Add")
-                else -> {
-                    // Can be clicked by touching GL view, even when buttons are invisible
-//                    DebugMode.assertState(play != null)
-                    play?.run {
-                        seek.progress.also { prevMilSec ->
-                            when (id) {
-                                R.id.playPause -> {
-                                    if (!isPlaying and noTracks()) return
-                                    view.setBackgroundResource(
-                                        if (isPlaying) android.R.drawable.ic_media_play
-                                        else android.R.drawable.ic_media_pause
-                                    )
-                                    toggle()
-                                    prevNext()
-                                }
-                                R.id.prev -> if (!isPlaying and !noTracks()) {
-                                    render.releaseAllKeys()
-                                    do {
-                                        val anyPressed = prevChord()
-                                    } while (((prevMilSec - seek.progress < 1) or !anyPressed)
-                                        and (seek.progress != 0)
-                                    )
-                                }
-                                R.id.next -> if (!isPlaying and !noTracks()) {
-                                    render.releaseAllKeys()
-                                    do {
-                                        val (anyPressed, stop) = nextChord()
-                                    } while (((seek.progress - prevMilSec < 1) or !anyPressed)
-                                        and !stop
-                                    )
-                                }
-                                else -> DebugMode.assertArgument(false)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
         DebugMode.assertArgument(bar != null)
-        curTime.text = Midi.minSecStr(this, string.timeCur, pos.toLong())
-        prevNext()
-        if (fromUser) {
-            DebugMode.assertState(play != null)
-            play?.seek(pos.toLong())
-        }
+        play.prevNext()
+        if (fromUser) play.seek(pos.toLong())
     }
 
     override fun onStartTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
     override fun onStopTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
 
-    private fun prevNext() {
-        /* When exception occurs in a child activity,
-        and "setDefaultUncaughtExceptionHandler" recreates the activity,
-        and MIDI-file has already been opened (play was not null),
-        for some reason onProgressChanged is called and we end up here,
-        and assert would cause infinite loop: */
-        if (DebugMode.debug) if (play == null) showMsg(string.error, "Play == null")
-        play?.run {
-            with(seek) {
-                prev.visibility = if ((isPlaying) or (progress == 0))
-                    View.INVISIBLE else View.VISIBLE
-                next.visibility = if ((isPlaying) or (progress == max))
-                    View.INVISIBLE else View.VISIBLE
-            }
-        }
-    }
-
-    private fun noTracks(): Boolean {
-        DebugMode.assertState(play != null)
-        if (play?.numSelTracks() == 0) {
-            showError(string.justTracks, string.trackNotSel)
-            drawerLayout.openDrawer(GravityCompat.START)
-            return true
-        }
-        return false
-    }
-
     private fun showError(titleId: Int, msgId: Int) = MessageDialog.show(this, titleId, msgId)
-    private fun showMsg(titleId: Int, msgStr: String) = MessageDialog.show(this, titleId, msgStr)
 }

@@ -7,23 +7,32 @@ import android.os.Build
 import android.os.SystemClock
 import androidx.appcompat.app.AlertDialog
 
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+
 import ru.bshakhovsky.piano_transcription.R.string
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.MinSec
+import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: MediaRecorder) :
-    Runnable {
+class RecordMsg(lifecycle: Lifecycle, c: Context?, dlg: AlertDialog?, r: MediaRecorder) :
+    Runnable, LifecycleObserver {
+
+    private val context = WeakPtr(lifecycle, c)
+    private val recDlg = WeakPtr(lifecycle, dlg)
+    private val recorder = WeakPtr(lifecycle, r)
 
     private var schedule: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val startTime = SystemClock.uptimeMillis()
-    private val fmtMsg = record.run {
-        DebugMode.assertState(context != null)
-        context?.run {
+    private val fmtMsg = recorder.get().run {
+        DebugMode.assertState(context.get() != null)
+        context.get()?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 DebugMode.assertState(
                     (activeRecordingConfiguration != null)
@@ -69,16 +78,22 @@ class RecordMsg(private val recDlg: AlertDialog?, context: Context?, record: Med
         }
     }
 
+    init {
+        lifecycle.addObserver(this)
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private fun stopThread() = schedule.shutdown()
+
     /* TODO: Emulator 2.7 Q VGA API 24
         ScheduledExecutorService called just once, then msg = "0 min : 1 sec" forever
         However, 3GP-recording duration is correct */
     override fun run(): Unit = (SystemClock.uptimeMillis() - startTime).let { milSec ->
-        DebugMode.assertState(recDlg != null)
-        recDlg?.setMessage(
+        DebugMode.assertState(recDlg.get() != null)
+        recDlg.get()?.setMessage(
             "$fmtMsg\n\nTime: ${MinSec.minutes(milSec)} min : ${MinSec.seconds(milSec)} sec"
         )
     }
 
     fun start(): Unit = run { schedule.scheduleWithFixedDelay(this, 0, 500, TimeUnit.MILLISECONDS) }
-    fun stop(): Unit = schedule.shutdown()
 }

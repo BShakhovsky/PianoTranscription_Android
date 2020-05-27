@@ -1,54 +1,69 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    style="@style/MatchParent"
-    android:baselineAligned="false">
+<layout>
+    <data>
+        <variable name="webModel" type="ru.bshakhovsky.piano_transcription.web.WebModel" />
+    </data>
 
-    <include layout="@layout/content_web"
-        android:layout_width="0dp" android:layout_height="match_parent"
-        android:layout_weight="1" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        style="@style/MatchParent"
+        android:baselineAligned="false">
 
-    <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="wrap_content" android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@drawable/linear_background"
-        android:padding="8dp">
+        <include layout="@layout/content_web"
+            android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goBack"
-            style="@style/Button"
-            android:text="@string/back"
+        <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="wrap_content" android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@drawable/linear_background"
+            android:padding="8dp">
 
-            app:icon="@drawable/back"
-            app:cornerRadius="24dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/goBack"
+                style="@style/Button"
+                android:text="@string/back"
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goForward"
-            style="@style/Button"
-            android:text="@string/forward"
+                android:onClick="@{() -> webModel.back()}"
 
-            app:icon="@drawable/forward"
-            app:cornerRadius="24dp" />
+                app:icon="@drawable/back"
+                app:cornerRadius="24dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goHome"
-            style="@style/Button"
-            android:text="@string/home"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/goForward"
+                style="@style/Button"
+                android:text="@string/forward"
 
-            app:icon="@drawable/close"
-            app:cornerRadius="24dp" />
+                android:onClick="@{() -> webModel.forward()}"
 
-        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp"
-            android:layout_weight="1"
-            tools:ignore="UselessLeaf" />
+                app:icon="@drawable/forward"
+                app:cornerRadius="24dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/download"
-            style="@style/Button"
-            android:text="@string/download"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/goHome"
+                style="@style/Button"
+                android:text="@string/home"
 
-            app:icon="@drawable/download"
-            app:cornerRadius="24dp" />
+                android:onClick="@{() -> webModel.home()}"
+
+                app:icon="@drawable/close"
+                app:cornerRadius="24dp" />
+
+            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp"
+                android:layout_weight="1"
+
+                xmlns:tools="http://schemas.android.com/tools"
+                tools:ignore="UselessLeaf" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/download"
+                style="@style/Button"
+                android:text="@string/download"
+
+                android:onClick="@{() -> webModel.request()}"
+
+                app:icon="@drawable/download"
+                app:cornerRadius="24dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</layout>

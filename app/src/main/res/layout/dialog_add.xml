@@ -1,45 +1,61 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout>
+    <data>
+        <variable name="addModel" type="ru.bshakhovsky.piano_transcription.addDialog.AddModel" />
+    </data>
 
-    style="@style/WrapContent"
-    android:orientation="vertical"
-    android:layout_alignParentBottom="true" android:layout_alignParentEnd="true"
-    android:layout_margin="32dp" android:padding="16dp"
-    android:background="@drawable/round_corners">
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        style="@style/WrapContent">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/surf"
-        android:text="@string/surf"
+        <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
 
-        app:icon="@drawable/earth"
+            style="@style/WrapContent"
+            android:orientation="vertical"
+            android:layout_margin="32dp" android:padding="16dp"
+            android:background="@drawable/round_corners">
 
-        style="@style/Button"
-        android:layout_marginBottom="8dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/surf"
+                android:text="@string/surf"
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/mediaFile"
-        android:text="@string/mediaFile"
+                android:onClick="@{() -> addModel.surf()}"
 
-        app:icon="@drawable/gallery"
+                app:icon="@drawable/earth"
 
-        style="@style/Button"
-        android:layout_marginBottom="8dp" />
+                style="@style/Button"
+                android:layout_marginBottom="8dp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/midiFile"
-        android:text="@string/midiFile"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/mediaFile"
+                android:text="@string/mediaFile"
 
-        app:icon="@drawable/queue"
+                android:onClick="@{() -> addModel.media()}"
 
-        style="@style/Button"
-        android:layout_marginBottom="8dp" />
+                app:icon="@drawable/gallery"
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/record"
-        android:text="@string/recordAudio"
+                style="@style/Button"
+                android:layout_marginBottom="8dp" />
 
-        app:icon="@drawable/record"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/midiFile"
+                android:text="@string/midiFile"
 
-        style="@style/Button" />
+                android:onClick="@{() -> addModel.midi()}"
 
-</LinearLayout>
+                app:icon="@drawable/queue"
+
+                style="@style/Button"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/record"
+                android:text="@string/recordAudio"
+
+                android:onClick="@{() -> addModel.record()}"
+
+                app:icon="@drawable/record"
+
+                style="@style/Button" />
+
+        </LinearLayout>
+    </FrameLayout>
+</layout>

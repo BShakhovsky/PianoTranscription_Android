@@ -1,6 +1,7 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
-import android.content.Context
+import android.content.res.AssetManager
+import android.content.res.Resources
 import android.opengl.GLES32
 
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.DepthShader
@@ -10,15 +11,15 @@ import ru.bshakhovsky.piano_transcription.main.openGL.shader.TextureShader
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.StencilShader
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 
-class Model(context: Context) {
+class Model(assets: AssetManager, resources: Resources) {
 
     val geom: Geometry = Geometry()
     val mats: Matrices = Matrices()
 
-    private val mainShader = MainShader(context)
-    private val depthShader = DepthShader(context)
-    private val stencilShader = StencilShader(context)
-    private val textureShader = TextureShader(context)
+    private val mainShader = MainShader(assets)
+    private val depthShader = DepthShader(assets)
+    private val stencilShader = StencilShader(assets)
+    private val textureShader = TextureShader(assets)
 
     private val lights = arrayOf(
         Light(floatArrayOf(-.5265408f, -.5735765f, -.6275069f), 0, mainShader, true),
@@ -26,7 +27,7 @@ class Model(context: Context) {
         Light(floatArrayOf(.7198464f, .3420201f, -.6040227f), 1, mainShader),
         Light(floatArrayOf(.4545195f, -.7660444f, .4545195f), 2, mainShader, true)
     )
-    val textures: Texture = Texture(context, lights)
+    val textures: Texture = Texture(resources, lights)
 
     fun draw(width: Int, height: Int): Unit = with(geom) {
         for (lightNo in 0..2) with(depthShader) {

@@ -2,104 +2,53 @@ package ru.bshakhovsky.piano_transcription.addDialog
 
 import android.Manifest
 import android.app.Dialog
-import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.icu.util.Calendar
-import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.provider.Settings
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
-import kotlinx.android.synthetic.main.dialog_add.mediaFile
-import kotlinx.android.synthetic.main.dialog_add.midiFile
 import kotlinx.android.synthetic.main.dialog_add.record
-import kotlinx.android.synthetic.main.dialog_add.surf
 
-import ru.bshakhovsky.piano_transcription.R // id
-import ru.bshakhovsky.piano_transcription.R.layout.dialog_add
 import ru.bshakhovsky.piano_transcription.R.string
+import ru.bshakhovsky.piano_transcription.databinding.DialogAddBinding
 
-import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.MessageDialog
-import ru.bshakhovsky.piano_transcription.web.WebActivity
 
-import java.io.FileDescriptor
-import java.io.FileNotFoundException
-import java.io.IOException
-
-class AddDialog : DialogFragment(), View.OnClickListener {
+class AddDialog : DialogFragment() {
 
     enum class RequestCode(val id: Int) { OPEN_MEDIA(10), OPEN_MIDI(11), WRITE_3GP(12) }
     enum class Permission(val id: Int) { RECORD(20), RECORD_SETTINGS(21) }
 
-    private var recFile: Uri? = null
-    private var record: MediaRecorder? = null
-    private var recDlg: AlertDialog? = null
-    private var recMsg: RecordMsg? = null
+    private lateinit var model: AddModel
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         DebugMode.assertState(context != null)
         return Dialog((context ?: return super.onCreateDialog(savedInstanceState))).apply {
-            setContentView(dialog_add)
+            model = ViewModelProvider(this@AddDialog).get(AddModel::class.java)
+                .apply { initialize(lifecycle, this@AddDialog) }
 
             DebugMode.assertState(window != null)
             window?.run {
                 setGravity(Gravity.BOTTOM or Gravity.END)
                 setBackgroundDrawableResource(android.R.color.transparent)
             }
-
-            arrayOf(surf, mediaFile, midiFile, record).forEach {
-                it.setOnClickListener(this@AddDialog)
-            }
         }
     }
 
-    override fun onClick(view: View?) {
-        DebugMode.assertArgument(view != null)
-        DebugMode.assertState((dialog != null) and (activity != null))
-        when (view?.id) {
-            R.id.surf -> {
-                startActivity(Intent(activity, WebActivity::class.java))
-                dialog?.dismiss()
-            }
-            R.id.mediaFile -> {
-                activity?.startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
-                    type = "*/*"
-                    // Don't show list of contacts or timezones:
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
-                }, RequestCode.OPEN_MEDIA.id)
-                dialog?.dismiss()
-            }
-            R.id.midiFile -> {
-                activity?.startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
-                    type = "audio/midi"
-                    // Don't show list of contacts or timezones:
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                }, RequestCode.OPEN_MIDI.id)
-                dialog?.dismiss()
-            }
-            R.id.record ->
-                if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                    != PackageManager.PERMISSION_GRANTED
-                ) requestPermissions(
-                    arrayOf(Manifest.permission.RECORD_AUDIO), Permission.RECORD.id
-                ) else writeWav()
-
-            else -> DebugMode.assertArgument(false)
-        }
-    }
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? = DialogAddBinding.inflate(inflater).apply { addModel = model }.root
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
@@ -109,7 +58,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
             Permission.RECORD.id ->
                 if ((grantResults.isNotEmpty() &&
                             grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) writeWav()
+                ) model.writeWav()
                 else settings()
             else -> DebugMode.assertArgument(false)
         }
@@ -123,7 +72,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                 DebugMode.assertState(activity != null)
                 if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     == PackageManager.PERMISSION_GRANTED
-                ) writeWav()
+                ) model.writeWav()
                 else settings()
             }
             RequestCode.WRITE_3GP.id ->
@@ -133,7 +82,7 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                     dialog?.dismiss()
                 } else {
                     DebugMode.assertArgument(data != null)
-                    startRec(data?.data)
+                    model.startRec(data?.data)
                 }
 
             else -> DebugMode.assertArgument(false)
@@ -153,118 +102,10 @@ class AddDialog : DialogFragment(), View.OnClickListener {
                                 Uri.parse("package:$packageName")
                             ), Permission.RECORD_SETTINGS.id
                         )
+                        Toast.makeText(applicationContext, string.grantRec, Toast.LENGTH_LONG)
+                            .apply { setGravity(Gravity.CENTER, 0, 0) }.show()
                     }
-                    Toast.makeText(context, string.grantRec, Toast.LENGTH_LONG).show()
                 }.show()
-        }
-    }
-
-    private fun writeWav() = startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-        type = "audio/3gp"
-        addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-        putExtra(
-            Intent.EXTRA_TITLE, "${getString(string.record)} ${Calendar.getInstance().time}.3gp"
-        )
-        Toast.makeText(context, string.save, Toast.LENGTH_LONG).show()
-    }, RequestCode.WRITE_3GP.id)
-
-    private fun add3gpExt(resolver: ContentResolver, uri: Uri, name: String) =
-        if (name.endsWith(".3gp")) uri else try {
-            DocumentsContract.renameDocument(resolver, uri, "$name.3gp")
-        } catch (e: IllegalStateException) {
-            e.localizedMessage.let {
-                DebugMode.assertState(!it.isNullOrEmpty())
-                it?.run {
-                    DebugMode.assertState(startsWith("File already exists: ") and endsWith(".3gp"))
-                }
-                MessageDialog.show(context, string.micError, getString(string.exists, it))
-            }
-            null
-        }
-
-    private fun startRec(uri: Uri?) {
-        DebugMode.assertArgument(uri != null)
-        uri?.let { u ->
-            DebugMode.assertState(context != null)
-            context?.let { c ->
-                DocumentFile.fromSingleUri(c, u)?.name.let { name ->
-                    DebugMode.assertState(name != null)
-                    name?.let { n ->
-                        DebugMode.assertState(
-                            (activity != null) and (activity?.contentResolver != null)
-                        )
-                        activity?.contentResolver?.let { resolver ->
-                            add3gpExt(resolver, u, n)?.let { newUri ->
-                                // DebugMode.assertState(newUri != null) // null if file exists
-                                // if (newUri == null) return
-                                try {
-                                    resolver.openFileDescriptor(newUri, "w").use { outFile ->
-                                        DebugMode.assertState(outFile != null)
-                                        recFile = newUri
-                                        startRecNonNull(outFile?.fileDescriptor ?: return)
-                                    }
-                                } catch (e: FileNotFoundException) {
-                                    MessageDialog.show(
-                                        context, string.noFile, "${e.localizedMessage ?: e}\n\n$uri"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun startRecNonNull(outFile: FileDescriptor) {
-        record = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-            setOutputFile(outFile)
-
-            try {
-                prepare()
-            } catch (e: IOException) {
-                MessageDialog.show(
-                    context, string.micError, getString(string.prepError, e.localizedMessage)
-                )
-                release()
-                recFile = null
-                return
-            }
-            start()
-
-            DebugMode.assertState((recDlg == null) and (recMsg == null) and (recFile != null))
-            recMsg = RecordMsg(
-                MessageDialog.show(context, string.recording, "", string.stop)
-                { dialog?.dismiss() }.apply { recDlg = this }, context, this
-            ).apply { start() }
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        record?.run {
-            stop()
-            release()
-        }
-        record = null
-
-        DebugMode.assertState(if (recMsg == null) recDlg == null else recDlg != null)
-        recMsg?.stop()
-        recMsg = null
-
-        if (recDlg != null) {
-            DebugMode.assertState(dialog != null)
-            dialog?.dismiss()
-        }
-        recDlg?.dismiss()
-        recDlg = null
-
-        recFile?.let {
-            startActivity(Intent(context, SpectrumActivity::class.java)
-                .apply { putExtra("Uri", it) })
         }
     }
 }

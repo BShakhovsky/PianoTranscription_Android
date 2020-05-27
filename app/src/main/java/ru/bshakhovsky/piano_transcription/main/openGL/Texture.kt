@@ -1,6 +1,6 @@
 package ru.bshakhovsky.piano_transcription.main.openGL
 
-import android.content.Context
+import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.opengl.GLES32
 import android.opengl.GLUtils
@@ -10,7 +10,7 @@ import ru.bshakhovsky.piano_transcription.R.drawable.desk
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.Light
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
-class Texture(context: Context, lights: Array<Light>) {
+class Texture(resources: Resources, lights: Array<Light>) {
 
     private val buff = IntArray(4)
     private val texture = IntArray(buff.size + 1)
@@ -36,7 +36,7 @@ class Texture(context: Context, lights: Array<Light>) {
             )
             parameteri()
         }
-        with(BitmapFactory.decodeResource(context.resources, desk)) {
+        with(BitmapFactory.decodeResource(resources, desk)) {
             bindTexture(texture.lastIndex)
             parameteri()
             GLUtils.texImage2D(GLES32.GL_TEXTURE_2D, 0, this, 0)

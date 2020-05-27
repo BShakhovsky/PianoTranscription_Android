@@ -1,144 +1,76 @@
 package ru.bshakhovsky.piano_transcription.spectrum
 
 import android.annotation.SuppressLint
-import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import com.arthenica.mobileffmpeg.FFmpeg
-import com.google.android.gms.ads.MobileAds
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
-import ru.bshakhovsky.piano_transcription.R.id
+import kotlinx.android.synthetic.main.activity_spectrum.adSpectrum
+import kotlinx.android.synthetic.main.activity_spectrum.spectrumBar
+
+import ru.bshakhovsky.piano_transcription.R.id.menuGuide
 import ru.bshakhovsky.piano_transcription.R.layout.activity_spectrum
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
+import ru.bshakhovsky.piano_transcription.databinding.ActivitySpectrumBinding
 
 import ru.bshakhovsky.piano_transcription.AdBanner
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.MessageDialog
 
-import java.io.FileNotFoundException
-import java.io.IOException
-
 class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
 
-    companion object {
-        private const val cachePref = "FFmpeg_"
-    }
-
-    private lateinit var convertLog: TextView
-
+    private lateinit var binding: ActivitySpectrumBinding
     private lateinit var rawAudio: RawAudio
     private lateinit var graphs: Graphs
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        rawAudio = RawAudio(this)
-        graphs = Graphs()
-        createLayout()
-    }
+    override fun onCreate(savedInstanceState: Bundle?): Unit =
+        super.onCreate(savedInstanceState).also {
+            binding = DataBindingUtil.setContentView(this, activity_spectrum)
+            rawAudio = ViewModelProvider(this).get(RawAudio::class.java)
+                .apply { initialize(lifecycle, this@SpectrumActivity, cacheDir) }
+            graphs = ViewModelProvider(this).get(Graphs::class.java)
+            with(binding) {
+                audioModel = rawAudio
+                graphsModel = graphs
+            }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        createLayout()
-    }
+            with(spectrumBar) {
+                setSupportActionBar(this)
+                DebugMode.assertState(supportActionBar != null)
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                setNavigationOnClickListener(this@SpectrumActivity)
+            }
 
-    private fun createLayout() {
-        setContentView(activity_spectrum)
-        convertLog = findViewById(id.textLog)
-
-        with(findViewById<Toolbar>(id.spectrumBar)) {
-            setSupportActionBar(this)
-            DebugMode.assertState(supportActionBar != null)
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            setNavigationOnClickListener(this@SpectrumActivity)
-        }
-
-        with(rawAudio) {
-            with(convertLog) {
+            with(rawAudio) {
                 if (rawData == null) {
-                    DebugMode.assertState(graphs.waveGraph == null)
-                    decode()
+                    DebugMode.assertState(
+                        graphs.waveGraph.value == null, "Unnecessary second FFmpeg call"
+                    )
+                    /* TODO: Decode in background thread, otherwise SpectrumActivity is leaking
+                        if device is rotated during opening the file */
+                    decode(intent.getParcelableExtra("Uri"), contentResolver)
                 }
-                DebugMode.assertState(!probeLog.isNullOrEmpty())
-                @SuppressLint("SetTextI18n")
-                text = "$probeLog\n\n${ffmpegLog ?: with(PipeTransfer.error) {
-                    when (this) {
-                        is OutOfMemoryError ->
-                            getString(string.memoryCopyFile, localizedMessage ?: this)
-                        else -> {
-                            DebugMode.assertState(this is IOException)
-                            this?.localizedMessage ?: toString()
-                        }
-                    }.also { MessageDialog.show(context, string.error, it) }
-                }}"
+                DebugMode.assertState(!probeLog.value.isNullOrEmpty())
 
                 try {
-                    rawData?.let { graphs.drawWave(it) }
+                    rawData?.let { graphs.drawWave(it, resources) }
                 } catch (e: OutOfMemoryError) {
                     getString(string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
                         @SuppressLint("SetTextI18n")
-                        text = "$text\n\n$errMsg"
-                        MessageDialog.show(context, string.error, errMsg)
+                        ffmpegLog.value += "\n\n$errMsg"
+                        MessageDialog.show(this@SpectrumActivity, string.error, errMsg)
                     }
                 }
             }
+
+            AdBanner(lifecycle, adSpectrum)
         }
-        findViewById<ImageView>(id.rawWave).setImageBitmap(graphs.waveGraph)
-
-        MobileAds.initialize(this)
-        AdBanner(findViewById(id.adSpectrum))
-    }
-
-    private fun decode(): Unit = with(rawAudio) {
-        DebugMode.assertState(rawData == null, "Unnecessary second FFmpeg call")
-        intent.getParcelableExtra<Uri>("Uri").also { uri ->
-            DebugMode.assertState((uri != null) and (contentResolver != null))
-            uri?.let { u ->
-                contentResolver?.run {
-                    try {
-                        if (probeLog.isNullOrEmpty()) {
-                            DebugMode.assertState(ffmpegLog == null, "Wrong order of FFmpeg calls")
-                            // For FFprobe we can use non-seekable input pipe:
-                            openFileDescriptor(u, "r").use { inFile ->
-                                DebugMode.assertState(inFile != null)
-                                inFile?.run { probe(fd) }
-                            }
-                        }
-                        clearCache()
-                        if (PipeTransfer.error != null) return
-                        /* For FFmpeg we cannot use non-seekable input pipe, because
-                        for some media formats it will write "partial file" error,
-                        and if audio data is located before "codec format chunk",
-                        then FFmpeg will not be able to seek back,
-                        and it will not "find" audio stream.
-
-                        I don't know how to get file path from URI,
-                        so have to temporarily copy it, so that we know its path */
-                        createTempFile(directory = createTempDir(cachePref, "")).let {
-                            PipeTransfer.streamToFile(openInputStream(u), it)
-                            if (PipeTransfer.error == null) {
-                                ffmpeg(it)
-                                DebugMode.assertState(!ffmpegLog.isNullOrEmpty())
-                            }
-                        }
-                    } catch (e: FileNotFoundException) {
-                        MessageDialog.show(
-                            this@SpectrumActivity, string.noFile,
-                            "${e.localizedMessage ?: e}\n\n$uri"
-                        )
-                    }
-                }
-            }
-        }
-    }
 
     override fun onClick(view: View?) {
         DebugMode.assertArgument(view != null)
@@ -156,27 +88,13 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
-                id.menuGuide -> {
+                menuGuide -> {
                     // TODO: Spectrum --> "Guide" menu
-                    Snackbar.make(convertLog, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .show()
+                    Snackbar.make(
+                        binding.root, "Replace with your own action", Snackbar.LENGTH_LONG
+                    ).show()
                 }
                 else -> DebugMode.assertArgument(false)
             }
         }
-
-    override fun onStop() {
-        super.onStop()
-        FFmpeg.cancel()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        graphs.waveGraph?.recycle()
-        rawAudio.rawData?.close()
-        clearCache()
-    }
-
-    private fun clearCache() = cacheDir.listFiles { _, name -> name.startsWith(cachePref) }
-        ?.forEach { it.deleteRecursively() }
 }
