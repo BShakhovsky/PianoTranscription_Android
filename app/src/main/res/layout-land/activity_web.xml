@@ -1,8 +1,5 @@
 <layout>
-    <data>
-        <variable name="webModel" type="ru.bshakhovsky.piano_transcription.web.WebModel" />
-    </data>
-
+    <data><variable name="webModel" type="ru.bshakhovsky.piano_transcription.web.WebModel" /></data>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         style="@style/MatchParent"
         android:baselineAligned="false">
@@ -14,11 +11,10 @@
         <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="wrap_content" android:layout_height="match_parent"
             android:orientation="vertical"
-            android:background="@drawable/linear_background"
+            android:background="@drawable/background_blue"
             android:padding="8dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/goBack"
                 style="@style/Button"
                 android:text="@string/back"
 
@@ -28,7 +24,6 @@
                 app:cornerRadius="24dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/goForward"
                 style="@style/Button"
                 android:text="@string/forward"
 
@@ -38,7 +33,6 @@
                 app:cornerRadius="24dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/goHome"
                 style="@style/Button"
                 android:text="@string/home"
 
@@ -54,7 +48,6 @@
                 tools:ignore="UselessLeaf" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/download"
                 style="@style/Button"
                 android:text="@string/download"
 

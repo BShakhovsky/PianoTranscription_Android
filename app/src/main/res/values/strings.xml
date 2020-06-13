@@ -1,5 +1,7 @@
-<!DOCTYPE resources [<!ENTITY tryAgain  ".\nTry again, choose a location and type file name.">
-                     <!ENTITY memory    "Insufficient memory on phone.\n">]>
+<!DOCTYPE resources [<!ENTITY exists      "Requested destination file already exists.">
+                     <!ENTITY tryAgain    ".\nTry again, choose a location and type file name.">
+                     <!ENTITY memory      "Insufficient storage space, the SD card is full.\n">
+                     <!ENTITY permissions "Open Permissions and allow ">]>
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
@@ -11,7 +13,7 @@
 
     DIALOG ADD
 
-    <string name="surf">Surf for video</string>
+    <string name="surf">Surf YouTube</string>
     <string name="mediaFile">Open audio/video</string>
     <string name="midiFile">Open MIDI</string>
     <string name="recordAudio">Record audio</string>
@@ -32,24 +34,6 @@
     <string name="tracks">%1$d of %2$d</string>
     <string name="keyTemp">%1$s %2$d bpm</string>
     <string name="noMidi">not loaded</string>
-
-    WEB SURF
-
-    <string name="notUrl">This might be not a valid URL:\n%1$s</string>
-    <string name="aboutBlank">Could not load the requested web page:\n%1$s</string>
-    <string name="noLink" tools:ignore="UnusedResources">Video not found,
-        probably you did not click on the video itself</string>
-    <string name="linkFailed" tools:ignore="UnusedResources">Could not get download link</string>
-    <string name="copyrightProtected">Streaming data is unplayable,
-        probably because copyright protection is enabled</string>
-    <string name="noAudioStream">Could not find audio stream</string>
-    <string name="notJson">Google returns not valid json if api limit</string>
-
-    Menu
-    <string name="home">Close</string>
-    <string name="back">Back</string>
-    <string name="forward">Forward</string>
-    <string name="download">Download</string>
 
     MIDI
 
@@ -80,19 +64,20 @@
     <string name="percuss">Percussion tracks</string>
     <string name="untitled">Untitled</string>
 
+
     MICROPHONE RECORDING
 
     Permission
     <string name="settings">Settings</string>
-    <string name="grantRec">Open Permissions and allow Microphone</string>
+    <string name="grantRec">&permissions;Microphone</string>
     <string name="micError">Could not record audio</string>
     <string name="prepError">Could not prepare recorder:\n%1$s</string>
     <string name="record">Record</string>
 
     Error
     <string name="warning">Warning</string>
-    <string name="notSaved">Record file was not created&tryAgain;</string>
-    <string name="exists" tools:ignore="DuplicateStrings">%1$s&tryAgain;</string>
+    <string name="notSaved">Output file was not specified&tryAgain;</string>
+    <string name="existsTryAgain">&exists;\n%1$s&tryAgain;</string>
     <string name="save">Choose a location, type file name and click save</string>
 
     Recording
@@ -104,6 +89,7 @@
     <string name="stereo">Stereo</string>
     <string name="invalidChannels">Invalid number of channels</string>
     <string name="invalid" tools:ignore="UnusedResources">Invalid</string>
+
 
     SPECTRUM
 
@@ -126,6 +112,65 @@
     <string name="ffmpegOut">Output from FFmpeg:</string>
     <string name="waveTitle">Audio wave for the 1st second</string>
     <string name="specTitle">Log mel-scaled spectrogram</string>
+    <string name="fileInterrupt">File IO operation interrupted:\n\n%1$s</string>
+
+
+    WEB SURF
+
+    <string name="notUrl">This might be not a valid URL:\n%1$s</string>
+    <string name="aboutBlank">Could not load the requested web page:\n%1$s</string>
+    <string name="noLink" tools:ignore="UnusedResources">Video not found,
+        probably you did not click on the video itself</string>
+    <string name="linkFailed" tools:ignore="UnusedResources">Could not get download link</string>
+    <string name="copyrightProtected">Streaming data is unplayable,
+        probably because copyright protection is enabled</string>
+    <string name="noAudioStream">Could not find audio stream</string>
+    <string name="notJson">Google returns not valid json if api limit</string>
+
+    <string name="grantStorage">&permissions;Storage (Files and media)</string>
+
+    Toasts
+
+    <string name="downStart">Download started.
+        \nYou can check status in the notification area.</string>
+
+    <string name="downFailed" tools:ignore="UnusedResources">Download failed</string>
+    <string name="cannotResume" tools:ignore="UnusedResources">
+        Some possibly transient error occurred</string>
+    <string name="storageMount" tools:ignore="UnusedResources">
+        No external storage device was found, the SD card is not mounted</string>
+    <string name="downExists" tools:ignore="UnusedResources">&exists;</string>
+    <string name="storageIssue" tools:ignore="UnusedResources">Storage issue</string>
+    <string name="httpError" tools:ignore="UnusedResources">
+        Error receiving or processing data occurred at the HTTP level</string>
+    <string name="memoryDownload" tools:ignore="UnusedResources">&memory;</string>
+    <string name="manyRedirects" tools:ignore="UnusedResources">
+        There were too many redirects</string>
+    <string name="unhandledHttp" tools:ignore="UnusedResources">
+        Cannot handle received HTTP code</string>
+
+    <string name="downPaused" tools:ignore="UnusedResources">Download paused</string>
+    <string name="queuedWiFi" tools:ignore="UnusedResources">
+        Exceeded size limit for downloads over the mobile network,
+        waiting for a Wi-Fi connection to proceed</string>
+    <string name="waitNet" tools:ignore="UnusedResources">
+        Waiting for network connectivity to proceed</string>
+    <string name="netRetry" tools:ignore="UnusedResources">
+        Network error occurred, waiting before retrying the request</string>
+    <string name="unknownReason" tools:ignore="UnusedResources">Unknown reason</string>
+
+    <string name="downPending" tools:ignore="UnusedResources">Download is waiting to start</string>
+    <string name="downRunning" tools:ignore="UnusedResources">Download is currently running</string>
+    <string name="downSuccess" tools:ignore="UnusedResources">
+        Download successfully completed</string>
+    <string name="unknownStatus" tools:ignore="UnusedResources">Unknown status</string>
+
+    Menu
+    <string name="home">Close</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="download">Download</string>
+
 
     USER GUIDE
 

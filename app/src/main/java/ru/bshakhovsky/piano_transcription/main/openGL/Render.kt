@@ -13,10 +13,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
+import ru.bshakhovsky.piano_transcription.main.Sound
 import ru.bshakhovsky.piano_transcription.main.mainUI.Touch
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Geometry
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Model
-import ru.bshakhovsky.piano_transcription.main.Sound
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 

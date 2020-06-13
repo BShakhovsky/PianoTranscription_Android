@@ -3,7 +3,6 @@
         <variable name="audioModel" type="ru.bshakhovsky.piano_transcription.spectrum.RawAudio" />
         <variable name="graphsModel" type="ru.bshakhovsky.piano_transcription.spectrum.Graphs" />
     </data>
-
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,7 +18,7 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/spectrumBar"
                 android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-                android:background="@drawable/linear_background"
+                android:background="@drawable/background_green"
 
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
@@ -43,11 +42,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintHorizontal_weight="2" />
 
-            <ImageView android:id="@+id/rawWave"
+            <FrameLayout android:id="@+id/rawWave"
                 style="@style/Zero"
-                android:scaleType="fitXY"
-
-                android:src="@{graphsModel.waveGraph}"
 
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/logScroll"
@@ -55,9 +51,21 @@
                 app:layout_constraintBottom_toTopOf="@id/spectrumTitle"
 
                 app:layout_constraintHorizontal_weight="2"
-                app:layout_constraintVertical_weight="1"
+                app:layout_constraintVertical_weight="1">
 
-                tools:ignore="ContentDescription" />
+                <ImageView style="@style/MatchParent"
+                    android:scaleType="fitXY"
+
+                    android:src="@{graphsModel.waveGraph}"
+
+                    tools:ignore="ContentDescription" />
+
+                <ProgressBar style="@style/WrapContent"
+                    android:layout_gravity="center"
+
+                    android:visibility="@{graphsModel.waveVis}" />
+
+            </FrameLayout>
 
             <TextView android:id="@+id/spectrumTitle"
                 style="@style/TextTitle"
@@ -73,9 +81,8 @@
 
                 app:layout_constraintHorizontal_weight="2" />
 
-            <ImageView android:id="@+id/spectrum"
+            <FrameLayout android:id="@+id/spectrum"
                 style="@style/Zero"
-                android:scaleType="fitXY"
 
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/logScroll"
@@ -83,11 +90,19 @@
                 app:layout_constraintBottom_toBottomOf="parent"
 
                 app:layout_constraintHorizontal_weight="2"
-                app:layout_constraintVertical_weight="2"
+                app:layout_constraintVertical_weight="2">
 
-                tools:ignore="ContentDescription" />
+                <ImageView style="@style/MatchParent"
+                    android:scaleType="fitXY"
 
-            <ScrollView android:id="@+id/logScroll"
+                    tools:ignore="ContentDescription" />
+
+                <ProgressBar style="@style/WrapContent"
+                    android:layout_gravity="center" />
+
+            </FrameLayout>
+
+            <FrameLayout android:id="@+id/logScroll"
                 style="@style/Zero"
 
                 app:layout_constraintStart_toEndOf="@id/spectrum"
@@ -97,15 +112,24 @@
 
                 app:layout_constraintHorizontal_weight="1">
 
-                <TextView android:id="@+id/textLog"
-                    style="@style/MatchParent"
-                    android:textColor="@android:color/black"
+                <ScrollView style="@style/MatchParent">
 
-                    android:text="@{audioModel.ffmpegLog}"
+                    <TextView android:id="@+id/textLog"
+                        style="@style/MatchParent"
+                        android:textColor="@android:color/black"
 
-                    tools:ignore="SelectableText, UnusedIds" />
+                        android:text="@{audioModel.ffmpegLog}"
 
-            </ScrollView>
+                        tools:ignore="SelectableText, UnusedIds" />
+
+                </ScrollView>
+
+                <ProgressBar style="@style/WrapContent"
+                    android:layout_gravity="center"
+
+                    android:visibility="@{audioModel.logVis}" />
+
+            </FrameLayout>
 
             <com.google.android.gms.ads.AdView
                 android:id="@+id/adSpectrum"

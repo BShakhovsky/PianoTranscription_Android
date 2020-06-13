@@ -8,8 +8,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 
+import android.view.View
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
@@ -29,10 +32,10 @@ class Graphs : ViewModel() {
     val waveGraph: LiveData<BitmapDrawable>
         get() = _waveGraph
 
-    override fun onCleared() {
-        waveGraph.value?.bitmap?.recycle()
-        super.onCleared()
-    }
+    val waveVis: LiveData<Int> = Transformations.map(waveGraph)
+    { if (it.bitmap == null) View.VISIBLE else View.GONE }
+
+    override fun onCleared(): Unit = waveGraph.value?.bitmap?.recycle().let { super.onCleared() }
 
     fun drawWave(rawData: FileChannel, resources: Resources): Unit = waveGraph.value?.let {}
         ?: Bitmap.createBitmap(

@@ -21,18 +21,17 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-class RecordMsg(lifecycle: Lifecycle, c: Context?, dlg: AlertDialog?, r: MediaRecorder) :
-    Runnable, LifecycleObserver {
+class RecordMsg(
+    lifecycle: Lifecycle, dlg: AlertDialog?, recorder: MediaRecorder, context: Context?
+) : Runnable, LifecycleObserver {
 
-    private val context = WeakPtr(lifecycle, c)
     private val recDlg = WeakPtr(lifecycle, dlg)
-    private val recorder = WeakPtr(lifecycle, r)
 
     private var schedule: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val startTime = SystemClock.uptimeMillis()
-    private val fmtMsg = recorder.get().run {
-        DebugMode.assertState(context.get() != null)
-        context.get()?.run {
+    private val fmtMsg = recorder.run {
+        DebugMode.assertState(context != null)
+        context?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 DebugMode.assertState(
                     (activeRecordingConfiguration != null)

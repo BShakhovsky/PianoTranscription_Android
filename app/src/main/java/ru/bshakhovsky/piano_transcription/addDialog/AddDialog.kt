@@ -11,24 +11,23 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
-import kotlinx.android.synthetic.main.dialog_add.record
+import kotlinx.android.synthetic.main.dialog_add.frameLayout
 
 import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.DialogAddBinding
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 
 class AddDialog : DialogFragment() {
 
-    enum class RequestCode(val id: Int) { OPEN_MEDIA(10), OPEN_MIDI(11), WRITE_3GP(12) }
-    enum class Permission(val id: Int) { RECORD(20), RECORD_SETTINGS(21) }
+    enum class RequestCode(val id: Int) { SURF(20), OPEN_MEDIA(21), OPEN_MIDI(22), WRITE_3GP(23) }
+    enum class Permission(val id: Int) { RECORD(30), RECORD_SETTINGS(31) }
 
     private lateinit var model: AddModel
 
@@ -68,8 +67,8 @@ class AddDialog : DialogFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             Permission.RECORD_SETTINGS.id -> {
-                // if (resultCode != FragmentActivity.RESULT_OK) for some reason it is never equal
-                DebugMode.assertState(activity != null)
+                DebugMode
+                    .assertState((resultCode != FragmentActivity.RESULT_OK) and (activity != null))
                 if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     == PackageManager.PERMISSION_GRANTED
                 ) model.writeWav()
@@ -77,7 +76,7 @@ class AddDialog : DialogFragment() {
             }
             RequestCode.WRITE_3GP.id ->
                 if (resultCode != FragmentActivity.RESULT_OK) {
-                    MessageDialog.show(context, string.warning, string.notSaved)
+                    InfoMessage.dialog(context, string.warning, string.notSaved)
                     DebugMode.assertState(dialog != null)
                     dialog?.dismiss()
                 } else {
@@ -90,22 +89,19 @@ class AddDialog : DialogFragment() {
     }
 
     private fun settings() {
-        DebugMode.assertState((dialog != null) and (dialog?.record != null))
-        dialog?.record?.let {
-            Snackbar.make(it, string.grantRec, Snackbar.LENGTH_LONG)
-                .setAction(string.settings) {
-                    DebugMode.assertState(context != null)
-                    context?.run {
-                        startActivityForResult(
-                            Intent(
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                Uri.parse("package:$packageName")
-                            ), Permission.RECORD_SETTINGS.id
-                        )
-                        Toast.makeText(applicationContext, string.grantRec, Toast.LENGTH_LONG)
-                            .apply { setGravity(Gravity.CENTER, 0, 0) }.show()
-                    }
-                }.show()
-        }
+        DebugMode.assertState((dialog != null) and (dialog?.frameLayout != null))
+        Snackbar.make(dialog?.frameLayout ?: return, string.grantRec, Snackbar.LENGTH_LONG)
+            .setAction(string.settings) {
+                DebugMode.assertState(context != null)
+                context?.run {
+                    startActivityForResult(
+                        Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:$packageName")
+                        ), Permission.RECORD_SETTINGS.id
+                    )
+                    InfoMessage.toast(applicationContext, string.grantRec)
+                }
+            }.show()
     }
 }

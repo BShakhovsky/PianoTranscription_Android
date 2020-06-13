@@ -4,6 +4,7 @@ import android.os.ParcelFileDescriptor
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import java.io.File
 import java.io.InputStream
+import java.io.InterruptedIOException
 import kotlin.math.pow
 
 class PipeTransfer(private val outFile: File) : Thread() {
@@ -20,7 +21,8 @@ class PipeTransfer(private val outFile: File) : Thread() {
                     ByteArray(64 * 1_024f.pow(2).toInt()).also { buf ->
                         var len: Int
                         while (inS.read(buf).also { len = it } > 0)
-                            outFile.appendBytes(buf.sliceArray(0 until len))
+                            if (interrupted()) throw InterruptedIOException()
+                            else outFile.appendBytes(buf.sliceArray(0 until len))
                         DebugMode.assertState(len in arrayOf(0, -1))
                     }
                 } catch (e: Throwable) {

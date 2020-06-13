@@ -4,7 +4,6 @@
         <variable name="soundModel" type="ru.bshakhovsky.piano_transcription.main.Sound" />
         <variable name="playModel" type="ru.bshakhovsky.piano_transcription.main.Play" />
     </data>
-
     <androidx.drawerlayout.widget.DrawerLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -43,8 +42,7 @@
                     android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <TextView android:id="@+id/soundCount"
-                        style="@style/WrapContent"
+                    <TextView style="@style/WrapContent"
                         android:layout_marginTop="16dp" android:layout_marginBottom="8dp"
                         android:layout_gravity="center_horizontal"
                         android:textColor="@android:color/white"
@@ -53,8 +51,7 @@
                         android:text="@{@string/loadSound(soundModel.count)}"
                         android:visibility="@{soundModel.visibility}" />
 
-                    <ProgressBar android:id="@+id/soundBar"
-                        style="?android:attr/progressBarStyleHorizontal"
+                    <ProgressBar style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:max="88"
 
@@ -63,7 +60,6 @@
                         android:visibility="@{soundModel.visibility}" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/control"
                         android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:layout_margin="16dp"
 
@@ -155,10 +151,10 @@
                     app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/newMedia"
                     style="@style/WrapContent"
                     android:layout_margin="16dp"
                     android:layout_alignParentBottom="true" android:layout_alignParentEnd="true"
+
                     android:onClick="@{() -> mainModel.dialogAdd()}"
 
                     app:srcCompat="@drawable/add" />

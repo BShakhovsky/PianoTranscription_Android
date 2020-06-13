@@ -1,6 +1,7 @@
 package ru.bshakhovsky.piano_transcription.main
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
@@ -42,20 +43,19 @@ import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.ActivityMainBinding
 
-import ru.bshakhovsky.piano_transcription.AdBanner
-import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.GuideActivity
+import ru.bshakhovsky.piano_transcription.ad.AdBanner
+import ru.bshakhovsky.piano_transcription.ad.AdInterstitial
+import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.main.mainUI.Toggle
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
 import ru.bshakhovsky.piano_transcription.midi.Midi
 import ru.bshakhovsky.piano_transcription.midi.MidiActivity
 import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
-
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
-
 import ru.bshakhovsky.piano_transcription.web.WebActivity
 
 import java.io.FileNotFoundException
@@ -63,12 +63,11 @@ import java.io.FileNotFoundException
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
 
+    internal enum class RequestCode(val id: Int) { SPECTRUM(10) }
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
     internal enum class DrawerItem(val id: Int) { CHECK_ALL(-1) }
 
     private lateinit var policy: StrictPolicy
-
-    private lateinit var binding: ActivityMainBinding
 
     private lateinit var model: MainModel
     private lateinit var sound: Sound
@@ -77,28 +76,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var render: Render
 
     private var midi: Midi? = null
-
     private var mainMenu: Menu? = null
+    private lateinit var interstitial: AdInterstitial
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (DebugMode.debug) {
-            policy = StrictPolicy(lifecycle, this)
+        if (DebugMode.debug)
             Thread.setDefaultUncaughtExceptionHandler(Crash(getExternalFilesDir("Errors")))
-        }
 
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
-        binding = DataBindingUtil.setContentView(this, activity_main)
         model = ViewModelProvider(this).get(MainModel::class.java)
             .apply { initialize(lifecycle, supportFragmentManager) }
-        sound = ViewModelProvider(this).get(Sound::class.java)
-            .apply { load(applicationContext, lifecycle) }
-        with(binding) {
+        sound = ViewModelProvider(this).get(Sound::class.java).apply { load(applicationContext) }
+        with(DataBindingUtil.setContentView<ActivityMainBinding>(this, activity_main)) {
+            if (DebugMode.debug) policy = StrictPolicy(lifecycle, this@MainActivity)
             mainModel = model
             soundModel = sound
-            render =
-                Render(lifecycle, assets, resources, surfaceView, playPause, prev, next, sound)
+
+            render = Render(lifecycle, assets, resources, surfaceView, playPause, prev, next, sound)
             play = ViewModelProvider(this@MainActivity).get(Play::class.java)
                 .apply { initialize(lifecycle, this@MainActivity, drawerLayout, render) }
             playModel = play
@@ -134,7 +130,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
             ).build()
         )
-        AdBanner(lifecycle, adMain)
+        AdBanner(lifecycle, adMain, applicationContext)
+        interstitial = AdInterstitial(lifecycle, applicationContext)
 
         onNewIntent(intent)
     }
@@ -147,7 +144,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Intent.ACTION_MAIN -> DebugMode.assertState(
                     (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
                             and (type == null) and (data == null) and (dataString == null)
-//                            and (extras == null) // not null when launched from main menu
+                            // Not null when launched from main menu from Emulator 2.7 Q VGA API 24:
+//                            and (extras == null)
                             and (clipData == null)
                 )
 
@@ -195,6 +193,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
     }
+
+    override fun onConfigurationChanged(newConfig: Configuration): Unit =
+        super.onConfigurationChanged(newConfig)
+            .also { interstitial = AdInterstitial(lifecycle, applicationContext) }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
@@ -284,7 +286,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode.toShort().toInt()) { // Dialog fragment on super() will receive it
-            AddDialog.RequestCode.OPEN_MEDIA.id -> {
+            RequestCode.SPECTRUM.id -> {
+                if (resultCode != RESULT_OK) return
+                DebugMode.assertState((data != null) and (data?.data != null))
+                data?.data?.let { uri -> openMidi(uri).let { ok -> DebugMode.assertState(ok) } }
+            }
+            AddDialog.RequestCode.SURF.id, AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
                 DebugMode.assertState((data != null) and (data?.data != null))
                 data?.data?.let { openMedia(it) }
@@ -300,11 +307,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun spectrum(uri: Uri) =
-        startActivity(Intent(this, SpectrumActivity::class.java).apply { putExtra("Uri", uri) })
-
     private fun openMedia(uri: Uri) {
-        if (!openMidi(uri)) spectrum(uri)
+        if (!openMidi(uri)) startActivityForResult(
+            Intent(this, SpectrumActivity::class.java).apply { putExtra("Uri", uri) },
+            RequestCode.SPECTRUM.id
+        )
     }
 
     private fun openMidi(uri: Uri): Boolean {
@@ -314,17 +321,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 inputStream?.use { inStream ->
                     with(Midi(inStream, getString(string.untitled))) {
                         if (badMidi) return false
+                        interstitial.show()
 
                         midi = this
                         midiEnabled(true)
                         tracksEnabled(false) // needs to know old play.isPlaying
                         when {
-                            tracks.isNullOrEmpty() ->
-                                showError(string.emptyMidi, string.noTracks)
+                            tracks.isNullOrEmpty() -> showError(string.emptyMidi, string.noTracks)
                             dur == 0L -> showError(string.emptyMidi, string.zeroDur)
                             else -> {
                                 DebugMode.assertState(::render.isInitialized)
-                                play.newMidi(tracks, dur.toInt())
+                                play.newMidi(tracks, dur)
                                 tracksEnabled(true)
                             }
                         }
@@ -332,7 +339,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         } catch (e: FileNotFoundException) {
-            MessageDialog.show(this, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
+            InfoMessage.dialog(this, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
         }
         return true
     }
@@ -384,7 +391,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (enabled) {
                     toggle()
                     if (!isChecked) toggle()
-                } else play.stop()
+                }
             }
         }
     }
@@ -395,11 +402,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
         DebugMode.assertArgument(bar != null)
         play.prevNext()
-        if (fromUser) play.seek(pos.toLong())
+        if (fromUser) play.seek(pos)
     }
 
     override fun onStartTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
     override fun onStopTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
 
-    private fun showError(titleId: Int, msgId: Int) = MessageDialog.show(this, titleId, msgId)
+    private fun showError(titleId: Int, msgId: Int) = InfoMessage.dialog(this, titleId, msgId)
 }

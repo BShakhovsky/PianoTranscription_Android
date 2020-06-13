@@ -4,7 +4,6 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 'android-R'
-    buildToolsVersion '30.0.0 rc2'
     defaultConfig {
         applicationId "ru.BShakhovsky.Piano_Transcription"
         minSdkVersion 24
@@ -14,13 +13,12 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes.release {
         minifyEnabled false
         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
-    dataBinding.enabled = true
+    buildFeatures.dataBinding = true
 }
 
 dependencies {
@@ -32,8 +30,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation 'com.github.pdrogfer:MidiDroid:v1.1'
-    implementation 'com.github.kittinunf.fuel:fuel-android:2.2.1'
-    implementation 'com.arthenica:mobile-ffmpeg-min:4.3.1'
+    implementation 'com.github.kittinunf.fuel:fuel-android:2.2.3'
+    implementation 'com.arthenica:mobile-ffmpeg-min:4.3.2'
 
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
 }

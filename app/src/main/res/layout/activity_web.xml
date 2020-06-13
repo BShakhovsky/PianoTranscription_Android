@@ -1,8 +1,5 @@
 <layout>
-    <data>
-        <variable name="webModel" type="ru.bshakhovsky.piano_transcription.web.WebModel" />
-    </data>
-
+    <data><variable name="webModel" type="ru.bshakhovsky.piano_transcription.web.WebModel" /></data>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         style="@style/MatchParent"
         android:orientation="vertical">
@@ -14,11 +11,10 @@
         <GridLayout xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:columnCount="2"
-            android:background="@drawable/linear_background"
+            android:background="@drawable/background_blue"
             android:padding="8dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/goHome"
                 style="@style/Button"
                 android:layout_width="0dp"
                 android:layout_columnWeight="1"
@@ -31,7 +27,6 @@
                 app:cornerRadius="24dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/download"
                 style="@style/Button"
                 android:layout_width="0dp"
                 android:layout_columnWeight="1"
@@ -44,7 +39,6 @@
                 app:cornerRadius="24dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/goBack"
                 style="@style/Button"
                 android:layout_width="0dp"
                 android:layout_columnWeight="1"
@@ -57,7 +51,6 @@
                 app:cornerRadius="24dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/goForward"
                 style="@style/Button"
                 android:layout_width="0dp"
                 android:layout_columnWeight="1"

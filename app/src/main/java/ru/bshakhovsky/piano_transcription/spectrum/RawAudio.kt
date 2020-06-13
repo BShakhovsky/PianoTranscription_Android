@@ -1,8 +1,8 @@
 package ru.bshakhovsky.piano_transcription.spectrum
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.view.View
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
@@ -16,13 +16,14 @@ import com.arthenica.mobileffmpeg.FFprobe
 import ru.bshakhovsky.piano_transcription.R.string
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MinSec
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.InterruptedIOException
 import java.io.RandomAccessFile
 
 import java.nio.channels.FileChannel
@@ -42,10 +43,12 @@ class RawAudio : ViewModel() {
     (its lifecycle callback) will not be called first (cleaned by GC) */
     private lateinit var cacheDir: File
 
-    private val _probeLog = MutableLiveData<String>()
-    val probeLog: LiveData<String>
-        get() = _probeLog
+    private lateinit var probeLog: String
     val ffmpegLog: MutableLiveData<String> = MutableLiveData()
+
+    private val _logVis = MutableLiveData<Int>()
+    val logVis: LiveData<Int>
+        get() = _logVis
 
     // TODO: Delete decoded raw audio file after mel-spectrum is calculated
     var rawData: FileChannel? = null
@@ -63,18 +66,18 @@ class RawAudio : ViewModel() {
         super.onCleared()
     }
 
-    fun decode(uri: Uri?, resolver: ContentResolver) {
+    fun decode(uri: Uri) {
         DebugMode.assertState(rawData == null, "Unnecessary second FFmpeg call")
-        try {
-            DebugMode.assertState(uri != null)
-            uri?.let { u ->
-                with(resolver) {
-                    if (probeLog.value.isNullOrEmpty()) {
+        with(context.get()) {
+            try {
+                DebugMode.assertState(contentResolver != null)
+                contentResolver?.run {
+                    if (!::probeLog.isInitialized) {
                         DebugMode.assertState(
                             ffmpegLog.value == null, "Wrong order of FFmpeg calls"
                         )
                         // For FFprobe we can use non-seekable input pipe:
-                        openFileDescriptor(u, "r").use { inFile ->
+                        openFileDescriptor(uri, "r").use { inFile ->
                             DebugMode.assertState(inFile != null)
                             inFile?.run { probe(fd) }
                         }
@@ -84,47 +87,49 @@ class RawAudio : ViewModel() {
                     /* For FFmpeg we cannot use non-seekable input pipe, because
                     for some media formats it will write "partial file" error,
                     and if audio data is located before "codec format chunk",
-                    then FFmpeg will not be able to seek back,
-                    and it will not "find" audio stream.
+                    then FFmpeg will not be able to seek back, and it will not "find" audio stream.
 
                     I don't know how to get file path from URI,
                     so have to temporarily copy it, so that we know its path */
-                    createTempFile("InputFile_", ".mp4", createTempDir(cachePref, ""))
-                        .let { copiedMedia ->
-                            PipeTransfer.streamToFile(openInputStream(u), copiedMedia)
-                            PipeTransfer.error.let { e ->
-                                when (e) {
-                                    null -> {
-                                        ffmpeg(copiedMedia)
-                                        DebugMode.assertState(!ffmpegLog.value.isNullOrEmpty())
-                                    }
-                                    else -> with(context.get()) {
-                                        ffmpegLog.value += "\n\n${when (e) {
-                                            is OutOfMemoryError -> getString(
-                                                string.memoryCopyFile, e.localizedMessage ?: e
-                                            )
-                                            else -> (e.localizedMessage ?: e.toString())
-                                                .also { DebugMode.assertState(e is IOException) }
-                                        }.also { MessageDialog.show(this, string.error, it) }}\n\n${
-                                        getString(string.ffmpegOut)}\n\n${
-                                        Config.getLastCommandOutput()}"
-                                    }
+                    createTempFile(
+                        prefix = "InputMedia_", directory = createTempDir(cachePref, "")
+                    ).let { copiedMedia ->
+                        PipeTransfer.streamToFile(openInputStream(uri), copiedMedia)
+                        PipeTransfer.error.let { e ->
+                            when (e) {
+                                null -> {
+                                    ffmpeg(copiedMedia)
+                                    DebugMode.assertState(!ffmpegLog.value.isNullOrEmpty())
+                                }
+                                else -> {
+                                    ffmpegLog.value += "\n\n${when (e) {
+                                        is OutOfMemoryError -> getString(
+                                            string.memoryCopyFile, e.localizedMessage ?: e
+                                        )
+                                        is InterruptedIOException -> getString(
+                                            string.fileInterrupt, e.localizedMessage ?: e
+                                        )
+                                        else -> (e.localizedMessage ?: e.toString())
+                                            .also { DebugMode.assertState(e is IOException) }
+                                    }.also { InfoMessage.dialog(this@with, string.error, it) }
+                                    }\n\n${getString(string.ffmpegOut)}\n\n${
+                                    Config.getLastCommandOutput()}"
                                 }
                             }
                         }
+                    }
                 }
+            } catch (e: FileNotFoundException) {
+                InfoMessage.dialog(this, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
             }
-        } catch (e: FileNotFoundException) {
-            MessageDialog.show(context.get(), string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
         }
     }
 
     private fun probe(fd: Int) {
         DebugMode.assertState(
-            (probeLog.value == null) and (rawData == null),
-            "Unnecessary second FFprobe call"
+            !::probeLog.isInitialized and (rawData == null), "Unnecessary second FFprobe call"
         )
-        _probeLog.value = with(FFprobe.getMediaInformation("pipe:$fd")) {
+        probeLog = with(FFprobe.getMediaInformation("pipe:$fd")) {
             context.get().run {
                 @Suppress("IfThenToElvis")
                 if (this@with == null) getString(string.probeFail) // e.g. midi
@@ -137,12 +142,11 @@ class RawAudio : ViewModel() {
                 }
             }
         }
-        DebugMode.assertState(probeLog.value != null)
         DebugMode.assertState(ffmpegLog.value == null, "Unnecessary second FFprobe call")
-        ffmpegLog.value = probeLog.value
+        ffmpegLog.value = probeLog
     }
 
-    private fun ffmpeg(inFile: File): Unit =
+    private fun ffmpeg(inFile: File) =
         createTempFile("DecodedRawFloatArray_", ".pcm", inFile.parentFile).let {
             // Raw audio float array of more than 10 minutes causes Out of Memory,
             // so, save to temp file instead of byte array
@@ -158,7 +162,7 @@ class RawAudio : ViewModel() {
                         Config.RETURN_CODE_CANCEL -> {
                             with(context.get()) {
                                 ffmpegLog.value += "\n\n${getString(string.cancelled)}"
-                                MessageDialog.show(this, string.cancel, string.cancelled)
+                                InfoMessage.dialog(this, string.cancel, string.cancelled)
                             }
                             deleteTempDir(inFile)
                         }
@@ -178,6 +182,7 @@ class RawAudio : ViewModel() {
                 }
             }
             DebugMode.assertState(!ffmpegLog.value.isNullOrEmpty())
+            _logVis.value = View.GONE
         }
 
     private fun decodeSuccess(outArray: File) = context.get().run {
@@ -187,7 +192,7 @@ class RawAudio : ViewModel() {
             if (size() == 0L) {
                 ffmpegLog.value += "\n${getString(string.noAudioStream)}\n${
                 getString(string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
-                MessageDialog.show(this@run, string.error, string.noAudioStream)
+                InfoMessage.dialog(this@run, string.error, string.noAudioStream)
             } else rawData = this
         }
     }
@@ -196,11 +201,13 @@ class RawAudio : ViewModel() {
         ffmpegLog.value += "\n\n${with(PipeTransfer.error) {
             when (this) {
                 null -> getString(string.decodeFail)
+                is InterruptedIOException ->
+                    getString(string.fileInterrupt, localizedMessage ?: this)
                 is OutOfMemoryError -> getString(string.memoryDecode, localizedMessage ?: this)
                 else -> (localizedMessage ?: toString())
                     .also { DebugMode.assertState(this is IOException) }
             }
-        }.also { MessageDialog.show(this, string.error, it) }}\n\n${
+        }.also { InfoMessage.dialog(this, string.error, it) }}\n\n${
         getString(string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
     }
 

@@ -1,17 +1,12 @@
 package ru.bshakhovsky.piano_transcription.addDialog
 
 import android.Manifest
-import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.icu.util.Calendar
 import android.media.MediaRecorder
 import android.net.Uri
-import android.provider.DocumentsContract
-import android.view.Gravity
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.DialogFragment
 
 import androidx.lifecycle.Lifecycle
@@ -23,7 +18,8 @@ import ru.bshakhovsky.piano_transcription.R.string
 
 import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import ru.bshakhovsky.piano_transcription.utils.MessageDialog
+import ru.bshakhovsky.piano_transcription.utils.FileExtension
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 import ru.bshakhovsky.piano_transcription.web.WebActivity
 
@@ -72,39 +68,40 @@ class AddModel : ViewModel(), LifecycleObserver {
     }
 
     fun surf(): Unit = with(fragment.get()) {
-        DebugMode.assertState((dialog != null) and (activity != null))
-        activity?.startActivity(Intent(activity, WebActivity::class.java))
+        startActivityForResult(
+            Intent(activity, WebActivity::class.java), AddDialog.RequestCode.SURF.id
+        )
+        DebugMode.assertState(dialog != null)
         dialog?.dismiss()
     }
 
     fun media(): Unit = with(fragment.get()) {
-        DebugMode.assertState((dialog != null) and (activity != null))
-        activity?.startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
+        startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
             addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
             putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
         }, AddDialog.RequestCode.OPEN_MEDIA.id)
+        DebugMode.assertState(dialog != null)
         dialog?.dismiss()
     }
 
     fun midi(): Unit = with(fragment.get()) {
-        DebugMode.assertState((dialog != null) and (activity != null))
-        activity?.startActivityForResult(
+        startActivityForResult(
             Intent(Intent.ACTION_GET_CONTENT).apply {
                 type = "audio/midi"
                 addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
             }, AddDialog.RequestCode.OPEN_MIDI.id
         )
+        DebugMode.assertState(dialog != null)
         dialog?.dismiss()
     }
 
     fun record(): Unit = with(fragment.get()) {
-        DebugMode.assertState(activity != null)
-        if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED
-        ) requestPermissions(
-            arrayOf(Manifest.permission.RECORD_AUDIO), AddDialog.Permission.RECORD.id
-        ) else writeWav()
+        Manifest.permission.RECORD_AUDIO.let {
+            DebugMode.assertState(activity != null)
+            if (activity?.checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED)
+                requestPermissions(arrayOf(it), AddDialog.Permission.RECORD.id) else writeWav()
+        }
     }
 
     fun writeWav(): Unit = with(fragment.get()) {
@@ -114,57 +111,21 @@ class AddModel : ViewModel(), LifecycleObserver {
             putExtra(
                 Intent.EXTRA_TITLE, "${getString(string.record)} ${Calendar.getInstance().time}.3gp"
             )
-            Toast.makeText(context, string.save, Toast.LENGTH_LONG)
-                .apply { setGravity(Gravity.CENTER, 0, 0) }.show()
+            InfoMessage.toast(context, string.save)
         }, AddDialog.RequestCode.WRITE_3GP.id)
     }
 
-    private fun add3gpExt(resolver: ContentResolver, uri: Uri, name: String) =
-        if (name.endsWith(".3gp")) uri else try {
-            DocumentsContract.renameDocument(resolver, uri, "$name.3gp")
-        } catch (e: IllegalStateException) {
-            e.localizedMessage.let {
-                DebugMode.assertState(!it.isNullOrEmpty())
-                it?.run {
-                    DebugMode.assertState(startsWith("File already exists: ") and endsWith(".3gp"))
-                }
-                with(fragment.get()) {
-                    MessageDialog.show(context, string.micError, getString(string.exists, it))
-                }
-            }
-            null
-        }
-
     fun startRec(uri: Uri?): Unit = with(fragment.get()) {
-        DebugMode.assertArgument(uri != null)
-        uri?.let { u ->
-            DebugMode.assertState(context != null)
-            context?.let { c ->
-                DocumentFile.fromSingleUri(c, u)?.name.let { name ->
-                    DebugMode.assertState(name != null)
-                    name?.let { n ->
-                        DebugMode.assertState(
-                            (activity != null) and (activity?.contentResolver != null)
-                        )
-                        activity?.contentResolver?.let { resolver ->
-                            add3gpExt(resolver, u, n)?.let { newUri ->
-                                // DebugMode.assertState(newUri != null) // null if file exists
-                                // if (newUri == null) return
-                                try {
-                                    resolver.openFileDescriptor(newUri, "w").use { outFile ->
-                                        DebugMode.assertState(outFile != null)
-                                        recFile = newUri
-                                        startRecNonNull(outFile?.fileDescriptor ?: return)
-                                    }
-                                } catch (e: FileNotFoundException) {
-                                    MessageDialog.show(
-                                        context, string.noFile, "${e.localizedMessage ?: e}\n\n$uri"
-                                    )
-                                }
-                            }
-                        }
-                    }
+        FileExtension.addExtension(context, uri, "3gp")?.let { newUri -> // null if file exists
+            try {
+                DebugMode.assertState((activity != null) and (activity?.contentResolver != null))
+                activity?.contentResolver?.openFileDescriptor(newUri, "w").use { outFile ->
+                    DebugMode.assertState(outFile != null)
+                    recFile = newUri
+                    startRecNonNull(outFile?.fileDescriptor ?: return)
                 }
+            } catch (e: FileNotFoundException) {
+                InfoMessage.dialog(context, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
             }
         }
     }
@@ -179,7 +140,7 @@ class AddModel : ViewModel(), LifecycleObserver {
             try {
                 prepare()
             } catch (e: IOException) {
-                MessageDialog.show(
+                InfoMessage.dialog(
                     context, string.micError, getString(string.prepError, e.localizedMessage)
                 )
                 release()
@@ -189,9 +150,9 @@ class AddModel : ViewModel(), LifecycleObserver {
             start()
 
             DebugMode.assertState((recDlg == null) and (recMsg == null) and (recFile != null))
-            recMsg = RecordMsg(lifecycle, context,
-                MessageDialog.show(context, string.recording, "", string.stop)
-                { dialog?.dismiss() }.apply { recDlg = this }, this
+            recMsg = RecordMsg(lifecycle,
+                InfoMessage.dialog(context, string.recording, "", string.stop)
+                { dialog?.dismiss() }.apply { recDlg = this }, this, context
             ).apply { start() }
         }
     }

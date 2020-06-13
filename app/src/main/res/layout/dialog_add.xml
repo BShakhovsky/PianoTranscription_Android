@@ -2,8 +2,8 @@
     <data>
         <variable name="addModel" type="ru.bshakhovsky.piano_transcription.addDialog.AddModel" />
     </data>
-
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/frameLayout"
         style="@style/WrapContent">
 
         <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,7 +14,6 @@
             android:background="@drawable/round_corners">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/surf"
                 android:text="@string/surf"
 
                 android:onClick="@{() -> addModel.surf()}"
@@ -25,7 +24,6 @@
                 android:layout_marginBottom="8dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/mediaFile"
                 android:text="@string/mediaFile"
 
                 android:onClick="@{() -> addModel.media()}"
@@ -36,7 +34,6 @@
                 android:layout_marginBottom="8dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/midiFile"
                 android:text="@string/midiFile"
 
                 android:onClick="@{() -> addModel.midi()}"
@@ -47,7 +44,6 @@
                 android:layout_marginBottom="8dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/record"
                 android:text="@string/recordAudio"
 
                 android:onClick="@{() -> addModel.record()}"

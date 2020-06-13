@@ -3,9 +3,7 @@ package ru.bshakhovsky.piano_transcription.main
 import android.app.Activity
 import android.os.Looper
 import android.os.SystemClock
-import android.view.Gravity
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 
@@ -23,6 +21,7 @@ import ru.bshakhovsky.piano_transcription.main.openGL.Render
 import ru.bshakhovsky.piano_transcription.midi.Midi
 import ru.bshakhovsky.piano_transcription.midi.Midi.Track
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 import java.util.concurrent.Executors
@@ -31,29 +30,29 @@ import java.util.concurrent.TimeUnit
 
 class Play : Runnable, ViewModel(), LifecycleObserver {
 
-    class Tracks(val tracks: Array<Track>) {
+    private class TracksArray(val tracks: Array<Track>) {
         val curIndices: IntArray = IntArray(tracks.size)
         val selTracks: MutableSet<Int> = mutableSetOf()
 
-        var curMilSec: Long = 0L
-        var startMilSec: Long = 0L
-        var startTime: Long = 0L
+        var curMilSec = 0L
+        var startMilSec = 0L
+        var startTime = 0L
     }
 
-    private var tracksArray: Tracks? = null
+    private var tracksArray: TracksArray? = null
 
     private lateinit var activity: WeakPtr<Activity>
-    private lateinit var drawerLayout: WeakPtr<DrawerLayout>
+    private lateinit var drawer: WeakPtr<DrawerLayout>
     private lateinit var render: Render
 
     private val _isPlaying = MutableLiveData<Boolean>().apply { value = false }
     val isPlaying: LiveData<Boolean>
         get() = _isPlaying
 
-    private val _duration = MutableLiveData<Int>().apply { value = 0 }
+    private val _duration = MutableLiveData<Int>()
     val duration: LiveData<Int>
         get() = _duration
-    private val _progress = MutableLiveData<Int>().apply { value = 0 }
+    private val _progress = MutableLiveData<Int>()
     val progress: LiveData<Int>
         get() = _progress
 
@@ -62,10 +61,10 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     val curText: LiveData<String> = Transformations.map(progress)
     { Midi.minSecStr(activity.get(), string.timeCur, it.toLong()) }
 
-    private val _prevVis = MutableLiveData<Int>().apply { value = View.VISIBLE }
+    private val _prevVis = MutableLiveData<Int>()
     val prevVis: LiveData<Int>
         get() = _prevVis
-    private val _nextVis = MutableLiveData<Int>().apply { value = View.VISIBLE }
+    private val _nextVis = MutableLiveData<Int>()
     val nextVis: LiveData<Int>
         get() = _nextVis
 
@@ -84,27 +83,35 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     fun initialize(lifecycle: Lifecycle, a: Activity, d: DrawerLayout, r: Render) {
         lifecycle.addObserver(this)
         activity = WeakPtr(lifecycle, a)
-        drawerLayout = WeakPtr(lifecycle, d)
+        drawer = WeakPtr(lifecycle, d)
         render = r
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    private fun start() = DebugMode.assertState(isPlaying.value != null)
-        .also { if (!(isPlaying.value ?: return)) playPause() }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun stop(): Unit = DebugMode.assertState(isPlaying.value != null)
-        .also { if (isPlaying.value ?: return) playPause() }
-
-    fun newMidi(tracks: Array<Track>, dur: Int) {
-        tracksArray = Tracks(tracks)
+    fun newMidi(tracks: Array<Track>, dur: Long) {
+        tracksArray = TracksArray(tracks)
         DebugMode.assertState(
             Looper.myLooper() == Looper.getMainLooper(),
             "New Midi-tracks should not be reset from SingleThreadScheduledExecutor"
         )
-        _duration.value = dur
+        _duration.value = dur.toInt()
+        stopPlaying()
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    private fun startPlaying() {
+        DebugMode.assertState(
+            (Looper.myLooper() == Looper.getMainLooper()) and (isPlaying.value != null)
+        )
+        if (!(isPlaying.value ?: return)) playPause()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private fun stopPlaying() {
+        DebugMode.assertState(
+            (Looper.myLooper() == Looper.getMainLooper()) and (isPlaying.value != null)
+        )
+        if (isPlaying.value ?: return) playPause()
+    }
 
     override fun run(): Unit = nextChord().let { (_, stop) ->
         if (stop) {
@@ -115,12 +122,17 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
             tracksArray?.run {
                 schedule?.schedule(
                     this@Play,
+                    /* If currently it is long silence and next notes milliseconds
+                    are far in the future, curMilSec is set 1 second away in nextChord(),
+                    so scheduler keeps executing every second,
+                    and seek bar keeps scrolling smoothly, and time text updates accordingly */
                     maxOf(0, curMilSec - startMilSec + startTime - SystemClock.uptimeMillis()),
                     TimeUnit.MILLISECONDS
                 )
             }
         }
     }
+
 
     fun playPause() {
         DebugMode.assertState(isPlaying.value != null)
@@ -130,7 +142,9 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
     fun prev() {
-        DebugMode.assertState(isPlaying.value != null)
+        DebugMode.assertState(
+            (Looper.myLooper() == Looper.getMainLooper()) and (isPlaying.value != null)
+        )
         if (!(isPlaying.value ?: return) and !noTracks()) {
             render.releaseAllKeys()
             DebugMode.assertState(progress.value != null)
@@ -146,7 +160,9 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
     fun next() {
-        DebugMode.assertState(isPlaying.value != null)
+        DebugMode.assertState(
+            (Looper.myLooper() == Looper.getMainLooper()) and (isPlaying.value != null)
+        )
         if (!(isPlaying.value ?: return) and !noTracks()) {
             render.releaseAllKeys()
             DebugMode.assertState(progress.value != null)
@@ -161,9 +177,10 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
+
     private fun toggle() = activity.get().runOnUiThread {
         DebugMode.assertState(isPlaying.value != null)
-        _isPlaying.value = _isPlaying.value?.not()
+        _isPlaying.value = isPlaying.value?.not()
         DebugMode.assertState(isPlaying.value != null)
         if (isPlaying.value ?: return@runOnUiThread) {
             render.releaseAllKeys()
@@ -180,29 +197,18 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
-
-    fun numSelTracks(): Int = tracksArray?.selTracks?.size ?: 0
-
-    fun addTrack(trackNo: Int) {
-        DebugMode.assertState(tracksArray != null)
-        tracksArray?.run {
-            selTracks += trackNo
-            seekTrack(curMilSec, trackNo)
+    private fun noTracks() = tracksArray?.selTracks.isNullOrEmpty().also {
+        /* Can be clicked by touching GL view, even when buttons are invisible,
+        also, no need to show error message at start: */
+        if (it and (tracksArray != null)) {
+            InfoMessage.toast(activity.get(), string.trackNotSel)
+            drawer.get().openDrawer(GravityCompat.START)
         }
     }
 
-    fun removeTrack(trackNo: Int) {
-        DebugMode.assertState(tracksArray != null)
-        tracksArray?.run { selTracks -= trackNo }
-    }
 
-    fun seek(newMilSec: Long) {
-        newStart(newMilSec)
-        DebugMode.assertState(tracksArray != null)
-        tracksArray?.run { selTracks.forEach { seekTrack(curMilSec, it) } }
-        render.releaseAllKeys()
-        activity.get().runOnUiThread { _progress.value = newMilSec.toInt() }
-    }
+    fun numSelTracks(): Int = (tracksArray?.selTracks?.size ?: 0)
+        .also { DebugMode.assertState(Looper.myLooper() == Looper.getMainLooper()) }
 
     fun prevNext(): Unit = activity.get().runOnUiThread {
         DebugMode.assertState(isPlaying.value != null)
@@ -213,14 +219,28 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         ) View.INVISIBLE else View.VISIBLE
     }
 
-
-    private fun noTracks() = tracksArray?.selTracks.isNullOrEmpty().also {
-        if (it and (tracksArray != null)) { // No need to show error message at start
-            Toast.makeText(activity.get(), string.trackNotSel, Toast.LENGTH_LONG)
-                .apply { setGravity(Gravity.CENTER, 0, 0) }.show()
-            drawerLayout.get().openDrawer(GravityCompat.START)
+    fun addTrack(trackNo: Int) {
+        DebugMode.assertState(
+            (Looper.myLooper() == Looper.getMainLooper()) and (tracksArray != null)
+        )
+        tracksArray?.run {
+            selTracks += trackNo
+            seekTrack(curMilSec, trackNo)
         }
     }
+
+    fun removeTrack(trackNo: Int): Unit = DebugMode.assertState(
+        (Looper.myLooper() == Looper.getMainLooper()) and (tracksArray != null)
+    ).let { tracksArray?.run { selTracks -= trackNo } }
+
+    fun seek(newMilSec: Int) {
+        newStart(newMilSec.toLong())
+        DebugMode.assertState(tracksArray != null)
+        tracksArray?.run { selTracks.forEach { seekTrack(curMilSec, it) } }
+        render.releaseAllKeys()
+        activity.get().runOnUiThread { _progress.value = newMilSec }
+    }
+
 
     private fun seekTrack(newMilSec: Long, trackNo: Int) {
         DebugMode.assertState(tracksArray != null)
@@ -245,36 +265,50 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         tracksArray?.run { // Can be clicked by touching GL view, even when buttons are invisible
             curMilSec.let { prevMilSec ->
                 DebugMode.assertState((selTracks.isNotEmpty()) and (duration.value != null))
-                curMilSec = (duration.value?.toLong() ?: Short.MAX_VALUE.toLong())
-                tracks.forEachIndexed { trackNo, track ->
-                    if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
-                        if (    curIndices[trackNo]       == size)      return@with
-                        if (    curIndices[trackNo]       == -1)        ++curIndices[trackNo]
-                        if (get(curIndices[trackNo]).mSec < prevMilSec) ++curIndices[trackNo]
-                        if (    curIndices[trackNo]       == size)      return@with
-                        if (get(curIndices[trackNo]).mSec == prevMilSec) {
-                            get(curIndices[trackNo]).notes.forEach { (note, vel) ->
-                                when (vel) {
-                                    0f -> render.releaseKey(note)
-                                    else -> {
-                                        render.pressKey(note, vel)
-                                        anyPressed = true
+                (duration.value?.toLong() ?: Short.MAX_VALUE.toLong()).let { dur ->
+                    /* If currently it is long silence and next notes milliseconds
+                    are far in the future, curMilSec is set 1 second away, so scheduler will execute
+                    after 1 second and will be executing every second until next notes,
+                    so seek bar still will be scrolling smoothly,
+                    and time text will be updating accordingly */
+                    curMilSec = minOf(curMilSec + 1_000, dur)
+                    tracks.forEachIndexed { trackNo, track ->
+                        if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
+                            if (    curIndices[trackNo]       == size)      return@with
+                            if (    curIndices[trackNo]       == -1)        ++curIndices[trackNo]
+                            if (get(curIndices[trackNo]).mSec < prevMilSec) ++curIndices[trackNo]
+                            if (    curIndices[trackNo]       == size)      return@with
+                            if (get(curIndices[trackNo]).mSec == prevMilSec) {
+                                get(curIndices[trackNo]).notes.forEach { (note, vel) ->
+                                    when (vel) {
+                                        0f -> render.releaseKey(note)
+                                        else -> {
+                                            render.pressKey(note, vel)
+                                            anyPressed = true
+                                        }
                                     }
                                 }
+                                ++curIndices[trackNo]
                             }
-                            ++curIndices[trackNo]
+                            if (curIndices[trackNo] != size) curMilSec =
+                                minOf(curMilSec, get(curIndices[trackNo]).mSec)
                         }
-                        if (curIndices[trackNo] != size) curMilSec =
-                            minOf(curMilSec, prevMilSec + 1_000, get(curIndices[trackNo]).mSec)
                     }
-                }
-                activity.get().runOnUiThread { _progress.value = curMilSec.toInt() }
+                    activity.get().runOnUiThread { _progress.value = curMilSec.toInt() }
 
-                tracks.forEachIndexed { trackNo, track ->
-                    if (selTracks.contains(trackNo) and (curIndices[trackNo] < track.chords.size)) {
-                        stop = false
-                        return@forEachIndexed
+                    tracks.forEachIndexed { trackNo, track ->
+                        if (selTracks.contains(trackNo)
+                            and (curIndices[trackNo] < track.chords.size)
+                        ) {
+                            stop = false
+                            return@forEachIndexed
+                        }
                     }
+                    DebugMode.assertState(
+                        if (stop) curMilSec == dur
+                        // If not stop, curMilSec may be == dur if clicked from UI:
+                        else curMilSec <= dur
+                    )
                 }
             }
         }
@@ -282,6 +316,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
     private fun prevChord(): Boolean {
+        DebugMode.assertState((Looper.myLooper() == Looper.getMainLooper()))
         var anyPressed = false
         tracksArray?.run { // Can be clicked by touching GL view, even when buttons are invisible
             curMilSec.let { prevMilSec ->
@@ -290,7 +325,9 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
                 tracks.forEachIndexed { trackNo, track ->
                     if (selTracks.contains(trackNo)) @Suppress("Reformat") with(track.chords) {
                         if (    curIndices[trackNo]       == -1)         return@with
-                        if (    curIndices[trackNo]       == size)       --curIndices[trackNo]
+                        // Somehow curIndices were size+1 once:
+//                        if (    curIndices[trackNo]       == size)       --curIndices[trackNo]
+                                curIndices[trackNo] = minOf(size - 1, curIndices[trackNo])
                         if (get(curIndices[trackNo]).mSec >= prevMilSec) --curIndices[trackNo]
                         if (    curIndices[trackNo]       != -1)
                             curMilSec = maxOf(curMilSec, get(curIndices[trackNo]).mSec)

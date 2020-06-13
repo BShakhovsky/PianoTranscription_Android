@@ -16,7 +16,7 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             style="@style/MatchParent"
             android:fitsSystemWindows="true"
-            android:background="@drawable/linear_background"
+            android:background="@drawable/background_green"
 
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">

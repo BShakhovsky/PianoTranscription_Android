@@ -13,10 +13,10 @@ import ru.bshakhovsky.piano_transcription.R.string.app_name
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 class Toggle(
-    lifecycle: Lifecycle, v: View, activity: Activity, drawer: DrawerLayout, toolbar: Toolbar
+    lifecycle: Lifecycle, view: View, activity: Activity, drawer: DrawerLayout, toolbar: Toolbar
 ) : ActionBarDrawerToggle(activity, drawer, toolbar, app_name, app_name) {
 
-    private val content = WeakPtr(lifecycle, v)
+    private val content = WeakPtr(lifecycle, view)
 
     override fun onDrawerOpened(drawerView: View) {}
     override fun onDrawerClosed(drawerView: View) {}
