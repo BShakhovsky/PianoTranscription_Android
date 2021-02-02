@@ -3,8 +3,8 @@ package ru.bshakhovsky.piano_transcription.main.openGL.shader
 import android.content.res.AssetManager
 import android.opengl.GLES32
 
-import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
+import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 
 class DepthShader(assets: AssetManager) : Shader(assets, "Shadow") {
 

@@ -105,7 +105,8 @@ class WebModel : ViewModel() {
                                         maxITag = itag
                                         bestUrl = Uri.parse(url)
                                         fileName = "${videoDetails.title}.${
-                                        YouTubeFormat.audios[mimeType]}"
+                                            YouTubeFormat.audios[mimeType]
+                                        }"
                                     }
                                 }
                             }

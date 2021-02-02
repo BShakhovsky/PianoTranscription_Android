@@ -2,11 +2,12 @@ package ru.bshakhovsky.piano_transcription
 
 import android.os.Bundle
 import android.view.View
+
 import androidx.appcompat.app.AppCompatActivity
+
 import com.google.android.material.snackbar.Snackbar
 
-import kotlinx.android.synthetic.main.activity_guide.fabGuide
-import kotlinx.android.synthetic.main.activity_guide.guideBar
+import ru.bshakhovsky.piano_transcription.databinding.ActivityGuideBinding
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
@@ -14,18 +15,20 @@ class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_guide)
+        with(ActivityGuideBinding.inflate(layoutInflater)) {
+            setContentView(root)
 
-        setSupportActionBar(guideBar)
-        DebugMode.assertState(supportActionBar != null)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        guideBar.setNavigationOnClickListener(this)
+            setSupportActionBar(guideBar)
+            DebugMode.assertState(supportActionBar != null)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            guideBar.setNavigationOnClickListener(this@GuideActivity)
 
-        setFinishOnTouchOutside(true)
+            setFinishOnTouchOutside(true)
 
-        fabGuide.setOnClickListener {
-            // TODO: User Guide --> "Share" button
-            Snackbar.make(it, "Replace with your own action", Snackbar.LENGTH_LONG).show()
+            fabGuide.setOnClickListener {
+                // TODO: User Guide --> "Share" button
+                Snackbar.make(it, "Replace with your own action", Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 

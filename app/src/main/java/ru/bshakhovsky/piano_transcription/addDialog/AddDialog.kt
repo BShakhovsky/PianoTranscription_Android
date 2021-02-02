@@ -11,12 +11,12 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.snackbar.Snackbar
 
-import kotlinx.android.synthetic.main.dialog_add.frameLayout
+import com.google.android.material.snackbar.Snackbar
 
 import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.DialogAddBinding
@@ -29,6 +29,7 @@ class AddDialog : DialogFragment() {
     enum class RequestCode(val id: Int) { SURF(20), OPEN_MEDIA(21), OPEN_MIDI(22), WRITE_3GP(23) }
     enum class Permission(val id: Int) { RECORD(30), RECORD_SETTINGS(31) }
 
+    private lateinit var binding: DialogAddBinding
     private lateinit var model: AddModel
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -47,7 +48,10 @@ class AddDialog : DialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? = DialogAddBinding.inflate(inflater).apply { addModel = model }.root
+    ): View = DialogAddBinding.inflate(inflater).apply {
+        binding = this
+        addModel = model
+    }.root
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
@@ -88,20 +92,18 @@ class AddDialog : DialogFragment() {
         }
     }
 
-    private fun settings() {
-        DebugMode.assertState((dialog != null) and (dialog?.frameLayout != null))
-        Snackbar.make(dialog?.frameLayout ?: return, string.grantRec, Snackbar.LENGTH_LONG)
-            .setAction(string.settings) {
-                DebugMode.assertState(context != null)
-                context?.run {
-                    startActivityForResult(
-                        Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.parse("package:$packageName")
-                        ), Permission.RECORD_SETTINGS.id
-                    )
-                    InfoMessage.toast(applicationContext, string.grantRec)
-                }
-            }.show()
-    }
+    private fun settings() = Snackbar
+        .make(binding.frameLayout, string.grantRec, Snackbar.LENGTH_LONG)
+        .setAction(string.settings) {
+            DebugMode.assertState(context != null)
+            context?.run {
+                startActivityForResult(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:$packageName")
+                    ), Permission.RECORD_SETTINGS.id
+                )
+                InfoMessage.toast(applicationContext, string.grantRec)
+            }
+        }.show()
 }

@@ -4,12 +4,12 @@ import android.content.res.AssetManager
 import android.content.res.Resources
 import android.opengl.GLES32
 
+import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.DepthShader
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.Light
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.MainShader
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.TextureShader
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.StencilShader
-import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 
 class Model(assets: AssetManager, resources: Resources) {
 

@@ -42,8 +42,6 @@
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/midiContent"
-        tools:ignore="UnusedIds"
-
         style="@style/MatchParent"
 
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -111,6 +109,8 @@
 
         app:layout_anchor="@id/appBarMidi"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@android:drawable/ic_menu_share" />
+        app:srcCompat="@android:drawable/ic_menu_share"
+
+        tools:ignore="ContentDescription" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -3,12 +3,12 @@
                      <!ENTITY memory      "Insufficient storage space, the SD card is full.\n">
                      <!ENTITY permissions "Open Permissions and allow ">]>
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <string name="app_name">Piano Transcription</string>
     <string name="ok">OK</string>
     <string name="stop">Stop</string>
-    <string name="error" tools:ignore="DuplicateStrings">Error</string>
+    <string name="error">Error</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
     DIALOG ADD
@@ -83,12 +83,11 @@
     Recording
     <string name="recording">Recording…</string>
     <string name="tapStop">Tap stop when finished to save the record file</string>
-    <string name="recFormat" tools:ignore="PluralsCandidate">
-        %1$s kHz, %2$s, encoding “%3$s” into “AMR-NB”</string>
+    <string name="recFormat">%1$s kHz, %2$s, encoding “%3$s” into “AMR-NB”</string>
     <string name="mono">Mono</string>
     <string name="stereo">Stereo</string>
     <string name="invalidChannels">Invalid number of channels</string>
-    <string name="invalid" tools:ignore="UnusedResources">Invalid</string>
+    <string name="invalid">Invalid</string>
 
 
     SPECTRUM
@@ -96,17 +95,15 @@
     <string name="spectrum">Spectrum</string>
 
     FFmpeg
-    <string name="probeFail" tools:ignore="UnusedResources">
-        Could not understand what kind of media file it is</string>
-    <string name="probeFmt" tools:ignore="PluralsCandidate, UnusedResources">
+    <string name="probeFail">Could not understand what kind of media file it is</string>
+    <string name="probeFmt">
         Duration %1$d min : %2$d sec\nFormat %3$s\n\nMeta data:\n%4$s\n\nStreams:\n%5$s</string>
     <string name="cancel">Cancel</string>
     <string name="cancelled">Cancelled by user</string>
     <string name="decodeSuccess">Successfully decoded media file</string>
     <string name="decodeFail">Could not decode media file,
         probably because its format is not supported</string>
-    <string name="memoryCopyFile" tools:ignore="UnusedResources">
-        &memory;Could not read media file:\n\n%1$s</string>
+    <string name="memoryCopyFile">&memory;Could not read media file:\n\n%1$s</string>
     <string name="memoryDecode">&memory;Could not decode media file:\n\n%1$s</string>
     <string name="memoryRawGraph">&memory;Could not draw audio wave graph:\n\n%1$s</string>
     <string name="ffmpegOut">Output from FFmpeg:</string>
@@ -119,9 +116,8 @@
 
     <string name="notUrl">This might be not a valid URL:\n%1$s</string>
     <string name="aboutBlank">Could not load the requested web page:\n%1$s</string>
-    <string name="noLink" tools:ignore="UnusedResources">Video not found,
-        probably you did not click on the video itself</string>
-    <string name="linkFailed" tools:ignore="UnusedResources">Could not get download link</string>
+    <string name="noLink">Video not found, probably you did not click on the video itself</string>
+    <string name="linkFailed">Could not get download link</string>
     <string name="copyrightProtected">Streaming data is unplayable,
         probably because copyright protection is enabled</string>
     <string name="noAudioStream">Could not find audio stream</string>
@@ -134,36 +130,28 @@
     <string name="downStart">Download started.
         \nYou can check status in the notification area.</string>
 
-    <string name="downFailed" tools:ignore="UnusedResources">Download failed</string>
-    <string name="cannotResume" tools:ignore="UnusedResources">
-        Some possibly transient error occurred</string>
-    <string name="storageMount" tools:ignore="UnusedResources">
+    <string name="downFailed">Download failed</string>
+    <string name="cannotResume">Some possibly transient error occurred</string>
+    <string name="storageMount">
         No external storage device was found, the SD card is not mounted</string>
-    <string name="downExists" tools:ignore="UnusedResources">&exists;</string>
-    <string name="storageIssue" tools:ignore="UnusedResources">Storage issue</string>
-    <string name="httpError" tools:ignore="UnusedResources">
-        Error receiving or processing data occurred at the HTTP level</string>
-    <string name="memoryDownload" tools:ignore="UnusedResources">&memory;</string>
-    <string name="manyRedirects" tools:ignore="UnusedResources">
-        There were too many redirects</string>
-    <string name="unhandledHttp" tools:ignore="UnusedResources">
-        Cannot handle received HTTP code</string>
+    <string name="downExists">&exists;</string>
+    <string name="storageIssue">Storage issue</string>
+    <string name="httpError">Error receiving or processing data occurred at the HTTP level</string>
+    <string name="memoryDownload">&memory;</string>
+    <string name="manyRedirects">There were too many redirects</string>
+    <string name="unhandledHttp">Cannot handle received HTTP code</string>
 
-    <string name="downPaused" tools:ignore="UnusedResources">Download paused</string>
-    <string name="queuedWiFi" tools:ignore="UnusedResources">
-        Exceeded size limit for downloads over the mobile network,
+    <string name="downPaused">Download paused</string>
+    <string name="queuedWiFi">Exceeded size limit for downloads over the mobile network,
         waiting for a Wi-Fi connection to proceed</string>
-    <string name="waitNet" tools:ignore="UnusedResources">
-        Waiting for network connectivity to proceed</string>
-    <string name="netRetry" tools:ignore="UnusedResources">
-        Network error occurred, waiting before retrying the request</string>
-    <string name="unknownReason" tools:ignore="UnusedResources">Unknown reason</string>
+    <string name="waitNet">Waiting for network connectivity to proceed</string>
+    <string name="netRetry">Network error occurred, waiting before retrying the request</string>
+    <string name="unknownReason">Unknown reason</string>
 
-    <string name="downPending" tools:ignore="UnusedResources">Download is waiting to start</string>
-    <string name="downRunning" tools:ignore="UnusedResources">Download is currently running</string>
-    <string name="downSuccess" tools:ignore="UnusedResources">
-        Download successfully completed</string>
-    <string name="unknownStatus" tools:ignore="UnusedResources">Unknown status</string>
+    <string name="downPending">Download is waiting to start</string>
+    <string name="downRunning">Download is currently running</string>
+    <string name="downSuccess">Download successfully completed</string>
+    <string name="unknownStatus">Unknown status</string>
 
     Menu
     <string name="home">Close</string>

@@ -4,14 +4,12 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.snackbar.Snackbar
 
-import kotlinx.android.synthetic.main.activity_spectrum.adSpectrum
-import kotlinx.android.synthetic.main.activity_spectrum.rawWave
-import kotlinx.android.synthetic.main.activity_spectrum.spectrumBar
+import com.google.android.material.snackbar.Snackbar
 
 import ru.bshakhovsky.piano_transcription.R.id.menuGuide
 import ru.bshakhovsky.piano_transcription.R.layout.activity_spectrum
@@ -27,31 +25,39 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var graphs: Graphs
     private lateinit var thread: DecodeThread
 
+    private lateinit var binding: ActivitySpectrumBinding
+
     override fun onCreate(savedInstanceState: Bundle?): Unit =
         super.onCreate(savedInstanceState).also {
-            rawAudio = ViewModelProvider(this).get(RawAudio::class.java)
-                .apply { initialize(lifecycle, this@SpectrumActivity, cacheDir) }
-            graphs = ViewModelProvider(this).get(Graphs::class.java)
+            with(ViewModelProvider(this)) {
+                rawAudio = get(RawAudio::class.java)
+                    .apply { initialize(lifecycle, this@SpectrumActivity, cacheDir) }
+                graphs = get(Graphs::class.java)
+            }
             with(DataBindingUtil.setContentView<ActivitySpectrumBinding>(this, activity_spectrum)) {
+                binding = this
+
                 audioModel = rawAudio
                 graphsModel = graphs
 
                 lifecycleOwner = this@SpectrumActivity // because of DecodeThread
             }
 
-            with(spectrumBar) {
-                setSupportActionBar(this)
-                DebugMode.assertState(supportActionBar != null)
-                supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                setNavigationOnClickListener(this@SpectrumActivity)
+            with(binding) {
+                with(spectrumBar) {
+                    setSupportActionBar(this)
+                    DebugMode.assertState(supportActionBar != null)
+                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                    setNavigationOnClickListener(this@SpectrumActivity)
+                }
+
+                thread = DecodeThread(
+                    lifecycle, this@SpectrumActivity, rawWave,// spectrum,
+                    rawAudio, graphs, intent.getParcelableExtra("Uri")
+                )
+
+                AdBanner(lifecycle, applicationContext, adSpectrum)
             }
-
-            thread = DecodeThread(
-                lifecycle, this, rawWave,// spectrum,
-                rawAudio, graphs, intent.getParcelableExtra("Uri")
-            )
-
-            AdBanner(lifecycle, adSpectrum, applicationContext)
         }
 
     override fun onClick(view: View?) {
@@ -72,8 +78,9 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
             when (item.itemId) {
                 menuGuide -> {
                     // TODO: Spectrum --> "Guide" menu
-                    Snackbar.make(adSpectrum, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .show()
+                    Snackbar.make(
+                        binding.adSpectrum, "Replace with your own action", Snackbar.LENGTH_LONG
+                    ).show()
                 }
                 else -> DebugMode.assertArgument(false)
             }

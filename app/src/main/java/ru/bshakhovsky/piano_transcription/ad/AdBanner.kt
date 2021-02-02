@@ -6,14 +6,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
 
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
-class AdBanner(lifecycle: Lifecycle, ad: AdView, context: Context) :
-    AdFailListener(lifecycle, context, "banner"), LifecycleObserver {
+class AdBanner(lifecycle: Lifecycle, c: Context, ad: AdView) :
+    AdListener(), LifecycleObserver {
 
+    private val context = WeakPtr(lifecycle, c)
     private val adView = WeakPtr(lifecycle, ad)
 
     init {
@@ -29,5 +32,10 @@ class AdBanner(lifecycle: Lifecycle, ad: AdView, context: Context) :
         adListener = null
         removeAllViews()
         destroy()
+    }
+
+    override fun onAdFailedToLoad(error: LoadAdError?) {
+        super.onAdFailedToLoad(error)
+        AdLoadFailed.showError(context.get(), "banner", error)
     }
 }

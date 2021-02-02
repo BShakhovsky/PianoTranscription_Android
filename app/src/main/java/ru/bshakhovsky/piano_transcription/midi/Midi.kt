@@ -119,9 +119,9 @@ class Midi(inStream: InputStream, untitled: String) {
                                 )
                             }
                             is ChannelEvent -> when (channel) {
-                                /* TODO: Percussion MIDI channel should be 10 instead of 9,
-                                    but there seems to be bug in library
-                                    https://github.com/LeffelMania/android-midi-lib/issues/17 */
+                                /* Percussion MIDI channel should be 10 instead of 9,
+                                but there seems to be bug in library
+                                https://github.com/LeffelMania/android-midi-lib/issues/17 */
                                 9 -> isPercuss = true
                                 else -> addNote(this, curTrack, curTick)
                             }
@@ -172,7 +172,7 @@ class Midi(inStream: InputStream, untitled: String) {
                 track.chords.forEach { chord -> with(chord) { mSec = ticks.getOrDefault(mSec, 0) } }
             }
         }
-        dur = if (tracks.isEmpty()) 0L else tracks.maxBy {
+        dur = if (tracks.isEmpty()) 0L else tracks.maxByOrNull {
             it.chords.last().mSec
         }!!.chords.last().mSec
     }

@@ -18,18 +18,16 @@ class StrictPolicy(lifecycle: Lifecycle, a: Activity) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     detectContentUriWithoutPermission()//.detectUntaggedSockets()
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { //detectNonSdkApiUsage().
-                        penaltyListener(
-                            Executors.newSingleThreadExecutor(),
-                            StrictMode.OnVmViolationListener {
-                                with(activity.get()) {
-                                    runOnUiThread {
-                                        InfoMessage.toast(
-                                            applicationContext,
-                                            it.localizedMessage ?: "Unknown Vm policy violation"
-                                        )
-                                    }
+                        penaltyListener(Executors.newSingleThreadExecutor()) {
+                            with(activity.get()) {
+                                runOnUiThread {
+                                    InfoMessage.toast(
+                                        applicationContext,
+                                        it.localizedMessage ?: "Unknown Vm policy violation"
+                                    )
                                 }
-                            })
+                            }
+                        }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                             detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
                     }
@@ -42,18 +40,17 @@ class StrictPolicy(lifecycle: Lifecycle, a: Activity) {
             StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     detectUnbufferedIo()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) penaltyListener(
-                        Executors.newSingleThreadExecutor(),
-                        StrictMode.OnThreadViolationListener { v ->
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                        penaltyListener(Executors.newSingleThreadExecutor()) {
                             with(activity.get()) {
                                 runOnUiThread {
                                     InfoMessage.toast(
                                         applicationContext,
-                                        v.localizedMessage ?: "Unknown Thread policy violation"
+                                        it.localizedMessage ?: "Unknown Thread policy violation"
                                     )
                                 }
                             }
-                        })
+                        }
                 }
             } //.detectAll().detectCustomSlowCalls().detectDiskReads().detectDiskWrites()
                 .detectNetwork().detectResourceMismatches().penaltyDialog().penaltyLog().build())

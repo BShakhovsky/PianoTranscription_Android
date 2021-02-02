@@ -18,6 +18,7 @@ import android.widget.TextView
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -26,13 +27,6 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.material.navigation.NavigationView
-
-import kotlinx.android.synthetic.main.activity_main.adMain
-import kotlinx.android.synthetic.main.activity_main.drawerLayout
-import kotlinx.android.synthetic.main.activity_main.drawerMenu
-import kotlinx.android.synthetic.main.activity_main.mainBar
-import kotlinx.android.synthetic.main.activity_main.mainLayout
-import kotlinx.android.synthetic.main.activity_main.seek
 
 import ru.bshakhovsky.piano_transcription.R.color.colorAccent
 import ru.bshakhovsky.piano_transcription.R.drawable
@@ -69,6 +63,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private lateinit var policy: StrictPolicy
 
+    private lateinit var binding: ActivityMainBinding
+
     private lateinit var model: MainModel
     private lateinit var sound: Sound
 
@@ -80,17 +76,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var interstitial: AdInterstitial
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (DebugMode.debug)
+        if (DebugMode.debug) {
             Thread.setDefaultUncaughtExceptionHandler(Crash(getExternalFilesDir("Errors")))
-
+            policy = StrictPolicy(lifecycle, this@MainActivity)
+        }
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
-        model = ViewModelProvider(this).get(MainModel::class.java)
-            .apply { initialize(lifecycle, supportFragmentManager) }
-        sound = ViewModelProvider(this).get(Sound::class.java).apply { load(applicationContext) }
+        with(ViewModelProvider(this)) {
+            model = get(MainModel::class.java)
+                .apply { initialize(lifecycle, supportFragmentManager) }
+            sound = get(Sound::class.java).apply { load(applicationContext) }
+        }
         with(DataBindingUtil.setContentView<ActivityMainBinding>(this, activity_main)) {
-            if (DebugMode.debug) policy = StrictPolicy(lifecycle, this@MainActivity)
+            binding = this
+
             mainModel = model
             soundModel = sound
 
@@ -102,36 +102,39 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             lifecycleOwner = this@MainActivity
         }
 
-        setSupportActionBar(mainBar)
+        with(binding) {
+            setSupportActionBar(mainBar)
 
-        drawerMenu.setNavigationItemSelectedListener(this)
-        with(drawerMenu.menu) {
-            intArrayOf(id.drawerMidi, id.drawerAll).forEach {
-                with(findItem(it).actionView as TextView) {
-                    gravity = Gravity.CENTER_VERTICAL
-                    setTextColor(getColor(colorAccent))
+            drawerMenu.setNavigationItemSelectedListener(this@MainActivity)
+            with(drawerMenu.menu) {
+                intArrayOf(id.drawerMidi, id.drawerAll).forEach {
+                    with(findItem(it).actionView as TextView) {
+                        gravity = Gravity.CENTER_VERTICAL
+                        setTextColor(getColor(colorAccent))
+                    }
+                }
+                with(findItem(id.drawerAll).actionView as Switch) {
+                    id = DrawerItem.CHECK_ALL.id
+                    setOnCheckedChangeListener(this@MainActivity)
                 }
             }
-            with(findItem(id.drawerAll).actionView as Switch) {
-                id = DrawerItem.CHECK_ALL.id
-                setOnCheckedChangeListener(this@MainActivity)
-            }
+            midiEnabled(false)
+            tracksEnabled(false)
+
+            drawerLayout.addDrawerListener(Toggle(
+                lifecycle, mainLayout, this@MainActivity, drawerLayout, mainBar
+            ).apply { syncState() })
+            seek.setOnSeekBarChangeListener(this@MainActivity)
+
+            MobileAds.initialize(applicationContext)
+            if (DebugMode.debug) MobileAds.setRequestConfiguration(
+                RequestConfiguration.Builder().setTestDeviceIds(
+                    listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
+                ).build()
+            )
+            AdBanner(lifecycle, applicationContext, adMain)
+            interstitial = AdInterstitial(lifecycle, this@MainActivity)
         }
-        midiEnabled(false)
-        tracksEnabled(false)
-
-        drawerLayout.addDrawerListener(Toggle(lifecycle, mainLayout, this, drawerLayout, mainBar)
-            .apply { syncState() })
-        seek.setOnSeekBarChangeListener(this)
-
-        MobileAds.initialize(applicationContext)
-        if (DebugMode.debug) MobileAds.setRequestConfiguration(
-            RequestConfiguration.Builder().setTestDeviceIds(
-                listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
-            ).build()
-        )
-        AdBanner(lifecycle, adMain, applicationContext)
-        interstitial = AdInterstitial(lifecycle, applicationContext)
 
         onNewIntent(intent)
     }
@@ -196,7 +199,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onConfigurationChanged(newConfig: Configuration): Unit =
         super.onConfigurationChanged(newConfig)
-            .also { interstitial = AdInterstitial(lifecycle, applicationContext) }
+            .also { interstitial = AdInterstitial(lifecycle, this) }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
@@ -206,7 +209,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
-                id.menuTracks -> drawerLayout.openDrawer(GravityCompat.START)
+                id.menuTracks -> binding.drawerLayout.openDrawer(GravityCompat.START)
                 id.menuMidi -> midi()
                 id.menuGuide -> guide()
                 else -> DebugMode.assertArgument(false)
@@ -223,7 +226,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return false
             }
         }
-        drawerLayout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
     }
 
     override fun onCheckedChanged(button: CompoundButton?, checked: Boolean) {
@@ -231,28 +234,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         button?.run {
             DebugMode.assertState(midi != null)
             midi?.run {
-                when (id) {
-                    DrawerItem.CHECK_ALL.id -> for (i in 0..tracks.lastIndex) {
-                        with(drawerMenu.menu.findItem(R.id.drawerTracks).subMenu.findItem(i)) {
-                            if (checkGroup(groupId, itemId))
-                                (actionView as Switch).isChecked = button.isChecked
-                        }
-                    }
-                    else -> {
-                        DebugMode.assertState(id in 0..tracks.lastIndex)
-                        with(play) {
-                            DebugMode.assertState(isPlaying.value != null)
-                            when {
-                                isChecked -> addTrack(id)
-                                (isPlaying.value ?: return@with) and (numSelTracks() == 1) -> {
-                                    showError(string.justTracks, string.trackNotSelPlaying)
-                                    performClick()
-                                    return
-                                }
-                                else -> removeTrack(id)
+                binding.run {
+                    when (id) {
+                        DrawerItem.CHECK_ALL.id -> for (i in 0..tracks.lastIndex) {
+                            with(drawerMenu.menu.findItem(R.id.drawerTracks).subMenu.findItem(i)) {
+                                if (checkGroup(groupId, itemId))
+                                    (actionView as Switch).isChecked = button.isChecked
                             }
-                            (drawerMenu.menu.findItem(R.id.drawerAll).actionView as Switch).text =
-                                getString(string.tracks, numSelTracks(), tracks.size)
+                        }
+                        else -> {
+                            DebugMode.assertState(id in 0..tracks.lastIndex)
+                            with(play) {
+                                DebugMode.assertState(isPlaying.value != null)
+                                when {
+                                    isChecked -> addTrack(id)
+                                    (isPlaying.value ?: return@with) and (numSelTracks() == 1) -> {
+                                        showError(string.justTracks, string.trackNotSelPlaying)
+                                        performClick()
+                                        return
+                                    }
+                                    else -> removeTrack(id)
+                                }
+                                (drawerMenu.menu.findItem(R.id.drawerAll).actionView as Switch)
+                                    .text = getString(string.tracks, numSelTracks(), tracks.size)
+                            }
                         }
                     }
                 }
@@ -280,7 +285,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else                    -> false.also { DebugMode.assertArgument(false) }
     }
 
-    override fun onBackPressed(): Unit = with(drawerLayout) {
+    override fun onBackPressed(): Unit = with(binding.drawerLayout) {
         GravityCompat.START.let { if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed() }
     }
 
@@ -344,25 +349,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    private fun midiEnabled(enabled: Boolean) = with(drawerMenu.menu.findItem(id.drawerMidi)) {
-        mainMenu?.run { findItem(id.menuMidi).isVisible = enabled }
-        isEnabled = enabled
-        (actionView as TextView).let { t ->
-            if (enabled) {
-                DebugMode.assertState((midi != null) and (midi?.summary != null))
-                midi?.summary?.run {
-                    t.text = getString(
-                        string.keyTemp,
-                        if (keys.isNullOrEmpty()) "" else keys.first().key,
-                        if (tempos.isNullOrEmpty()) 0 else tempos.first().bpm.toInt()
-                    )
-                }
-            } else t.text = getString(string.noMidi)
-            font(t, enabled)
+    private fun midiEnabled(enabled: Boolean) =
+        with(binding.drawerMenu.menu.findItem(id.drawerMidi)) {
+            mainMenu?.run { findItem(id.menuMidi).isVisible = enabled }
+            isEnabled = enabled
+            (actionView as TextView).let { t ->
+                if (enabled) {
+                    DebugMode.assertState((midi != null) and (midi?.summary != null))
+                    midi?.summary?.run {
+                        t.text = getString(
+                            string.keyTemp,
+                            if (keys.isNullOrEmpty()) "" else keys.first().key,
+                            if (tempos.isNullOrEmpty()) 0 else tempos.first().bpm.toInt()
+                        )
+                    }
+                } else t.text = getString(string.noMidi)
+                font(t, enabled)
+            }
         }
-    }
 
-    private fun tracksEnabled(enabled: Boolean) = with(drawerMenu.menu) {
+    private fun tracksEnabled(enabled: Boolean) = with(binding.drawerMenu.menu) {
         mainMenu?.run { findItem(id.menuTracks).isVisible = enabled }
         model.contVis.value = if (enabled) View.VISIBLE else View.GONE
         with(findItem(id.drawerTracks).subMenu) {
@@ -370,7 +376,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 DebugMode.assertState((midi != null) and (midi?.tracks != null))
                 midi?.tracks?.forEachIndexed { i, track ->
                     with(add(1, i, Menu.NONE, track.info.name)) {
-                        icon = getDrawable(drawable.queue)
+                        icon = ContextCompat.getDrawable(applicationContext, drawable.queue)
                         actionView = Switch(this@MainActivity).apply {
                             id = i
                             showText = true

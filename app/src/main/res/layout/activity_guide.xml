@@ -41,8 +41,6 @@
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/guideContent"
-        tools:ignore="UnusedIds"
-
         style="@style/MatchParent"
 
         app:layout_behavior="@string/appbar_scrolling_view_behavior">

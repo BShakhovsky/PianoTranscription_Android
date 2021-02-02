@@ -47,7 +47,7 @@ class Graphs : ViewModel() {
                         .order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(this)
                     with(Canvas(bitmap)) {
                         drawColor(Color.WHITE)
-                        with(maxBy { it.absoluteValue }) {
+                        with(maxByOrNull { it.absoluteValue }) {
                             when (this) {
                                 null -> 1f.also { DebugMode.assertState(false) }
                                 0f -> 1f

@@ -4,7 +4,9 @@ import android.content.res.AssetManager
 import android.opengl.GLES32
 import android.opengl.GLException
 import android.opengl.Matrix
+
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+
 import java.io.InputStreamReader
 
 abstract class Shader(assets: AssetManager, name: String) {

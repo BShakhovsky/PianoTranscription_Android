@@ -1,41 +1,56 @@
 package ru.bshakhovsky.piano_transcription.ad
 
-import android.content.Context
+import android.app.Activity
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
 import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.InterstitialAd
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
+import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
-class AdInterstitial(lifecycle: Lifecycle, context: Context) :
-    AdFailListener(lifecycle, context, "interstitial"), LifecycleObserver {
+class AdInterstitial(lifecycle: Lifecycle, a: Activity) :
+    FullScreenContentCallback(), LifecycleObserver {
 
-    private val adInter = InterstitialAd(context).apply {
-        adUnitId = "ca-app-pub-3940256099942544/1033173712"
-        adListener = this@AdInterstitial
-    }
+    private val activity = WeakPtr(lifecycle, a)
+    private var adInter: InterstitialAd? = null
 
     init {
         lifecycle.addObserver(this)
         load()
     }
 
+    private fun load() = activity.get().applicationContext.let { appContext ->
+        InterstitialAd.load(
+            appContext, "ca-app-pub-3940256099942544/1033173712", AdRequest.Builder().build(),
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) = super.onAdLoaded(ad)
+                    .also { adInter = ad.apply { fullScreenContentCallback = this@AdInterstitial } }
+
+                override fun onAdFailedToLoad(error: LoadAdError) = super.onAdFailedToLoad(error)
+                    .also { AdLoadFailed.showError(appContext, "interstitial", error) }
+            }
+        )
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private fun destroyAd() = with(adInter) { adListener = null }
+    private fun destroyAd() = run { adInter = null }
 
-    override fun onAdClosed(): Unit = super.onAdClosed().also { load() }
-
-    fun show(): Unit = with(adInter) {
-        when {
-            isLoaded -> show()
-            DebugMode.debug -> InfoMessage.toast(context.get(), "Ad-interstitial was not loaded")
+    fun show(): Unit = with(activity.get()) {
+        adInter?.show(this) ?: load().also {
+            if (DebugMode.debug)
+                InfoMessage.toast(applicationContext, "Ad-interstitial was not loaded")
         }
     }
 
-    private fun load(): Unit = adInter.loadAd(AdRequest.Builder().build())
+    override fun onAdDismissedFullScreenContent(): Unit =
+        super.onAdDismissedFullScreenContent().also { load() }
 }

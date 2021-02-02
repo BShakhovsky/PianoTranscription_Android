@@ -1,19 +1,26 @@
 package ru.bshakhovsky.piano_transcription.spectrum
 
 import android.os.ParcelFileDescriptor
+
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import java.io.File
+
 import java.io.InputStream
 import java.io.InterruptedIOException
+
+import java.nio.file.Path
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.appendBytes
+
 import kotlin.math.pow
 
-class PipeTransfer(private val outFile: File) : Thread() {
+class PipeTransfer(private val outPath: Path) : Thread() {
 
     companion object {
         var error: Throwable? = null
             private set
 
-        fun streamToFile(inStream: InputStream?, outFile: File) {
+        @ExperimentalPathApi
+        fun streamToFile(inStream: InputStream?, outPath: Path) {
             DebugMode.assertState(inStream != null)
             inStream?.use { inS ->
                 try {
@@ -22,7 +29,7 @@ class PipeTransfer(private val outFile: File) : Thread() {
                         var len: Int
                         while (inS.read(buf).also { len = it } > 0)
                             if (interrupted()) throw InterruptedIOException()
-                            else outFile.appendBytes(buf.sliceArray(0 until len))
+                            else outPath.appendBytes(buf.sliceArray(0 until len))
                         DebugMode.assertState(len in arrayOf(0, -1))
                     }
                 } catch (e: Throwable) {
@@ -42,6 +49,7 @@ class PipeTransfer(private val outFile: File) : Thread() {
         pipe[1]
     }
 
-    override fun run(): Unit = streamToFile(inStream, outFile)
+    @ExperimentalPathApi
+    override fun run(): Unit = streamToFile(inStream, outPath)
         .also { DebugMode.assertState(inStream != null, "Did you call pipeOut() before start() ?") }
 }

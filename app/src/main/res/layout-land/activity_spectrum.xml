@@ -118,9 +118,7 @@
                         style="@style/MatchParent"
                         android:textColor="@android:color/black"
 
-                        android:text="@{audioModel.ffmpegLog}"
-
-                        tools:ignore="SelectableText, UnusedIds" />
+                        android:text="@{audioModel.ffmpegLog}" />
 
                 </ScrollView>
 

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Looper
 import android.os.SystemClock
 import android.view.View
+
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 
@@ -31,8 +32,8 @@ import java.util.concurrent.TimeUnit
 class Play : Runnable, ViewModel(), LifecycleObserver {
 
     private class TracksArray(val tracks: Array<Track>) {
-        val curIndices: IntArray = IntArray(tracks.size)
-        val selTracks: MutableSet<Int> = mutableSetOf()
+        val curIndices = IntArray(tracks.size)
+        val selTracks = mutableSetOf<Int>()
 
         var curMilSec = 0L
         var startMilSec = 0L

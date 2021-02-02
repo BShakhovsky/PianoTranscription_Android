@@ -157,7 +157,10 @@
 
                     android:onClick="@{() -> mainModel.dialogAdd()}"
 
-                    app:srcCompat="@drawable/add" />
+                    app:srcCompat="@drawable/add"
+
+                    xmlns:tools="http://schemas.android.com/tools"
+                    tools:ignore="ContentDescription" />
 
             </RelativeLayout>
 

@@ -16,6 +16,8 @@ import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
+import kotlin.io.path.ExperimentalPathApi
+
 class DecodeThread(
     lifecycle: Lifecycle, a: Activity, w: FrameLayout,// s: FrameLayout,
     private val rawAudio: RawAudio, private val graphs: Graphs, private val uri: Uri?
@@ -34,6 +36,7 @@ class DecodeThread(
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     private fun cancelDecoding() = thread.interrupt()
 
+    @ExperimentalPathApi
     override fun run() {
         /* TODO: Increase delay (dirty hack during opening and decoding file
             to show activity UI (frozen though) instead of black screen) */

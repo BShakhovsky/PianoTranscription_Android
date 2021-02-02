@@ -13,7 +13,7 @@ class MainModel : ViewModel() {
 
     private lateinit var fragment: WeakPtr<FragmentManager>
 
-    val contVis: MutableLiveData<Int> = MutableLiveData<Int>()
+    val contVis: MutableLiveData<Int> = MutableLiveData()
 
     fun initialize(lifecycle: Lifecycle, f: FragmentManager): Unit =
         run { fragment = WeakPtr(lifecycle, f) }
