@@ -67,30 +67,34 @@ class AddDialog : DialogFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            Permission.RECORD_SETTINGS.id -> {
-                DebugMode
-                    .assertState((resultCode != FragmentActivity.RESULT_OK) and (activity != null))
-                if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                    == PackageManager.PERMISSION_GRANTED
-                ) model.writeWav()
-                else settings()
-            }
-            RequestCode.WRITE_3GP.id ->
-                if (resultCode != FragmentActivity.RESULT_OK) {
-                    InfoMessage.dialog(context, string.warning, string.notSaved)
-                    DebugMode.assertState(dialog != null)
-                    dialog?.dismiss()
-                } else {
-                    DebugMode.assertArgument(data != null)
-                    model.startRec(data?.data)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Unit =
+        super.onActivityResult(requestCode, resultCode, data).also {
+            when (requestCode) {
+                Permission.RECORD_SETTINGS.id -> {
+                    DebugMode.assertState(
+                        (resultCode != FragmentActivity.RESULT_OK) and (activity != null)
+                    )
+                    if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+                        == PackageManager.PERMISSION_GRANTED
+                    ) model.writeWav()
+                    else settings()
                 }
+                RequestCode.WRITE_3GP.id ->
+                    if (resultCode != FragmentActivity.RESULT_OK) {
+                        InfoMessage.dialog(
+                            context, string.warning,
+                            getString(string.notSaved, getString(string.record))
+                        )
+                        DebugMode.assertState(dialog != null)
+                        dialog?.dismiss()
+                    } else {
+                        DebugMode.assertArgument(data != null)
+                        model.startRec(data?.data)
+                    }
 
-            else -> DebugMode.assertArgument(false)
+                else -> DebugMode.assertArgument(false)
+            }
         }
-    }
 
     private fun settings() = Snackbar
         .make(binding.frameLayout, string.grantRec, Snackbar.LENGTH_LONG)

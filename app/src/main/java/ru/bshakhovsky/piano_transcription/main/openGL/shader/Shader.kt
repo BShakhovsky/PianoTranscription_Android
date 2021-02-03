@@ -5,6 +5,8 @@ import android.opengl.GLES32
 import android.opengl.GLException
 import android.opengl.Matrix
 
+import androidx.annotation.CheckResult
+
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.io.InputStreamReader
@@ -33,7 +35,10 @@ abstract class Shader(assets: AssetManager, name: String) {
         GLES32.glEnableVertexAttribArray(pos)
     }
 
+    @CheckResult
     fun uniform(name: String): Int = GLES32.glGetUniformLocation(program, name)
+
+    @CheckResult
     protected fun attribute(name: String): Int = GLES32.glGetAttribLocation(program, name)
 
     protected fun use(): Unit = GLES32.glUseProgram(program)

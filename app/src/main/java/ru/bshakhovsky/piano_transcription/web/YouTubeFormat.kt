@@ -12,7 +12,7 @@ object YouTubeFormat {
     )
 
     data class AdaptiveFormat(
-        val url: String,
+        val url: String?,
         val mimeType: String,
         @Suppress("SpellCheckingInspection") val itag: Int,
 

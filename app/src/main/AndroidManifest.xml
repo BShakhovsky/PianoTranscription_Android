@@ -57,13 +57,13 @@
 
         <activity android:name=".GuideActivity"
             android:parentActivityName=".main.MainActivity"
-            android:label="@string/guide" android:theme="@style/AppTheme" />
+            android:label="@string/userGuide" android:theme="@style/AppTheme" />
         <activity android:name=".midi.MidiActivity"
             android:parentActivityName=".main.MainActivity"
-            android:label="@string/midi" android:theme="@style/AppTheme" />
-        <activity android:name=".spectrum.SpectrumActivity"
+            android:label="@string/midiSum" android:theme="@style/AppTheme" />
+        <activity android:name=".media.MediaActivity"
             android:parentActivityName=".main.MainActivity"
-            android:label="@string/spectrum" android:theme="@style/AppTheme" />
+            android:label="@string/transcription" android:theme="@style/AppTheme" />
         <activity android:name=".web.WebActivity"
             android:parentActivityName=".main.MainActivity"
             android:label="@string/surf" android:theme="@style/AppTheme">

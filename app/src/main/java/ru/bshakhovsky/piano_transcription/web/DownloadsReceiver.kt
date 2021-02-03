@@ -12,6 +12,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 
+import androidx.annotation.CheckResult
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -23,18 +24,23 @@ import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 
 import java.lang.ref.WeakReference
 
-class DownloadsReceiver(lifecycle: Lifecycle, a: Activity) :
-    BroadcastReceiver(), LifecycleObserver {
+class DownloadsReceiver : BroadcastReceiver(), LifecycleObserver {
 
-    /* Activity is not WeakPtr, because we need it onDestroy (unregister),
+    /* Activity is not WeakPtr, but WeakReference, because we need it onDestroy (unregister),
     and unfortunately, activity is garbage collected first */
-    private val activity = WeakReference(a)
-    private val downManager = a.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-    private val downloads = mutableSetOf<Long>()
+    // TODO: Eliminate reference to Activity
+    private lateinit var activity: WeakReference<Activity>
+    private lateinit var downManager: DownloadManager
 
-    init {
+    // KeyMap of downloads is instantiated here just once to survive device screen rotation
+    private val downloads = mutableMapOf<Long, String>()
+
+    fun initialize(lifecycle: Lifecycle, a: Activity) {
         lifecycle.addObserver(this)
         a.registerReceiver(this, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+
+        activity = WeakReference(a)
+        downManager = a.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
@@ -57,15 +63,20 @@ class DownloadsReceiver(lifecycle: Lifecycle, a: Activity) :
         }
     }
 
-    fun addDownload(webUrl: Uri, fileName: String) {
+    fun addDownload(youTubeUrl: String, downloadUrl: Uri, fileName: String) {
+        if (youTubeUrl in downloads.values) {
+            // Download button tapped multiple times, already downloading
+            InfoMessage.toast(activity.get()?.applicationContext, string.alreadyDown)
+            return
+        }
         downloads += downManager.enqueue(
-            DownloadManager.Request(webUrl).setTitle(fileName)
+            DownloadManager.Request(downloadUrl).setTitle(fileName)
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
                 .setNotificationVisibility(
                     DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
                 )
-        )
-        InfoMessage.toast(activity.get(), string.downStart)
+        ) to youTubeUrl
+        InfoMessage.toast(activity.get()?.applicationContext, string.downStart)
     }
 
     private fun checkFile(id: Long): Unit = with(downManager) {
@@ -75,12 +86,17 @@ class DownloadsReceiver(lifecycle: Lifecycle, a: Activity) :
         getUriForDownloadedFile(id).let { downFile ->
             DebugMode.assertState(activity.get() != null)
             activity.get()?.run {
-                setResult(Activity.RESULT_OK, Intent().apply { data = downFile })
+                setResult(Activity.RESULT_OK, Intent().apply {
+                    data = downFile
+                    DebugMode.assertState(downloads[id] != null)
+                    putExtra("YouTube Link", downloads[id])
+                })
                 finish()
             }
         }
     }
 
+    @CheckResult
     private fun checkStatus(cursor: Cursor) = cursor.run {
         getInt(getColumnIndex(DownloadManager.COLUMN_REASON)).let {
             DebugMode.assertState(activity.get() != null)

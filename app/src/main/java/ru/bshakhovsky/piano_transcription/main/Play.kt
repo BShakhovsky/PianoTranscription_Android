@@ -5,6 +5,10 @@ import android.os.Looper
 import android.os.SystemClock
 import android.view.View
 
+import androidx.annotation.CheckResult
+import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
+
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 
@@ -81,13 +85,19 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         seek bar _duration          newMidi() */
     private var schedule: ScheduledExecutorService? = null
 
+    @MainThread
     fun initialize(lifecycle: Lifecycle, a: Activity, d: DrawerLayout, r: Render) {
+        DebugMode.assertState(
+            Looper.myLooper() == Looper.getMainLooper(),
+            "Class Play should be initialized from MainActivity UI-thread"
+        )
         lifecycle.addObserver(this)
         activity = WeakPtr(lifecycle, a)
         drawer = WeakPtr(lifecycle, d)
         render = r
     }
 
+    @MainThread
     fun newMidi(tracks: Array<Track>, dur: Long) {
         tracksArray = TracksArray(tracks)
         DebugMode.assertState(
@@ -98,6 +108,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         stopPlaying()
     }
 
+    @MainThread
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     private fun startPlaying() {
         DebugMode.assertState(
@@ -106,6 +117,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         if (!(isPlaying.value ?: return)) playPause()
     }
 
+    @MainThread
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun stopPlaying() {
         DebugMode.assertState(
@@ -114,6 +126,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         if (isPlaying.value ?: return) playPause()
     }
 
+    @WorkerThread
     override fun run(): Unit = nextChord().let { (_, stop) ->
         if (stop) {
             seek(0)
@@ -135,6 +148,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
 
+    // Both threads
     fun playPause() {
         DebugMode.assertState(isPlaying.value != null)
         if (!(isPlaying.value ?: return) and noTracks()) return
@@ -142,6 +156,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         prevNext()
     }
 
+    @MainThread
     fun prev() {
         DebugMode.assertState(
             (Looper.myLooper() == Looper.getMainLooper()) and (isPlaying.value != null)
@@ -160,6 +175,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
+    @MainThread
     fun next() {
         DebugMode.assertState(
             (Looper.myLooper() == Looper.getMainLooper()) and (isPlaying.value != null)
@@ -179,6 +195,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
 
+    // Both threads
     private fun toggle() = activity.get().runOnUiThread {
         DebugMode.assertState(isPlaying.value != null)
         _isPlaying.value = isPlaying.value?.not()
@@ -198,6 +215,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
+    // Both threads
     private fun noTracks() = tracksArray?.selTracks.isNullOrEmpty().also {
         /* Can be clicked by touching GL view, even when buttons are invisible,
         also, no need to show error message at start: */
@@ -208,9 +226,12 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
 
+    @MainThread
+    @CheckResult
     fun numSelTracks(): Int = (tracksArray?.selTracks?.size ?: 0)
         .also { DebugMode.assertState(Looper.myLooper() == Looper.getMainLooper()) }
 
+    // Both threads
     fun prevNext(): Unit = activity.get().runOnUiThread {
         DebugMode.assertState(isPlaying.value != null)
         _prevVis.value = if ((isPlaying.value ?: return@runOnUiThread) or (progress.value == 0))
@@ -220,6 +241,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         ) View.INVISIBLE else View.VISIBLE
     }
 
+    @MainThread
     fun addTrack(trackNo: Int) {
         DebugMode.assertState(
             (Looper.myLooper() == Looper.getMainLooper()) and (tracksArray != null)
@@ -230,10 +252,12 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
+    @MainThread
     fun removeTrack(trackNo: Int): Unit = DebugMode.assertState(
         (Looper.myLooper() == Looper.getMainLooper()) and (tracksArray != null)
     ).let { tracksArray?.run { selTracks -= trackNo } }
 
+    // Both threads
     fun seek(newMilSec: Int) {
         newStart(newMilSec.toLong())
         DebugMode.assertState(tracksArray != null)
@@ -243,6 +267,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     }
 
 
+    // Both threads
     private fun seekTrack(newMilSec: Long, trackNo: Int) {
         DebugMode.assertState(tracksArray != null)
         tracksArray?.run {
@@ -252,6 +277,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
+    // Both threads
     private fun newStart(newMilSec: Long) {
         DebugMode.assertState(tracksArray != null)
         tracksArray?.run {
@@ -261,6 +287,8 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
     }
 
+    // Both threads
+    @CheckResult
     private fun nextChord(): Pair<Boolean, Boolean> {
         var (anyPressed, stop) = false to true
         tracksArray?.run { // Can be clicked by touching GL view, even when buttons are invisible
@@ -316,6 +344,8 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         return anyPressed to stop
     }
 
+    @MainThread
+    @CheckResult
     private fun prevChord(): Boolean {
         DebugMode.assertState((Looper.myLooper() == Looper.getMainLooper()))
         var anyPressed = false

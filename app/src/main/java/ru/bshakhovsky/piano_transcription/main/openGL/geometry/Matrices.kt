@@ -1,6 +1,7 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
 import android.opengl.Matrix
+import androidx.annotation.CheckResult
 
 class Matrices {
 
@@ -14,6 +15,7 @@ class Matrices {
     val reflectVP: FloatArray = FloatArray(16)
     val refInvTransView: FloatArray = FloatArray(16)
 
+    @CheckResult
     fun project(width: Int, height: Int): Float =
         (height.toFloat() / width.toFloat()).also { ratio ->
             Matrix.frustumM(

@@ -41,7 +41,7 @@ class WebActivity : AppCompatActivity() {
                     @SuppressLint("SetJavaScriptEnabled")
                     settings.javaScriptEnabled = true
 
-                    savedInstanceState?.let { web.restoreState(it) } ?: with(intent.extras) {
+                    savedInstanceState?.let { restoreState(it) } ?: with(intent.extras) {
                         (if (this == null) "https://youtu.be"
                         else get(Intent.EXTRA_TEXT).toString().also {
                             if (!intent.hasExtra(Intent.EXTRA_SUBJECT)) Snackbar
@@ -56,15 +56,12 @@ class WebActivity : AppCompatActivity() {
             }
         }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        web.saveState(outState)
-    }
+    override fun onSaveInstanceState(outState: Bundle): Unit =
+        super.onSaveInstanceState(outState).also { web.saveState(outState) }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+    override fun onRestoreInstanceState(savedInstanceState: Bundle): Unit =
         super.onRestoreInstanceState(savedInstanceState)
-        web.restoreState(savedInstanceState)
-    }
+            .also { web.restoreState(savedInstanceState) }
 
     override fun onBackPressed(): Unit =
         with(web) { if (canGoBack()) goBack() else super.onBackPressed() }

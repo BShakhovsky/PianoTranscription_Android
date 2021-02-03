@@ -16,6 +16,8 @@ import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 
+import androidx.annotation.CheckResult
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -26,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+
 import com.google.android.material.navigation.NavigationView
 
 import ru.bshakhovsky.piano_transcription.R.color.colorAccent
@@ -45,7 +48,7 @@ import ru.bshakhovsky.piano_transcription.main.mainUI.Toggle
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
 import ru.bshakhovsky.piano_transcription.midi.Midi
 import ru.bshakhovsky.piano_transcription.midi.MidiActivity
-import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
+import ru.bshakhovsky.piano_transcription.media.MediaActivity
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
@@ -87,19 +90,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             model = get(MainModel::class.java)
                 .apply { initialize(lifecycle, supportFragmentManager) }
             sound = get(Sound::class.java).apply { load(applicationContext) }
-        }
-        with(DataBindingUtil.setContentView<ActivityMainBinding>(this, activity_main)) {
-            binding = this
+            with(
+                DataBindingUtil
+                    .setContentView<ActivityMainBinding>(this@MainActivity, activity_main)
+            ) {
+                binding = this
 
-            mainModel = model
-            soundModel = sound
+                mainModel = model
+                soundModel = sound
 
-            render = Render(lifecycle, assets, resources, surfaceView, playPause, prev, next, sound)
-            play = ViewModelProvider(this@MainActivity).get(Play::class.java)
-                .apply { initialize(lifecycle, this@MainActivity, drawerLayout, render) }
-            playModel = play
+                render =
+                    Render(lifecycle, assets, resources, surfaceView, playPause, prev, next, sound)
+                play = get(Play::class.java)
+                    .apply { initialize(lifecycle, this@MainActivity, drawerLayout, render) }
+                playModel = play
 
-            lifecycleOwner = this@MainActivity
+                lifecycleOwner = this@MainActivity
+            }
         }
 
         with(binding) {
@@ -147,8 +154,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Intent.ACTION_MAIN -> DebugMode.assertState(
                     (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
                             and (type == null) and (data == null) and (dataString == null)
-                            // Not null when launched from main menu from Emulator 2.7 Q VGA API 24:
 //                            and (extras == null)
+                            /* Not null when launched on Emulator 2.7 Q VGA API 24 from main menu:
+                            extras != null = dalvik.system.PathClassLoader[DexPathList[
+                            [zip file "/data/app/ru.BShakhovsky.Piano_Transcription-2/base.apk"],
+                            nativeLibraryDirectories=
+                            [/data/app/ru.BShakhovsky.Piano_Transcription-2/lib/x86,
+                            /data/app/ru.BShakhovsky.Piano_Transcription-2/base.apk!/lib/x86,
+                            /system/lib, /vendor/lib]]] */
                             and (clipData == null)
                 )
 
@@ -192,7 +205,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
 
-                else -> DebugMode.assertState(false)
+                // Restarted due to UncaughtExceptionHandler:
+                else -> DebugMode.assertState(action == null)
             }
         }
     }
@@ -251,7 +265,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                     (isPlaying.value ?: return@with) and (numSelTracks() == 1) -> {
                                         showError(string.justTracks, string.trackNotSelPlaying)
                                         performClick()
-                                        return
+                                        return@with
                                     }
                                     else -> removeTrack(id)
                                 }
@@ -276,6 +290,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
 
+    @CheckResult
     private fun checkGroup(groupId: Int, itemId: Int) = @Suppress("Reformat") when (groupId) {
         0                       -> false.also { DebugMode.assertArgument(itemId == id.drawerAll) }
         DrawerGroup.TRACKS.id   -> true.also {
@@ -298,8 +313,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             AddDialog.RequestCode.SURF.id, AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
-                DebugMode.assertState((data != null) and (data?.data != null))
-                data?.data?.let { openMedia(it) }
+                DebugMode.assertState(data != null)
+                data?.let { intent ->
+                    DebugMode.assertState(intent.data != null)
+                    intent.data?.let { openMedia(it, intent.getStringExtra("YouTube Link")) }
+                }
             }
             AddDialog.RequestCode.OPEN_MIDI.id -> {
                 if (resultCode != RESULT_OK) return
@@ -312,13 +330,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun openMedia(uri: Uri) {
-        if (!openMidi(uri)) startActivityForResult(
-            Intent(this, SpectrumActivity::class.java).apply { putExtra("Uri", uri) },
-            RequestCode.SPECTRUM.id
+    // TODO: Make private again after AddDialog feature removed
+    fun openMedia(file: Uri, youTubeLink: String? = null) {
+        if (!openMidi(file)) startActivityForResult(
+            Intent(this, MediaActivity::class.java).apply {
+                data = file
+                youTubeLink?.let { putExtra("YouTube Link", it) }
+            }, RequestCode.SPECTRUM.id
         )
     }
 
+    @CheckResult
     private fun openMidi(uri: Uri): Boolean {
         try {
             contentResolver.openInputStream(uri).let { inputStream ->
@@ -414,5 +436,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onStartTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
     override fun onStopTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
 
-    private fun showError(titleId: Int, msgId: Int) = InfoMessage.dialog(this, titleId, msgId)
+    @CheckResult
+    private fun showError(@StringRes titleId: Int, @StringRes msgId: Int) =
+        InfoMessage.dialog(this, titleId, msgId)
 }

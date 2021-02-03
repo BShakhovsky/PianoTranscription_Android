@@ -9,6 +9,7 @@ import android.opengl.GLU
 import android.os.SystemClock
 import android.widget.ImageButton
 
+import androidx.annotation.CheckResult
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -130,6 +131,7 @@ class Render(
         model.mats.viewProject(x, yz, yz)
     }
 
+    @CheckResult
     private fun winX(worldX: Float) = floatArrayOf(0f, 0f, 0f).let {
         GLU.gluProject(
             worldX, Geometry.whiteWid, Geometry.whiteLen, model.mats.view,
@@ -138,6 +140,7 @@ class Render(
         PointF(it[0], it[1])
     }
 
+    @CheckResult
     private fun worldXZ(xWin: Float, yWin: Float): PointF {
         fun worldCords(zDepth: Float) = floatArrayOf(0f, 0f, 0f, 0f).also { obj ->
             with(model.mats) {
@@ -168,6 +171,7 @@ class Render(
         }
     }
 
+    @CheckResult
     private fun winToKey(xWin: Float, yWin: Float) = worldXZ(xWin, yWin).let { xz ->
         if ((xz.y == 0f) or (xz.x !in 0f..Geometry.overallLen) or (xz.y !in 0f..Geometry.whiteLen))
             -1
@@ -252,11 +256,15 @@ class Render(
         }
     }
 
-    fun releaseAllKeys(): Unit = model.geom.keys.forEachIndexed { note, key ->
-        key.isPressed = false
-        sound.stop(note)
+    fun releaseAllKeys() {
+        // For some reason, not yet initialized if MIDI is received from another App through Intent
+        if (::model.isInitialized) model.geom.keys.forEachIndexed { note, key ->
+            key.isPressed = false
+            sound.stop(note)
+        }
     }
 
+    @CheckResult
     private fun check(note: Int) =
         ::model.isInitialized.also { DebugMode.assertArgument(note in 0..87) }
 }

@@ -26,14 +26,20 @@ import java.net.URLDecoder
 
 class WebModel : ViewModel() {
 
+    // TODO: Eliminate reference to Activity
     private lateinit var activity: WeakPtr<Activity>
+
+    // TODO: Eliminate reference to WebView
     private lateinit var web: WeakPtr<WebView>
-    private lateinit var downloader: DownloadsReceiver
+
+    // Instantiated here just once to survive device screen rotation
+    // This is the only real reason for current class WebModel
+    private val downloader = DownloadsReceiver()
 
     fun initialize(lifecycle: Lifecycle, a: Activity, w: WebView) {
         activity = WeakPtr(lifecycle, a)
         web = WeakPtr(lifecycle, w)
-        downloader = DownloadsReceiver(lifecycle, a)
+        downloader.initialize(lifecycle, a)
     }
 
     fun home(): Unit = activity.get().finish()
@@ -65,7 +71,7 @@ class WebModel : ViewModel() {
                                         ).show()
                                         return@response
                                     }
-                                    is Result.Success -> bestLink(response)
+                                    is Result.Success -> bestLink(url, response)
                                     else -> DebugMode.assertState(false)
                                 }
                             }
@@ -76,7 +82,7 @@ class WebModel : ViewModel() {
     }
 
     // TODO: Increase number of attempts
-    private fun bestLink(response: Response) = IntArray(2).forEach { _ ->
+    private fun bestLink(youTubeLink: String, response: Response) = IntArray(2).forEach { _ ->
         try {
             var playerResponse = ""
             for (p in response.toString().split('&'))
@@ -103,17 +109,19 @@ class WebModel : ViewModel() {
                                     DebugMode.assertState(mimeType in YouTubeFormat.audios.keys)
                                     if (itag >= maxITag) {
                                         maxITag = itag
-                                        bestUrl = Uri.parse(url)
-                                        fileName = "${videoDetails.title}.${
-                                            YouTubeFormat.audios[mimeType]
-                                        }"
+                                        url?.let { u ->
+                                            bestUrl = Uri.parse(u)
+                                            fileName = "${videoDetails.title}.${
+                                                YouTubeFormat.audios[mimeType]
+                                            }"
+                                        }
                                     }
                                 }
                             }
                         }
                         bestUrl?.let {
                             DebugMode.assertState(fileName != null)
-                            downloader.addDownload(it, fileName!!)
+                            downloader.addDownload(youTubeLink, it, fileName!!)
                             return
                         } ?: run {
                             DebugMode.assertState(fileName == null)

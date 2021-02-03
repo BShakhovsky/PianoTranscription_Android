@@ -1,15 +1,17 @@
 package ru.bshakhovsky.piano_transcription
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 
 import androidx.appcompat.app.AppCompatActivity
 
-import com.google.android.material.snackbar.Snackbar
-
+import ru.bshakhovsky.piano_transcription.R.id.fabGuide
+import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.ActivityGuideBinding
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 
 class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -25,10 +27,7 @@ class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
             setFinishOnTouchOutside(true)
 
-            fabGuide.setOnClickListener {
-                // TODO: User Guide --> "Share" button
-                Snackbar.make(it, "Replace with your own action", Snackbar.LENGTH_LONG).show()
-            }
+            fabGuide.setOnClickListener(this@GuideActivity)
         }
     }
 
@@ -36,6 +35,16 @@ class GuideActivity : AppCompatActivity(), View.OnClickListener {
         DebugMode.assertArgument(view != null)
         when (view?.id) {
             -1 -> onBackPressed() // not android.R.id.home
+            fabGuide -> startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, "${getString(string.app_name)} for Android")
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "https://play.google.com/store/apps/details?id=${packageName}"
+                )
+                DebugMode.assertState(resolveActivity(packageManager) != null)
+                InfoMessage.toast(applicationContext, string.guideShare)
+            }, null))
             else -> DebugMode.assertState(false)
         }
     }

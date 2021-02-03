@@ -142,13 +142,9 @@
 
                 </LinearLayout>
 
-                <com.google.android.gms.ads.AdView
-                    android:id="@+id/adMain"
+                <FrameLayout android:id="@+id/adMain"
                     style="@style/WrapContent"
-                    android:layout_alignParentBottom="true"
-
-                    app:adSize="BANNER"
-                    app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+                    android:layout_alignParentBottom="true" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     style="@style/WrapContent"

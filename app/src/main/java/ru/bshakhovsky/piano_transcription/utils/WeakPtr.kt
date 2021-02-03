@@ -1,5 +1,7 @@
 package ru.bshakhovsky.piano_transcription.utils
 
+import androidx.annotation.CheckResult
+
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -21,5 +23,6 @@ class WeakPtr<T>(lifecycle: Lifecycle, ref: T) : LifecycleObserver {
         DebugMode.assertState(ptr.get() == null)
     }
 
+    @CheckResult
     fun get(): T = DebugMode.assertState(ptr.get() != null).let { ptr.get()!! }
 }

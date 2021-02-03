@@ -2,6 +2,9 @@ package ru.bshakhovsky.piano_transcription.midi
 
 import android.content.Context
 
+import androidx.annotation.CheckResult
+import androidx.annotation.StringRes
+
 import com.pdrogfer.mididroid.MidiFile
 import com.pdrogfer.mididroid.event.ChannelAftertouch
 import com.pdrogfer.mididroid.event.ChannelEvent
@@ -41,7 +44,7 @@ import kotlin.math.roundToLong
 class Midi(inStream: InputStream, untitled: String) {
 
     companion object {
-        fun minSecStr(context: Context, strId: Int, mSec: Long): String =
+        fun minSecStr(context: Context, @StringRes strId: Int, mSec: Long): String =
             context.getString(strId, MinSec.minutes(mSec), MinSec.seconds(mSec))
     }
 
@@ -177,6 +180,7 @@ class Midi(inStream: InputStream, untitled: String) {
         }!!.chords.last().mSec
     }
 
+    @CheckResult
     private fun addNote(event: MidiEvent, curTrack: Track, curTick: Long) =
         (if (curTrack.chords.isEmpty()) true
         else curTrack.chords.last().mSec != curTick).let { newChord ->

@@ -3,7 +3,7 @@
 
     <item android:id="@+id/drawerMidi"
         android:icon="@drawable/info"
-        android:title="@string/midi"
+        android:title="@string/midiSum"
         android:enabled="false"
 
         app:actionViewClass="android.widget.TextView" />
@@ -24,7 +24,7 @@
         <menu>
             <item android:id="@+id/drawerGuide"
                 android:icon="@drawable/help"
-                android:title="@string/guide" />
+                android:title="@string/userGuide" />
         </menu>
     </item>
 

@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.spectrum
+package ru.bshakhovsky.piano_transcription.media
 
 import android.os.Bundle
 import android.view.Menu
@@ -12,35 +12,35 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
 import ru.bshakhovsky.piano_transcription.R.id.menuGuide
-import ru.bshakhovsky.piano_transcription.R.layout.activity_spectrum
+import ru.bshakhovsky.piano_transcription.R.layout.activity_media
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
-import ru.bshakhovsky.piano_transcription.databinding.ActivitySpectrumBinding
+import ru.bshakhovsky.piano_transcription.databinding.ActivityMediaBinding
 
 import ru.bshakhovsky.piano_transcription.ad.AdBanner
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
-class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
+class MediaActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var rawAudio: RawAudio
     private lateinit var graphs: Graphs
     private lateinit var thread: DecodeThread
 
-    private lateinit var binding: ActivitySpectrumBinding
+    private lateinit var binding: ActivityMediaBinding
 
     override fun onCreate(savedInstanceState: Bundle?): Unit =
         super.onCreate(savedInstanceState).also {
             with(ViewModelProvider(this)) {
                 rawAudio = get(RawAudio::class.java)
-                    .apply { initialize(lifecycle, this@SpectrumActivity, cacheDir) }
+                    .apply { initialize(lifecycle, this@MediaActivity, cacheDir) }
                 graphs = get(Graphs::class.java)
             }
-            with(DataBindingUtil.setContentView<ActivitySpectrumBinding>(this, activity_spectrum)) {
+            with(DataBindingUtil.setContentView<ActivityMediaBinding>(this, activity_media)) {
                 binding = this
 
                 audioModel = rawAudio
                 graphsModel = graphs
 
-                lifecycleOwner = this@SpectrumActivity // because of DecodeThread
+                lifecycleOwner = this@MediaActivity // because of DecodeThread
             }
 
             with(binding) {
@@ -48,12 +48,12 @@ class SpectrumActivity : AppCompatActivity(), View.OnClickListener {
                     setSupportActionBar(this)
                     DebugMode.assertState(supportActionBar != null)
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                    setNavigationOnClickListener(this@SpectrumActivity)
+                    setNavigationOnClickListener(this@MediaActivity)
                 }
 
                 thread = DecodeThread(
-                    lifecycle, this@SpectrumActivity, rawWave,// spectrum,
-                    rawAudio, graphs, intent.getParcelableExtra("Uri")
+                    lifecycle, this@MediaActivity, rawWave,// spectrum,
+                    rawAudio, graphs, intent.data
                 )
 
                 AdBanner(lifecycle, applicationContext, adSpectrum)

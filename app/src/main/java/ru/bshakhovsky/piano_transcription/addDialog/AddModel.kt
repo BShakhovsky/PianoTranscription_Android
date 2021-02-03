@@ -16,9 +16,9 @@ import androidx.lifecycle.ViewModel
 
 import ru.bshakhovsky.piano_transcription.R.string
 
-import ru.bshakhovsky.piano_transcription.spectrum.SpectrumActivity
+import ru.bshakhovsky.piano_transcription.main.MainActivity
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import ru.bshakhovsky.piano_transcription.utils.FileExtension
+import ru.bshakhovsky.piano_transcription.utils.FileName
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 import ru.bshakhovsky.piano_transcription.web.WebActivity
@@ -60,10 +60,7 @@ class AddModel : ViewModel(), LifecycleObserver {
             recDlg?.dismiss()
             recDlg = null
 
-            recFile?.let {
-                startActivity(Intent(context, SpectrumActivity::class.java)
-                    .apply { putExtra("Uri", it) })
-            }
+            recFile?.let { (activity as MainActivity).openMedia(it) }
         }
     }
 
@@ -86,12 +83,10 @@ class AddModel : ViewModel(), LifecycleObserver {
     }
 
     fun midi(): Unit = with(fragment.get()) {
-        startActivityForResult(
-            Intent(Intent.ACTION_GET_CONTENT).apply {
-                type = "audio/midi"
-                addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-            }, AddDialog.RequestCode.OPEN_MIDI.id
-        )
+        startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "audio/midi"
+            addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
+        }, AddDialog.RequestCode.OPEN_MIDI.id)
         DebugMode.assertState(dialog != null)
         dialog?.dismiss()
     }
@@ -111,12 +106,12 @@ class AddModel : ViewModel(), LifecycleObserver {
             putExtra(
                 Intent.EXTRA_TITLE, "${getString(string.record)} ${Calendar.getInstance().time}.3gp"
             )
-            InfoMessage.toast(context, string.save)
+            InfoMessage.toast(context, getString(string.save, getString(string.record)))
         }, AddDialog.RequestCode.WRITE_3GP.id)
     }
 
     fun startRec(uri: Uri?): Unit = with(fragment.get()) {
-        FileExtension.addExtension(context, uri, "3gp")?.let { newUri -> // null if file exists
+        FileName.addExtension(context, uri, "3gp")?.let { newUri -> // null if file exists
             try {
                 DebugMode.assertState((activity != null) and (activity?.contentResolver != null))
                 activity?.contentResolver?.openFileDescriptor(newUri, "w").use { outFile ->

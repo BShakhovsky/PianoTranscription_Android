@@ -84,8 +84,8 @@ class RecordMsg(
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun stopThread() = schedule.shutdown()
 
-    /* Emulator 2.7 Q VGA API 26: Ok
-       Emulator 2.7 Q VGA API 24:
+    /*  Emulator 2.7 Q VGA API 26: Ok
+        Emulator 2.7 Q VGA API 24:
             ScheduledExecutorService called just once, then msg = "0 min : 1 sec" forever
             However, 3GP-recording duration is correct */
     override fun run(): Unit = (SystemClock.uptimeMillis() - startTime).let { milSec ->

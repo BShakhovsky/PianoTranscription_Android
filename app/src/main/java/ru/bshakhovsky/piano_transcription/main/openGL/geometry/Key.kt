@@ -1,5 +1,6 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
+import androidx.annotation.CheckResult
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import kotlin.math.atan
 
@@ -49,6 +50,7 @@ class Key(note: Int) {
         Math.toDegrees(atan(1.1 * Geometry.blackWid / Geometry.blackLen)).toFloat()
     else Math.toDegrees(atan(.6 * Geometry.whiteWid / Geometry.whiteLen)).toFloat()
 
+    @CheckResult
     fun color(): FloatArray =
         if (isPressed or isTapped) if (key == KeyType.BLACK) slateGray else lightSilver
         else if (key == KeyType.BLACK) black

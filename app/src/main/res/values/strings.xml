@@ -23,8 +23,8 @@
     <string name="midiSettings">MIDI playback settings</string>
     <string name="selectBelow">Choose tracks below</string>
     <string name="selectAll">Select all</string>
-    <string name="midi">Midi info</string>
-    <string name="guide">User guide</string>
+    <string name="midiSum">Midi summary</string>
+    <string name="userGuide">User guide</string>
     <string name="justTracks">Tracks</string>
     <string name="justMidi">Midi</string>
     <string name="justGuide">Guide</string>
@@ -36,6 +36,8 @@
     <string name="noMidi">not loaded</string>
 
     MIDI
+
+    <string name="midiShare">Share MIDI-summary as text</string>
 
     Error
     <string name="noFile">File not found</string>
@@ -49,7 +51,7 @@
     <string name="trackNotSelPlaying">At least 1 track should
         always be chosen while playing</string>
 
-    Info
+    Summary
     <string name="timeCur">Time %1$02d:%2$02d</string>
     <string name="timeOf">" of %1$02d:%2$02d"</string>
     <string name="copyright">Copyright</string>
@@ -76,9 +78,9 @@
 
     Error
     <string name="warning">Warning</string>
-    <string name="notSaved">Output file was not specified&tryAgain;</string>
+    <string name="notSaved">Output %1$s-file was not specified&tryAgain;</string>
     <string name="existsTryAgain">&exists;\n%1$s&tryAgain;</string>
-    <string name="save">Choose a location, type file name and click save</string>
+    <string name="save">Choose a location, type %1$s-file name and click save</string>
 
     Recording
     <string name="recording">Recording…</string>
@@ -90,9 +92,16 @@
     <string name="invalid">Invalid</string>
 
 
-    SPECTRUM
+    TRANSCRIPTION
 
-    <string name="spectrum">Spectrum</string>
+    <string name="transcription">Transcription</string>
+    <string name="transGuide">It is simple.\n
+        If audio/video file is not corrupted, decoding and transcription will start automatically.\n
+        After conversion completes, it will offer to save the resulted MIDI-file.\n
+        Then, you can go back to the main screen and MIDI will start playing automatically.</string>
+
+    YouTube
+    <string name="youTube">Downloaded from YouTube:\n%1$s</string>
 
     FFmpeg
     <string name="probeFail">Could not understand what kind of media file it is</string>
@@ -103,19 +112,22 @@
     <string name="decodeSuccess">Successfully decoded media file</string>
     <string name="decodeFail">Could not decode media file,
         probably because its format is not supported</string>
+
+    <string name="ffmpegOut">Output from FFmpeg:</string>
+    <string name="fileInterrupt">File IO operation interrupted:\n\n%1$s</string>
+
     <string name="memoryCopyFile">&memory;Could not read media file:\n\n%1$s</string>
     <string name="memoryDecode">&memory;Could not decode media file:\n\n%1$s</string>
     <string name="memoryRawGraph">&memory;Could not draw audio wave graph:\n\n%1$s</string>
-    <string name="ffmpegOut">Output from FFmpeg:</string>
+
     <string name="waveTitle">Audio wave for the 1st second</string>
     <string name="specTitle">Log mel-scaled spectrogram</string>
-    <string name="fileInterrupt">File IO operation interrupted:\n\n%1$s</string>
 
 
-    WEB SURF
+    YOUTUBE SURF
 
-    <string name="notUrl">This might be not a valid URL:\n%1$s</string>
-    <string name="aboutBlank">Could not load the requested web page:\n%1$s</string>
+    <string name="notUrl">This might be not a valid YouTube URL:\n%1$s</string>
+    <string name="aboutBlank">Could not load the requested YouTube web page:\n%1$s</string>
     <string name="noLink">Video not found, probably you did not click on the video itself</string>
     <string name="linkFailed">Could not get download link</string>
     <string name="copyrightProtected">Streaming data is unplayable,
@@ -127,6 +139,7 @@
 
     Toasts
 
+    <string name="alreadyDown">Trying to download…</string>
     <string name="downStart">Download started.
         \nYou can check status in the notification area.</string>
 
@@ -161,6 +174,8 @@
 
 
     USER GUIDE
+
+    <string name="guideShare">Share Google Play App link with other people</string>
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio-file
         (such as MP3, WAV, etc.)</string>

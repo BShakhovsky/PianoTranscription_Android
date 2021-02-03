@@ -1,7 +1,7 @@
 <layout>
     <data>
-        <variable name="audioModel" type="ru.bshakhovsky.piano_transcription.spectrum.RawAudio" />
-        <variable name="graphsModel" type="ru.bshakhovsky.piano_transcription.spectrum.Graphs" />
+        <variable name="audioModel" type="ru.bshakhovsky.piano_transcription.media.RawAudio" />
+        <variable name="graphsModel" type="ru.bshakhovsky.piano_transcription.media.Graphs" />
     </data>
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -93,12 +93,8 @@
 
             </FrameLayout>
 
-            <com.google.android.gms.ads.AdView
-                android:id="@+id/adSpectrum"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-
-                app:adSize="BANNER"
-                app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+            <FrameLayout android:id="@+id/adSpectrum"
+                android:layout_width="match_parent" android:layout_height="wrap_content" />
 
         </LinearLayout>
 

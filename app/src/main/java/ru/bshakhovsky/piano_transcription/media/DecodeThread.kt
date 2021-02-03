@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.spectrum
+package ru.bshakhovsky.piano_transcription.media
 
 import android.app.Activity
 import android.net.Uri
