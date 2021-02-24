@@ -46,20 +46,17 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout style="@style/WrapContent" android:orientation="vertical">
-            <!-- TODO: User Guide -> screenshots and text -->
             <TextView  style="@style/Text"  android:text="@string/userGuide1"/>
-            <ImageView style="@style/Image" android:background="@drawable/gallery" />
-            <TextView  style="@style/Text"  android:text="@string/userGuide2"/>
-            <ImageView style="@style/Image" android:background="@drawable/info" />
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_1" />
             <TextView  style="@style/Text"  android:text="@string/userGuide3"/>
-            <ImageView style="@style/Image" android:background="@drawable/queue" />
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_3" />
             <TextView  style="@style/Text"  android:text="@string/userGuide4"/>
             <TextView  style="@style/Text"  android:text="@string/userGuide5"/>
-            <ImageView style="@style/Image" android:background="@drawable/queue" />
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_4" />
             <TextView  style="@style/Text"  android:text="@string/userGuide6"/>
-            <ImageView style="@style/Image" android:background="@android:drawable/ic_media_next" />
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_5" />
             <TextView  style="@style/Text"  android:text="@string/userGuide7"/>
-            <ImageView style="@style/Image" android:background="@android:drawable/ic_media_play" />
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_6" />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

@@ -46,9 +46,9 @@ import ru.bshakhovsky.piano_transcription.ad.AdInterstitial
 import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.main.mainUI.Toggle
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
+import ru.bshakhovsky.piano_transcription.media.MediaActivity
 import ru.bshakhovsky.piano_transcription.midi.Midi
 import ru.bshakhovsky.piano_transcription.midi.MidiActivity
-import ru.bshakhovsky.piano_transcription.media.MediaActivity
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Intent.ACTION_MAIN -> DebugMode.assertState(
                     (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
                             and (type == null) and (data == null) and (dataString == null)
-//                            and (extras == null)
+                            // and (extras == null)
                             /* Not null when launched on Emulator 2.7 Q VGA API 24 from main menu:
                             extras != null = dalvik.system.PathClassLoader[DexPathList[
                             [zip file "/data/app/ru.BShakhovsky.Piano_Transcription-2/base.apk"],

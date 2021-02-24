@@ -48,6 +48,7 @@ class MidiActivity : AppCompatActivity(), View.OnClickListener {
                         else keys.text = s.keys.joinToString("\n") {
                             with(it) { "${Midi.minSecStr(context, string.timeCur, milSec)} $key" }
                         }.also { content += "\n\n\n${getString(string.keys)}\n\n$it" }
+
                         if (s.tempos.isEmpty()) removeView(temposGroup)
                         else tempos.text = s.tempos.joinToString("\n") {
                             with(it) {

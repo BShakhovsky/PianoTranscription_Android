@@ -64,19 +64,22 @@ class DownloadsReceiver : BroadcastReceiver(), LifecycleObserver {
     }
 
     fun addDownload(youTubeUrl: String, downloadUrl: Uri, fileName: String) {
-        if (youTubeUrl in downloads.values) {
-            // Download button tapped multiple times, already downloading
-            InfoMessage.toast(activity.get()?.applicationContext, string.alreadyDown)
-            return
+        DebugMode.assertState(activity.get() != null)
+        activity.get()?.run {
+            if (youTubeUrl in downloads.values) {
+                // Download button tapped multiple times, already downloading
+                InfoMessage.toast(applicationContext, string.alreadyDown)
+                return
+            }
+            downloads += downManager.enqueue(
+                DownloadManager.Request(downloadUrl).setTitle(fileName)
+                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                    .setNotificationVisibility(
+                        DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                    )
+            ) to youTubeUrl
+            InfoMessage.toast(applicationContext, string.downStart)
         }
-        downloads += downManager.enqueue(
-            DownloadManager.Request(downloadUrl).setTitle(fileName)
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-                .setNotificationVisibility(
-                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-                )
-        ) to youTubeUrl
-        InfoMessage.toast(activity.get()?.applicationContext, string.downStart)
     }
 
     private fun checkFile(id: Long): Unit = with(downManager) {

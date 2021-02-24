@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.media
+package ru.bshakhovsky.piano_transcription.media.background
 
 import android.app.Activity
 import android.net.Uri
@@ -12,6 +12,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import ru.bshakhovsky.piano_transcription.R.anim.anim_graph
 import ru.bshakhovsky.piano_transcription.R.string
 
+import ru.bshakhovsky.piano_transcription.media.graphs.Graphs
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
@@ -20,7 +21,7 @@ import kotlin.io.path.ExperimentalPathApi
 
 class DecodeThread(
     lifecycle: Lifecycle, a: Activity, w: FrameLayout,// s: FrameLayout,
-    private val rawAudio: RawAudio, private val graphs: Graphs, private val uri: Uri?
+    private val decodeRoutine: DecodeRoutine, private val graphs: Graphs, private val uri: Uri?
 ) : Runnable, LifecycleObserver {
 
     private val activity = WeakPtr(lifecycle, a)
@@ -42,7 +43,7 @@ class DecodeThread(
             to show activity UI (frozen though) instead of black screen) */
         Thread.sleep(500)
         activity.get().runOnUiThread {
-            with(rawAudio) {
+            with(decodeRoutine) {
                 if (rawData == null) {
                     DebugMode.assertState(
                         graphs.waveGraph.value == null, "Unnecessary second FFmpeg call"

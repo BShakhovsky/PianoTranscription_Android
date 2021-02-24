@@ -1,6 +1,7 @@
-package ru.bshakhovsky.piano_transcription.media
+package ru.bshakhovsky.piano_transcription.media.background
 
 import android.os.ParcelFileDescriptor
+import androidx.annotation.CheckResult
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
@@ -43,6 +44,7 @@ class PipeTransfer(private val outPath: Path) : Thread() {
 
     private var inStream: ParcelFileDescriptor.AutoCloseInputStream? = null
 
+    @CheckResult
     fun pipeOut(): ParcelFileDescriptor = ParcelFileDescriptor.createPipe().let { pipe ->
         DebugMode.assertState(inStream == null, "pipeOut() must be called just once")
         inStream = ParcelFileDescriptor.AutoCloseInputStream(pipe[0])

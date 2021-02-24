@@ -33,6 +33,7 @@
     </style>
     <style name="Image" parent="WrapContent">
         <item name="android:layout_gravity">center</item>
+        <item name="android:adjustViewBounds">true</item>
     </style>
     <style name="Divider">
         <item name="android:layout_width">match_parent</item>

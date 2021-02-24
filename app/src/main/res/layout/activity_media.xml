@@ -1,11 +1,12 @@
 <layout>
     <data>
-        <variable name="audioModel" type="ru.bshakhovsky.piano_transcription.media.RawAudio" />
-        <variable name="graphsModel" type="ru.bshakhovsky.piano_transcription.media.Graphs" />
+        <variable name="audioModel"
+            type="ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine" />
+        <variable name="graphsModel"
+            type="ru.bshakhovsky.piano_transcription.media.graphs.Graphs" />
     </data>
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
 
         style="@style/MatchParent"
         android:fitsSystemWindows="true">
@@ -16,10 +17,11 @@
             android:fitsSystemWindows="true">
 
             <androidx.appcompat.widget.Toolbar
-                android:id="@+id/spectrumBar"
+                android:id="@+id/transBar"
                 android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
                 android:background="@drawable/background_green"
 
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -93,7 +95,7 @@
 
             </FrameLayout>
 
-            <FrameLayout android:id="@+id/adSpectrum"
+            <FrameLayout android:id="@+id/adTrans"
                 android:layout_width="match_parent" android:layout_height="wrap_content" />
 
         </LinearLayout>

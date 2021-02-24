@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.media
+package ru.bshakhovsky.piano_transcription.media.background
 
 import android.content.Context
 import android.net.Uri
@@ -34,7 +34,9 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteExisting
 
-class RawAudio : ViewModel() {
+import kotlin.math.roundToLong
+
+class DecodeRoutine : ViewModel() {
 
     companion object {
         const val sampleRate: Int = 16_000
@@ -142,12 +144,13 @@ class RawAudio : ViewModel() {
             context.get().run {
                 @Suppress("IfThenToElvis")
                 if (this@with == null) getString(string.probeFail) // e.g. midi
-                else (duration ?: 0).let { dur ->
+                else ((duration?.toFloat() ?: 0f) * 1_000).roundToLong().let { dur ->
                     getString(string.probeFmt, MinSec.minutes(dur), MinSec.seconds(dur), format,
-                        with(metadataEntries) {
-                            if (isEmpty()) "N/A"
-                            else joinToString("\n") { with(it) { "$key:\t$value" } }
-                        }, streams.joinToString("\n") { with(it) { "$type $fullCodec" } })
+                        with(mediaProperties) {
+                            if (has("tags")) with(getJSONObject("tags")) {
+                                keys().asSequence().joinToString("\n") { "$it:\t${getString(it)}" }
+                            } else "N/A"
+                        }, streams.joinToString("\n") { with(it) { "$type $codec" } })
                 }
             }
         }

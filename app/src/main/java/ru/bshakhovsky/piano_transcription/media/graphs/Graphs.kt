@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.media
+package ru.bshakhovsky.piano_transcription.media.graphs
 
 import android.content.res.Resources
 
@@ -15,6 +15,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 
+import ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.nio.ByteOrder
@@ -39,7 +40,7 @@ class Graphs : ViewModel() {
 
     fun drawWave(rawData: FileChannel, resources: Resources): Unit = waveGraph.value?.let {}
         ?: Bitmap.createBitmap(
-            RawAudio.sampleRate, waveScale * 2, Bitmap.Config.RGB_565
+            DecodeRoutine.sampleRate, waveScale * 2, Bitmap.Config.RGB_565
         ).let { bitmap ->
             with(rawData) {
                 with(FloatArray(minOf(bitmap.width, (size() / 4).toInt()))) {

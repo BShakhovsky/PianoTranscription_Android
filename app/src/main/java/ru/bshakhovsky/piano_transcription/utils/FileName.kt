@@ -27,8 +27,7 @@ object FileName {
                             DebugMode.assertState(!it.isNullOrEmpty())
                             it?.run {
                                 DebugMode.assertState(
-                                    startsWith("File already exists: ")
-                                            and endsWith(".$ext")
+                                    startsWith("File already exists: ") and endsWith(".$ext")
                                 )
                             }
                             InfoMessage.dialog(

@@ -9,19 +9,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 
-import com.google.android.material.snackbar.Snackbar
-
 import ru.bshakhovsky.piano_transcription.R.id.menuGuide
 import ru.bshakhovsky.piano_transcription.R.layout.activity_media
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
+import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.ActivityMediaBinding
 
 import ru.bshakhovsky.piano_transcription.ad.AdBanner
+import ru.bshakhovsky.piano_transcription.media.background.DecodeThread
+import ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine
+import ru.bshakhovsky.piano_transcription.media.graphs.Graphs
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
+import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 
 class MediaActivity : AppCompatActivity(), View.OnClickListener {
 
-    private lateinit var rawAudio: RawAudio
+    private lateinit var decodeRoutine: DecodeRoutine
     private lateinit var graphs: Graphs
     private lateinit var thread: DecodeThread
 
@@ -30,21 +33,21 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?): Unit =
         super.onCreate(savedInstanceState).also {
             with(ViewModelProvider(this)) {
-                rawAudio = get(RawAudio::class.java)
+                decodeRoutine = get(DecodeRoutine::class.java)
                     .apply { initialize(lifecycle, this@MediaActivity, cacheDir) }
                 graphs = get(Graphs::class.java)
             }
             with(DataBindingUtil.setContentView<ActivityMediaBinding>(this, activity_media)) {
                 binding = this
 
-                audioModel = rawAudio
+                audioModel = decodeRoutine
                 graphsModel = graphs
 
                 lifecycleOwner = this@MediaActivity // because of DecodeThread
             }
 
             with(binding) {
-                with(spectrumBar) {
+                with(transBar) {
                     setSupportActionBar(this)
                     DebugMode.assertState(supportActionBar != null)
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -53,10 +56,10 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
 
                 thread = DecodeThread(
                     lifecycle, this@MediaActivity, rawWave,// spectrum,
-                    rawAudio, graphs, intent.data
+                    decodeRoutine, graphs, intent.data
                 )
 
-                AdBanner(lifecycle, applicationContext, adSpectrum)
+                AdBanner(lifecycle, applicationContext, adTrans)
             }
         }
 
@@ -76,12 +79,7 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
-                menuGuide -> {
-                    // TODO: Spectrum --> "Guide" menu
-                    Snackbar.make(
-                        binding.adSpectrum, "Replace with your own action", Snackbar.LENGTH_LONG
-                    ).show()
-                }
+                menuGuide -> InfoMessage.dialog(this, string.userGuide, string.transGuide)
                 else -> DebugMode.assertArgument(false)
             }
         }

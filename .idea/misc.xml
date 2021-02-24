@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/activity_guide.xml" value="0.29257246376811596" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/dialog_add.xml" value="0.291213768115942" />
+      </map>
+    </option>
+  </component>
   <component name="EntryPointsManager">
     <list size="1">
       <item index="0" class="java.lang.String" itemvalue="androidx.lifecycle.OnLifecycleEvent" />

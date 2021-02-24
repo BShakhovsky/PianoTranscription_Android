@@ -177,19 +177,22 @@
 
     <string name="guideShare">Share Google Play App link with other people</string>
 
-    <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio-file
+    <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio/video-file
         (such as MP3, WAV, etc.)</string>
-    <string name="userGuide2">The program will automatically transcribe audio
+    <string name="userGuide3">The program will automatically transcribe audio
         and save as a MIDI-file</string>
-    <string name="userGuide3">However, no instrument information is extracted,
-        and all transcribed notes get combined into one part</string>
-    <string name="userGuide4">The accuracy depends on the complexity of the song, and is
+    <string name="userGuide4">However, no instrument information is extracted,
+        and all transcribed notes get combined into one part.
+        The accuracy depends on the complexity of the song, and is
         obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
-    <string name="userGuide5">Select tracks.  Percussion-tracks (like “Drums”, “Rhythms”, “Hit”,
-        “Blow”, “Strike”, “Clash”, etc.) will be disabled.</string>
-    <string name="userGuide6">If you want to go forward or backwards chord-by-chord,
-        you can use scroll-bar left or right button</string>
-    <string name="userGuide7">Or if you want just to play the song in real time,
-        press “Play” button</string>
+    <string name="userGuide5">If you opened an existing MIDI-file, select tracks.
+        Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.)
+        will be disabled.</string>
+    <string name="userGuide6">For some MIDI-files downloaded from Internet,
+        there can be dozens of tracks</string>
+    <string name="userGuide7">If you want just to play the song in real time,
+        tap in the upper-middle area of the screen.
+        Or if you want to go forward or backwards chord-by-chord,
+        you can pause and tap in the upper-left or upper-right areas of the screen</string>
 
 </resources>
