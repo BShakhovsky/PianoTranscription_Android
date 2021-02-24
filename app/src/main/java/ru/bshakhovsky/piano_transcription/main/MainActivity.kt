@@ -53,7 +53,6 @@ import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
-import ru.bshakhovsky.piano_transcription.web.WebActivity
 
 import java.io.FileNotFoundException
 
@@ -184,23 +183,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     clipData?.run {
                         DebugMode.assertState((itemCount == 1) and (description != null))
                         description?.run {
-                            DebugMode.assertState(mimeTypeCount == 1)
-                            if (type == "text/plain") {
-                                DebugMode.assertState(
-                                    (getMimeType(0) == "text/plain") and hasExtra(Intent.EXTRA_TEXT)
-                                )
-                                startActivity(Intent(this@MainActivity, WebActivity::class.java)
-                                    .apply { putExtras(intent) })
-                            } else {
-                                DebugMode.assertState(
-                                    (type != null)
-                                            and (type?.substringBefore('/')
-                                            in arrayOf("audio", "video"))
-                                            and (getMimeType(0).substringBefore('/')
-                                            in arrayOf("audio", "video")) and (getItemAt(0) != null)
-                                )
-                                getItemAt(0)?.run { openMedia(uri) }
-                            }
+                            DebugMode.assertState(
+                                (mimeTypeCount == 1) and (type != null)
+                                        and (type?.substringBefore('/')
+                                        in arrayOf("audio", "video"))
+                                        and (getMimeType(0).substringBefore('/')
+                                        in arrayOf("audio", "video")) and (getItemAt(0) != null)
+                            )
+                            getItemAt(0)?.run { openMedia(uri) }
                         }
                     }
                 }
@@ -330,7 +320,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    // TODO: Make private again after AddDialog feature removed
     fun openMedia(file: Uri, youTubeLink: String? = null) {
         if (!openMidi(file)) startActivityForResult(
             Intent(this, MediaActivity::class.java).apply {

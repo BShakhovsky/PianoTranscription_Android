@@ -21,7 +21,6 @@ import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.FileName
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
-import ru.bshakhovsky.piano_transcription.web.WebActivity
 
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
@@ -62,14 +61,6 @@ class AddModel : ViewModel(), LifecycleObserver {
 
             recFile?.let { (activity as MainActivity).openMedia(it) }
         }
-    }
-
-    fun surf(): Unit = with(fragment.get()) {
-        startActivityForResult(
-            Intent(activity, WebActivity::class.java), AddDialog.RequestCode.SURF.id
-        )
-        DebugMode.assertState(dialog != null)
-        dialog?.dismiss()
     }
 
     fun media(): Unit = with(fragment.get()) {

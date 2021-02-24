@@ -13,16 +13,6 @@
             android:background="@drawable/round_corners">
 
             <com.google.android.material.button.MaterialButton
-                android:text="@string/surf"
-
-                android:onClick="@{() -> addModel.surf()}"
-
-                app:icon="@drawable/earth"
-
-                style="@style/Button"
-                android:layout_marginBottom="8dp" />
-
-            <com.google.android.material.button.MaterialButton
                 android:text="@string/mediaFile"
 
                 android:onClick="@{() -> addModel.media()}"

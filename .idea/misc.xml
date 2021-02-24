@@ -3,8 +3,20 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/drawable/add.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/drawable/back.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout-land/activity_media.xml" value="0.20943562610229277" />
         <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/activity_guide.xml" value="0.29257246376811596" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/activity_main.xml" value="0.24739583333333334" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/activity_media.xml" value="0.24739583333333334" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/activity_midi.xml" value="0.24739583333333334" />
         <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/dialog_add.xml" value="0.291213768115942" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/layout/drawer_header.xml" value="0.24739583333333334" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/menu/menu_drawer.xml" value="0.24739583333333334" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/menu/menu_main.xml" value="0.24739583333333334" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/Evgeniy/AndroidStudioProjects/PianoTranscription/app/src/main/res/mipmap/ic_launcher.xml" value="1.58125" />
       </map>
     </option>
   </component>

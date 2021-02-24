@@ -13,7 +13,6 @@
 
     DIALOG ADD
 
-    <string name="surf">Surf YouTube</string>
     <string name="mediaFile">Open audio/video</string>
     <string name="midiFile">Open MIDI</string>
     <string name="recordAudio">Record audio</string>
@@ -100,9 +99,6 @@
         After conversion completes, it will offer to save the resulted MIDI-file.\n
         Then, you can go back to the main screen and MIDI will start playing automatically.</string>
 
-    YouTube
-    <string name="youTube">Downloaded from YouTube:\n%1$s</string>
-
     FFmpeg
     <string name="probeFail">Could not understand what kind of media file it is</string>
     <string name="probeFmt">
@@ -112,6 +108,7 @@
     <string name="decodeSuccess">Successfully decoded media file</string>
     <string name="decodeFail">Could not decode media file,
         probably because its format is not supported</string>
+    <string name="noAudioStream">Could not find audio stream</string>
 
     <string name="ffmpegOut">Output from FFmpeg:</string>
     <string name="fileInterrupt">File IO operation interrupted:\n\n%1$s</string>
@@ -124,73 +121,24 @@
     <string name="specTitle">Log mel-scaled spectrogram</string>
 
 
-    YOUTUBE SURF
-
-    <string name="notUrl">This might be not a valid YouTube URL:\n%1$s</string>
-    <string name="aboutBlank">Could not load the requested YouTube web page:\n%1$s</string>
-    <string name="noLink">Video not found, probably you did not click on the video itself</string>
-    <string name="linkFailed">Could not get download link</string>
-    <string name="copyrightProtected">Streaming data is unplayable,
-        probably because copyright protection is enabled</string>
-    <string name="noAudioStream">Could not find audio stream</string>
-    <string name="notJson">Google returns not valid json if api limit</string>
-
-    <string name="grantStorage">&permissions;Storage (Files and media)</string>
-
-    Toasts
-
-    <string name="alreadyDown">Trying to download…</string>
-    <string name="downStart">Download started.
-        \nYou can check status in the notification area.</string>
-
-    <string name="downFailed">Download failed</string>
-    <string name="cannotResume">Some possibly transient error occurred</string>
-    <string name="storageMount">
-        No external storage device was found, the SD card is not mounted</string>
-    <string name="downExists">&exists;</string>
-    <string name="storageIssue">Storage issue</string>
-    <string name="httpError">Error receiving or processing data occurred at the HTTP level</string>
-    <string name="memoryDownload">&memory;</string>
-    <string name="manyRedirects">There were too many redirects</string>
-    <string name="unhandledHttp">Cannot handle received HTTP code</string>
-
-    <string name="downPaused">Download paused</string>
-    <string name="queuedWiFi">Exceeded size limit for downloads over the mobile network,
-        waiting for a Wi-Fi connection to proceed</string>
-    <string name="waitNet">Waiting for network connectivity to proceed</string>
-    <string name="netRetry">Network error occurred, waiting before retrying the request</string>
-    <string name="unknownReason">Unknown reason</string>
-
-    <string name="downPending">Download is waiting to start</string>
-    <string name="downRunning">Download is currently running</string>
-    <string name="downSuccess">Download successfully completed</string>
-    <string name="unknownStatus">Unknown status</string>
-
-    Menu
-    <string name="home">Close</string>
-    <string name="back">Back</string>
-    <string name="forward">Forward</string>
-    <string name="download">Download</string>
-
-
     USER GUIDE
 
     <string name="guideShare">Share Google Play App link with other people</string>
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio/video-file
-        (such as MP3, WAV, etc.)</string>
-    <string name="userGuide3">The program will automatically transcribe audio
+        (such as MP3, MP4, etc.) or record a piano piece with microphone</string>
+    <string name="userGuide2">The program will automatically transcribe audio
         and save as a MIDI-file</string>
-    <string name="userGuide4">However, no instrument information is extracted,
+    <string name="userGuide3">However, no instrument information is extracted,
         and all transcribed notes get combined into one part.
         The accuracy depends on the complexity of the song, and is
         obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
-    <string name="userGuide5">If you opened an existing MIDI-file, select tracks.
+    <string name="userGuide4">If you opened an existing MIDI-file, select tracks.
         Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.)
         will be disabled.</string>
-    <string name="userGuide6">For some MIDI-files downloaded from Internet,
+    <string name="userGuide5">For some MIDI-files downloaded from Internet,
         there can be dozens of tracks</string>
-    <string name="userGuide7">If you want just to play the song in real time,
+    <string name="userGuide6">If you want just to play the song in real time,
         tap in the upper-middle area of the screen.
         Or if you want to go forward or backwards chord-by-chord,
         you can pause and tap in the upper-left or upper-right areas of the screen</string>
