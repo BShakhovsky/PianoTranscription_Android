@@ -1,9 +1,9 @@
 <layout>
     <data>
-        <variable name="audioModel"
+        <variable name="commonModel"
+            type="ru.bshakhovsky.piano_transcription.media.background.BothRoutines" />
+        <variable name="decodeModel"
             type="ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine" />
-        <variable name="graphsModel"
-            type="ru.bshakhovsky.piano_transcription.media.graphs.Graphs" />
     </data>
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -58,14 +58,14 @@
                 <ImageView style="@style/MatchParent"
                     android:scaleType="fitXY"
 
-                    android:src="@{graphsModel.waveGraph}"
+                    android:src="@{decodeModel.waveGraph.graphDrawable}"
 
                     tools:ignore="ContentDescription" />
 
                 <ProgressBar style="@style/WrapContent"
                     android:layout_gravity="center"
 
-                    android:visibility="@{graphsModel.waveVis}" />
+                    android:visibility="@{decodeModel.waveGraph.isVisible}" />
 
             </FrameLayout>
 
@@ -120,14 +120,14 @@
                         style="@style/MatchParent"
                         android:textColor="@android:color/black"
 
-                        android:text="@{audioModel.ffmpegLog}" />
+                        android:text="@{commonModel.ffmpegLog}" />
 
                 </ScrollView>
 
                 <ProgressBar style="@style/WrapContent"
                     android:layout_gravity="center"
 
-                    android:visibility="@{audioModel.logVis}" />
+                    android:visibility="@{decodeModel.logVis}" />
 
             </FrameLayout>
 

@@ -1,72 +1,43 @@
 package ru.bshakhovsky.piano_transcription.media.graphs
 
-import android.content.res.Resources
-
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
+import android.os.Looper
 
-import android.view.View
-
+import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 
-import ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
-import java.nio.ByteOrder
-import java.nio.channels.FileChannel
+open class Graphs : ViewModel() {
 
-import kotlin.math.absoluteValue
+    protected var scale: Int = 0
 
-class Graphs : ViewModel() {
+    @Suppress("PropertyName")
+    protected val _graphBitmap: MutableLiveData<Bitmap> = MutableLiveData()
+    val graphBitmap: LiveData<Bitmap>
+        get() = _graphBitmap
 
-    companion object {
-        private const val waveScale = 10
+    val graphDrawable: MutableLiveData<BitmapDrawable> = MutableLiveData()
+
+    lateinit var isVisible: LiveData<Int>
+        private set
+
+    @MainThread
+    protected fun initialize(s: Int, vis: LiveData<Int>) {
+        DebugMode.assertState(
+            Looper.myLooper() == Looper.getMainLooper(),
+            "Graphs should be initialized by MediaActivity UI-thread"
+        )
+        scale = s
+        isVisible = vis
     }
 
-    private val _waveGraph = MutableLiveData<BitmapDrawable>()
-    val waveGraph: LiveData<BitmapDrawable>
-        get() = _waveGraph
-
-    val waveVis: LiveData<Int> = Transformations.map(waveGraph)
-    { if (it.bitmap == null) View.VISIBLE else View.GONE }
-
-    override fun onCleared(): Unit = waveGraph.value?.bitmap?.recycle().let { super.onCleared() }
-
-    fun drawWave(rawData: FileChannel, resources: Resources): Unit = waveGraph.value?.let {}
-        ?: Bitmap.createBitmap(
-            DecodeRoutine.sampleRate, waveScale * 2, Bitmap.Config.RGB_565
-        ).let { bitmap ->
-            with(rawData) {
-                with(FloatArray(minOf(bitmap.width, (size() / 4).toInt()))) {
-                    map(FileChannel.MapMode.READ_ONLY, 0, size * 4L)
-                        .order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(this)
-                    with(Canvas(bitmap)) {
-                        drawColor(Color.WHITE)
-                        with(maxByOrNull { it.absoluteValue }) {
-                            when (this) {
-                                null -> 1f.also { DebugMode.assertState(false) }
-                                0f -> 1f
-                                else -> absoluteValue.also { DebugMode.assertState(it < 1.44) }
-                            }
-                        }.also { maxWave ->
-                            slice(0 until lastIndex).forEachIndexed { index, value ->
-                                drawLine(
-                                    index.toFloat(), value / maxWave * waveScale + waveScale,
-                                    index + 1f, get(index + 1) / maxWave * waveScale + waveScale,
-                                    Paint().apply { color = Color.BLUE }
-                                )
-                            }
-                        }
-                    }
-                }
-                DebugMode.assertState(waveGraph.value == null, "Unnecessary second bitmap creation")
-                _waveGraph.value = BitmapDrawable(resources, bitmap)
-            }
-        }
+    @MainThread
+    override fun onCleared(): Unit = DebugMode.assertState(
+        Looper.myLooper() == Looper.getMainLooper(),
+        "Graphs should be cleared by MediaActivity UI-thread"
+    ).let { graphDrawable.value?.bitmap?.recycle().let { super.onCleared() } }
 }

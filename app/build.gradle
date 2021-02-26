@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.21'
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVer"
 
     api 'androidx.constraintlayout:constraintlayout:2.0.4'
     api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0'
