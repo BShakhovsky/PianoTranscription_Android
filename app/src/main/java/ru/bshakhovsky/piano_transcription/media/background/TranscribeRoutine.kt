@@ -131,53 +131,77 @@ class TranscribeRoutine : ViewModel() {
                 val paddedSong = with(rawData)
                 { getZeroPadded(floatLen() + outStepSecs - (floatLen() - shape[0]) % outStepSecs) }
                 TfLiteModel().apply { initialize(appContext(), ffmpegLog) }.use { model ->
-                    with(appContext()) {
-                        (0..(paddedSong.size - shape[0]) / outStepSecs).forEach { curStep ->
-                            loadArray(
-                                paddedSong.sliceArray
-                                    (curStep * outStepSecs until curStep * outStepSecs + shape[0])
-                            )
-                            with(model.process(this@run)) {
-                                DebugMode.assertArgument(
-                                    outputFeature0AsTensorBuffer.shape
-                                        .contentEquals(intArrayOf(1, outStepNotes, 88))
-                                            and outputFeature1AsTensorBuffer.shape
-                                        .contentEquals(intArrayOf(1, outStepNotes, 88))
-                                            and outputFeature2AsTensorBuffer.shape
-                                        .contentEquals(intArrayOf(1, outStepNotes, 88))
-                                            and outputFeature3AsTensorBuffer.shape
-                                        .contentEquals(intArrayOf(1, outStepNotes, 88))
-                                )
-                                try {
-                                    rollGraph.drawNextRoll(
-                                        outputFeature0AsTensorBuffer.floatArray,
-                                        outputFeature1AsTensorBuffer.floatArray, threshold
-                                    )
-                                    frames += outputFeature0AsTensorBuffer.floatArray
-                                    onsets += outputFeature1AsTensorBuffer.floatArray
-                                    volumes += outputFeature3AsTensorBuffer.floatArray
-                                } catch (e: OutOfMemoryError) {
-                                    getString(string.memoryRollGraph, e.localizedMessage ?: e)
-                                        .let { errMsg ->
-                                            withContext(Dispatchers.Main) {
-                                                ffmpegLog.value += "\n\n$errMsg"
-                                                alertMsg.value = Triple(string.error, errMsg, null)
-                                            }
-                                        }
-                                }
-                            }
-                        }
-
-                        getString(string.transComplete).let { msg ->
-                            withContext(Dispatchers.Main) {
-                                rollGraph.isTranscribed.value = true
-                                ffmpegLog.value += "\n$msg"
-                            }
-                        }
-                        clearCache()
-                        makeMidi()
-                        withContext(Dispatchers.Main) { _midiSaveStart.call() }
+                    // var (numThreads, nThFound, nanoSecs) = Triple(1, false, Long.MAX_VALUE)
+                    (0..(paddedSong.size - shape[0]) / outStepSecs).forEach { curStep ->
+                        nextSecond(curStep, outStepNotes, outStepSecs, this@run, paddedSong, model)
                     }
+                    appContext().getString(string.transComplete).let { msg ->
+                        withContext(Dispatchers.Main) {
+                            rollGraph.isTranscribed.value = true
+                            ffmpegLog.value += "\n$msg"
+                        }
+                    }
+                    clearCache()
+                    makeMidi()
+                    withContext(Dispatchers.Main) { _midiSaveStart.call() }
+                }
+            }
+        }
+    }
+
+    private suspend fun nextSecond(
+        curStep: Int, outStepNotes: Int, outStepSecs: Int,
+        tensBuff: TensorBuffer, paddedSong: FloatArray, model: TfLiteModel
+    ) {
+        with(tensBuff) {
+            loadArray(
+                paddedSong.sliceArray(curStep * outStepSecs until curStep * outStepSecs + shape[0])
+            )
+        }
+        @Suppress("SpellCheckingInspection") /*
+        with(if (nThFound) model.process(this@run) else {
+            model.initialize(appContext(), ffmpegLog, numThreads)
+            var output: OnsetsFramesWavinput.Outputs
+            measureNanoTime { output = model.process(this@run) }.let {
+                if (it < nanoSecs) {
+                    nanoSecs = it
+                    numThreads += 1
+                } else {
+                    nThFound = true
+                    <string name="optimal">" = optimal"</string>
+                    withContext(Dispatchers.Main) { ffmpegLog.value += getString(string.optimal) }
+                }
+            }
+            output
+        }) { */
+        with(model.process(tensBuff)) {
+            DebugMode.assertArgument(
+                outputFeature0AsTensorBuffer.shape
+                    .contentEquals(intArrayOf(1, outStepNotes, 88))
+                        and outputFeature1AsTensorBuffer.shape
+                    .contentEquals(intArrayOf(1, outStepNotes, 88))
+                        and outputFeature2AsTensorBuffer.shape
+                    .contentEquals(intArrayOf(1, outStepNotes, 88))
+                        and outputFeature3AsTensorBuffer.shape
+                    .contentEquals(intArrayOf(1, outStepNotes, 88))
+            )
+            try {
+                rollGraph.drawNextRoll(
+                    outputFeature0AsTensorBuffer.floatArray,
+                    outputFeature1AsTensorBuffer.floatArray, threshold
+                )
+                frames += outputFeature0AsTensorBuffer.floatArray
+                onsets += outputFeature1AsTensorBuffer.floatArray
+                volumes += outputFeature3AsTensorBuffer.floatArray
+            } catch (e: OutOfMemoryError) {
+                with(data) {
+                    appContext().getString(string.memoryRollGraph, e.localizedMessage ?: e)
+                        .let { errMsg ->
+                            withContext(Dispatchers.Main) {
+                                ffmpegLog.value += "\n\n$errMsg"
+                                alertMsg.value = Triple(string.error, errMsg, null)
+                            }
+                        }
                 }
             }
         }

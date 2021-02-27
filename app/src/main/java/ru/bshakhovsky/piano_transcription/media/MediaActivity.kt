@@ -137,10 +137,10 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
             and all ViewModel data is lost, and transcription starts all-over again.
         Anyway, no real need to delete DecodeRawFloatArray from cache folder ASAP,
             it is Ok for it to be cleared automatically later *//*
-            isTranscribed.observe(this@MediaActivity) {
-                if (it) decodeThread.onCleared()
-                DebugMode.assertState(decodeThread.decodeStarted)
-            } */
+        isTranscribed.observe(this@MediaActivity) {
+            if (it) decodeThread.onCleared()
+            DebugMode.assertState(decodeThread.decodeStarted)
+        } */
     }
 
     private fun midiObserve() = with(transRoutine) {

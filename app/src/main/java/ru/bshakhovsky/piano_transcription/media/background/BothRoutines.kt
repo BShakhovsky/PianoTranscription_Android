@@ -18,7 +18,6 @@ class BothRoutines(application: Application) : AndroidViewModel(application) {
     //                              <titleId, msgStr?, msgId?>
     val alertMsg: MutableLiveData<Triple<Int, String?, Int?>> = MutableLiveData()
     val ffmpegLog: MutableLiveData<String> = MutableLiveData()
-
     var rawData: RandomFileArray = RandomFileArray()
 
     /* Uri is not WeakReference, because we need it during DecodeThread.decode(),

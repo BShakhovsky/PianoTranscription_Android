@@ -34,7 +34,7 @@ class WaveGraph : Graphs() {
     }
 
     @WorkerThread
-    suspend fun drawWave(rawData: RandomFileArray) {
+    suspend fun drawWave(rawWave: RandomFileArray) {
         DebugMode.assertState(
             Looper.myLooper() != Looper.getMainLooper(),
             "Raw wave graph should be drawn in background thread"
@@ -42,7 +42,7 @@ class WaveGraph : Graphs() {
         if (graphDrawable.value == null) Bitmap.createBitmap(
             DecodeRoutine.sampleRate, scale * 2, Bitmap.Config.ARGB_8888
         ).let { bitmap ->
-            with(rawData.getArray(bitmap.width)) {
+            with(rawWave.getArray(bitmap.width)) {
                 with(Canvas(bitmap)) {
                     with(maxByOrNull { it.absoluteValue }) {
                         when (this) {

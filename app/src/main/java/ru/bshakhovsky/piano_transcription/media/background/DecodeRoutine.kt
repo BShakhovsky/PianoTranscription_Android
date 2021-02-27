@@ -157,7 +157,7 @@ class DecodeRoutine : ViewModel() {
                     createTempFile(
                         createTempDirectory(cachePrefDecode), "InputMedia_"
                     ).let { copiedMedia ->
-                        PipeTransfer.streamToFile(withContext(Dispatchers.IO) {
+                        PipeTransfer.streamToPath(withContext(Dispatchers.IO) {
                             @Suppress("BlockingMethodInNonBlockingContext")
                             openInputStream(mediaFile)
                         }, copiedMedia)

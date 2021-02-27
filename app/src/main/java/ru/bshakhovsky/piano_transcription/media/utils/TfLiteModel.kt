@@ -76,6 +76,9 @@ class TfLiteModel : Closeable {
 
                 // if (gpu) setDevice(Model.Device.GPU) else setNumThreads(4)
                 setNumThreads(4)
+//                withContext(Dispatchers.Main)
+//                <string name="numThreads">Processing using %1$d CPU-threads</string>
+//                { ffmpegLog.value += "\n${getString(string.numThreads, numThreads)}" }
             }
         }.build().let {
             withContext(Dispatchers.IO) {

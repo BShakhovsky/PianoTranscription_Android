@@ -21,7 +21,7 @@ class PipeTransfer(private val outPath: Path) : Thread() {
             private set
 
         @ExperimentalPathApi
-        fun streamToFile(inStream: InputStream?, outPath: Path) {
+        fun streamToPath(inStream: InputStream?, outPath: Path) {
             DebugMode.assertState(inStream != null)
             inStream?.use { inS ->
                 try {
@@ -52,6 +52,6 @@ class PipeTransfer(private val outPath: Path) : Thread() {
     }
 
     @ExperimentalPathApi
-    override fun run(): Unit = streamToFile(inStream, outPath)
+    override fun run(): Unit = streamToPath(inStream, outPath)
         .also { DebugMode.assertState(inStream != null, "Did you call pipeOut() before start() ?") }
 }
