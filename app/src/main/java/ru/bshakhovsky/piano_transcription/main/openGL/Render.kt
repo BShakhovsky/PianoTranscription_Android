@@ -86,7 +86,7 @@ class Render(
             if (zoomTime != 0L) zoom(1 - .0006f * (SystemClock.uptimeMillis() - zoomTime))
             zoomTime = SystemClock.uptimeMillis()
         }
-        @Suppress("RedundantWith") with(model) {
+        with(model) {
             draw(width, height)
             geom.keys.forEach { it.rotate(SystemClock.uptimeMillis() - prevTime) }
             prevTime = SystemClock.uptimeMillis()

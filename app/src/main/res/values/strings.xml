@@ -117,8 +117,22 @@
     <string name="memoryDecode">&memory;Could not decode media file:\n\n%1$s</string>
     <string name="memoryRawGraph">&memory;Could not draw audio wave graph:\n\n%1$s</string>
 
+    <string name="memoryRollGraph">&memory;Could not draw piano-roll:\n\n%1$s</string>
     <string name="waveTitle">Audio wave for the 1st second</string>
-    <string name="specTitle">Log mel-scaled spectrogram</string>
+
+    TfLite
+    <string name="rollTitle">Piano-roll of predicted note probabilities</string>
+    <string name="duration">%1$d min : %2$d sec</string>
+
+    <string name="compat">compatible</string>
+    <string name="inCompat">incompatible</string>
+    <string name="gpuCompat">This device is GPU %1$s</string>
+
+    <string name="transComplete">Transcription completed :=)</string>
+    <string name="transInProgress">Transcription is still in progress.
+        \nAre you sure you want to cancel it?</string>
+    <string name="contTrans">Continue transcribing</string>
+    <string name="saveMidi">Save MIDI</string>
 
 
     USER GUIDE

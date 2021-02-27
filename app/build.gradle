@@ -19,6 +19,7 @@ android {
     buildFeatures { // noinspection DataBindingWithoutKapt
         dataBinding true
         viewBinding true
+        mlModelBinding true
     }
 }
 
@@ -30,6 +31,10 @@ dependencies {
 
     api 'com.google.android.material:material:1.3.0'
     api 'com.google.android.gms:play-services-ads:19.7.0'
+
+    api 'org.tensorflow:tensorflow-lite-gpu:2.4.0'
+    api 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
+    api 'org.tensorflow:tensorflow-lite-support:0.1.0'
 
     api 'com.github.pdrogfer:MidiDroid:v1.1'
     api 'com.arthenica:mobile-ffmpeg-min:4.4.LTS'

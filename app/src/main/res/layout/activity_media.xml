@@ -4,6 +4,8 @@
             type="ru.bshakhovsky.piano_transcription.media.background.BothRoutines" />
         <variable name="decodeModel"
             type="ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine" />
+        <variable name="transModel"
+            type="ru.bshakhovsky.piano_transcription.media.background.TranscribeRoutine" />
     </data>
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -59,19 +61,28 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@android:color/black"
                 android:layout_margin="0dp"
-                android:text="@string/specTitle" />
+                android:text="@string/rollTitle" />
+            <TextView style="@style/TextTitle"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black"
+                android:layout_margin="0dp"
+                android:text="@{transModel.rollGraph.rollDur}" />
 
-            <FrameLayout android:id="@+id/spectrum"
+            <FrameLayout android:id="@+id/roll"
                 android:layout_width="match_parent" android:layout_height="0dp"
                 android:layout_weight="2">
 
                 <ImageView style="@style/MatchParent"
                     android:scaleType="fitXY"
 
+                    android:src="@{transModel.rollGraph.graphDrawable}"
+
                     tools:ignore="ContentDescription" />
 
                 <ProgressBar style="@style/WrapContent"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+
+                    android:visibility="@{transModel.rollGraph.isVisible}" />
 
             </FrameLayout>
 

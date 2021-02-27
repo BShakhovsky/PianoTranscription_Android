@@ -4,6 +4,8 @@
             type="ru.bshakhovsky.piano_transcription.media.background.BothRoutines" />
         <variable name="decodeModel"
             type="ru.bshakhovsky.piano_transcription.media.background.DecodeRoutine" />
+        <variable name="transModel"
+            type="ru.bshakhovsky.piano_transcription.media.background.TranscribeRoutine" />
     </data>
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -50,7 +52,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/logScroll"
                 app:layout_constraintTop_toBottomOf="@id/waveTitle"
-                app:layout_constraintBottom_toTopOf="@id/spectrumTitle"
+                app:layout_constraintBottom_toTopOf="@id/rollTitle"
 
                 app:layout_constraintHorizontal_weight="2"
                 app:layout_constraintVertical_weight="1">
@@ -69,26 +71,39 @@
 
             </FrameLayout>
 
-            <TextView android:id="@+id/spectrumTitle"
+            <TextView android:id="@+id/rollTitle"
                 style="@style/TextTitle"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@android:color/black"
                 android:layout_margin="0dp"
-                android:text="@string/specTitle"
+                android:text="@string/rollTitle"
 
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/logScroll"
                 app:layout_constraintTop_toBottomOf="@id/rawWave"
-                app:layout_constraintBottom_toTopOf="@id/spectrum"
+                app:layout_constraintBottom_toTopOf="@id/rollDur"
+
+                app:layout_constraintHorizontal_weight="2" />
+            <TextView android:id="@+id/rollDur"
+                style="@style/TextTitle"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black"
+                android:layout_margin="0dp"
+                android:text="@{transModel.rollGraph.rollDur}"
+
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/logScroll"
+                app:layout_constraintTop_toBottomOf="@id/rollTitle"
+                app:layout_constraintBottom_toTopOf="@id/roll"
 
                 app:layout_constraintHorizontal_weight="2" />
 
-            <FrameLayout android:id="@+id/spectrum"
+            <FrameLayout android:id="@+id/roll"
                 style="@style/Zero"
 
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/logScroll"
-                app:layout_constraintTop_toBottomOf="@id/spectrumTitle"
+                app:layout_constraintTop_toBottomOf="@id/rollDur"
                 app:layout_constraintBottom_toBottomOf="parent"
 
                 app:layout_constraintHorizontal_weight="2"
@@ -97,17 +112,21 @@
                 <ImageView style="@style/MatchParent"
                     android:scaleType="fitXY"
 
+                    android:src="@{transModel.rollGraph.graphDrawable}"
+
                     tools:ignore="ContentDescription" />
 
                 <ProgressBar style="@style/WrapContent"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+
+                    android:visibility="@{transModel.rollGraph.isVisible}" />
 
             </FrameLayout>
 
             <FrameLayout android:id="@+id/logScroll"
                 style="@style/Zero"
 
-                app:layout_constraintStart_toEndOf="@id/spectrum"
+                app:layout_constraintStart_toEndOf="@id/roll"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/adTrans"

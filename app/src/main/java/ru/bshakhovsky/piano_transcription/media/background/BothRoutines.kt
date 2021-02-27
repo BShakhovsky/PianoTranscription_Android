@@ -9,19 +9,17 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 
+import ru.bshakhovsky.piano_transcription.media.utils.RandomFileArray
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.FileName
 
-import java.nio.channels.FileChannel
-
 class BothRoutines(application: Application) : AndroidViewModel(application) {
 
-    //                              <titleId, msgStr?, msgInt?>
+    //                              <titleId, msgStr?, msgId?>
     val alertMsg: MutableLiveData<Triple<Int, String?, Int?>> = MutableLiveData()
     val ffmpegLog: MutableLiveData<String> = MutableLiveData()
 
-    // TODO: Delete decoded raw audio file after mel-spectrum is calculated
-    var rawData: FileChannel? = null
+    var rawData: RandomFileArray = RandomFileArray()
 
     /* Uri is not WeakReference, because we need it during DecodeThread.decode(),
     and after that will need file name during TranscribeThread.makeMidi() and gamma(),

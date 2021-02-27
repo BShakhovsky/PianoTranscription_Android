@@ -80,7 +80,7 @@ class DecodeRoutine : ViewModel() {
         )
         FFmpeg.cancel()
         pipeThread?.interrupt()
-        data.rawData?.close()
+        data.rawData.file?.close()
         clearCache()
         super.onCleared()
     }
@@ -93,19 +93,21 @@ class DecodeRoutine : ViewModel() {
             "DecodeRoutine should be started in background thread"
         )
         with(waveGraph) {
-            DebugMode.assertState(
-                (rawData == null) and (graphBitmap.value == null) and (graphDrawable.value == null),
-                "Unnecessary second FFmpeg call"
-            )
-            decode()
-            try {
-                rawData?.let { drawWave(it) }
-            } catch (e: OutOfMemoryError) {
-                with(appContext()) {
-                    getString(string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
-                        withContext(Dispatchers.Main) {
-                            ffmpegLog.value += "\n\n$errMsg"
-                            alertMsg.value = Triple(string.error, errMsg, null)
+            with(rawData) {
+                DebugMode.assertState(
+                    (graphBitmap.value == null) and (graphDrawable.value == null)
+                            and (file == null), "Unnecessary second FFmpeg call"
+                )
+                decode()
+                try {
+                    file?.let { drawWave(this) }
+                } catch (e: OutOfMemoryError) {
+                    with(appContext()) {
+                        getString(string.memoryRawGraph, e.localizedMessage ?: e).let { errMsg ->
+                            withContext(Dispatchers.Main) {
+                                ffmpegLog.value += "\n\n$errMsg"
+                                alertMsg.value = Triple(string.error, errMsg, null)
+                            }
                         }
                     }
                 }
@@ -120,7 +122,7 @@ class DecodeRoutine : ViewModel() {
             Looper.myLooper() != Looper.getMainLooper(),
             "Decoding should be called from background thread"
         )
-        DebugMode.assertState(rawData == null, "Unnecessary second FFmpeg call")
+        DebugMode.assertState(rawData.file == null, "Unnecessary second FFmpeg call")
         with(appContext()) {
             DebugMode.assertState(youTubeLink == null)
 //            youTubeLink?.let {
@@ -204,7 +206,7 @@ class DecodeRoutine : ViewModel() {
             "FFprobe should be called from background thread"
         )
         DebugMode.assertState(
-            !::probeLog.isInitialized and (rawData == null), "Unnecessary second FFprobe call"
+            !::probeLog.isInitialized and (rawData.file == null), "Unnecessary second FFprobe call"
         )
         probeLog = "$fileName\n" + with(FFprobe.getMediaInformation("pipe:$fd")) {
             appContext().run {
@@ -239,7 +241,7 @@ class DecodeRoutine : ViewModel() {
             with(data) {
                 // Raw audio float array of more than 10 minutes causes Out of Memory,
                 // so, save to temp file instead of byte array
-                DebugMode.assertState(rawData == null, "Unnecessary second FFmpeg call")
+                DebugMode.assertState(rawData.file == null, "Unnecessary second FFmpeg call")
                 pipeThread = PipeTransfer(it).apply {
                     pipeOut().use { outPipe ->
                         FFmpeg.cancel()
@@ -288,7 +290,7 @@ class DecodeRoutine : ViewModel() {
                             getString(string.ffmpegOut)
                         }\n\n${Config.getLastCommandOutput()}"
                         alertMsg.value = Triple(string.error, null, string.noAudioStream)
-                    } else rawData = this
+                    } else rawData.file = this
                 }
             }
         }

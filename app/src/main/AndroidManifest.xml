@@ -44,6 +44,7 @@
             <!-- Android - Lint - Correctness - App Links Auto Verification Failure
             http://bshakhovsky.github.io/.well-known/assetlinks.json
             has incorrect JSON syntax -->
+            <!-- TODO /.well-known/assetlinks.json package name to lowercase -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
