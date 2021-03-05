@@ -18,4 +18,9 @@
 
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/menuRate"
+        android:title="@string/justReview"
+
+        app:showAsAction="ifRoom" />
+
 </menu>

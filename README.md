@@ -12,7 +12,7 @@ Want to transcribe some piano piece from YouTube?  You can google for websites/a
 
 # For Android 8.0 (API level 26) or higher:
 
-[![](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png 'Get it on Google Play')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png 'Get it on Google Play')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 # About Midi/Karaoke Files
 
@@ -33,28 +33,28 @@ For complete __*Privacy Policy*__ see [Privacy Policy](https://BShakhovsky.GitHu
 
 # How to Use
 
-[![](Main.png 'Main Activity')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_1.webp 'Main Activity')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 1. Open any MIDI- or Karaoke-file or any other audio/video-file (such as MP3, MP4, etc.) or record a piano piece with microphone.
 
-[![](Menu.png 'Attach new audio')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_2.webp 'Attach new audio')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 2. The program will automatically transcribe audio and save as a MIDI-file.
 
-[![](Transcription.png 'Generate MIDI from audio/video')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_3.webp 'Generate MIDI from audio/video')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 However, no instrument information is extracted, and all transcribed notes get combined into one part.  The accuracy depends on the complexity of the song, and is obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.
 
 3. If you opened an existing MIDI-file, select tracks.  Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.) will be disabled.
 
-[![](Tracks4.png 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_4.webp 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 For some MIDI-files downloaded from Internet, there can be dozens of tracks.
 
-[![](Tracks10.png 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_5.webp 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 4. If you want just to play the song in real time, tap in the upper-middle area of the screen.  Or if you want to go forward or backwards chord-by-chord, you can pause and tap in the upper-left or upper-right areas of the screen.
 
-[![](Play.png 'Play/pause/seek/prev/next')](https://play.google.com/store/apps/details?id=ru.bshakhovsky.piano_transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_6.webp 'Play/pause/seek/prev/next')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 5. Enjoy :smile:

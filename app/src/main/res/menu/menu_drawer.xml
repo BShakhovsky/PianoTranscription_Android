@@ -28,4 +28,12 @@
         </menu>
     </item>
 
+    <item android:title="@string/justReview">
+        <menu>
+            <item android:id="@+id/drawerRate"
+                android:icon="@drawable/thumb"
+                android:title="@string/review" />
+        </menu>
+    </item>
+
 </menu>

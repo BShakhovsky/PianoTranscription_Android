@@ -39,8 +39,7 @@ class GuideActivity : AppCompatActivity(), View.OnClickListener {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_SUBJECT, "${getString(string.app_name)} for Android")
                 putExtra(
-                    Intent.EXTRA_TEXT,
-                    "https://play.google.com/store/apps/details?id=${packageName}"
+                    Intent.EXTRA_TEXT, "https://play.google.com/store/apps/details?id=$packageName"
                 )
                 DebugMode.assertState(resolveActivity(packageManager) != null)
                 InfoMessage.toast(applicationContext, string.guideShare)

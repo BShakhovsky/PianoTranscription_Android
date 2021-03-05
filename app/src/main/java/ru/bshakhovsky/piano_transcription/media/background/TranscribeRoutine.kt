@@ -132,8 +132,8 @@ class TranscribeRoutine : ViewModel() {
                 { getZeroPadded(floatLen() + outStepSecs - (floatLen() - shape[0]) % outStepSecs) }
                 TfLiteModel().apply { initialize(appContext(), ffmpegLog) }.use { model ->
                     // var (numThreads, nThFound, nanoSecs) = Triple(1, false, Long.MAX_VALUE)
-                    (0..(paddedSong.size - shape[0]) / outStepSecs).forEach { curStep ->
-                        nextSecond(curStep, outStepNotes, outStepSecs, this@run, paddedSong, model)
+                    (0..(paddedSong.size - shape[0]) / outStepSecs).forEach {
+                        nextSecond(it, outStepNotes, outStepSecs, model, this@run, paddedSong)
                     }
                     appContext().getString(string.transComplete).let { msg ->
                         withContext(Dispatchers.Main) {
@@ -151,7 +151,7 @@ class TranscribeRoutine : ViewModel() {
 
     private suspend fun nextSecond(
         curStep: Int, outStepNotes: Int, outStepSecs: Int,
-        tensBuff: TensorBuffer, paddedSong: FloatArray, model: TfLiteModel
+        model: TfLiteModel, tensBuff: TensorBuffer, paddedSong: FloatArray
     ) {
         with(tensBuff) {
             loadArray(
@@ -335,57 +335,52 @@ class TranscribeRoutine : ViewModel() {
 
         IntArray(12).let { notesCount ->
             DebugMode.assertState(midi.trackCount == 1)
-            midi.tracks[0].events.forEach { event ->
-                with(event) {
-                    when (this) {
-                        is TrackName -> DebugMode.assertState(trackName == "Acoustic Grand Piano")
-                        is TextualMetaEvent -> when (this) {
-                            is InstrumentName -> DebugMode
-                                .assertState(name == "Acoustic Grand Piano")
-                            is CopyrightNotice -> DebugMode
-                                .assertState(notice == "Used software created by Boris Shakhovsky")
-                            is Text -> DebugMode.assertState(
-                                text == with(data) {
-                                    "Automatically transcribed from ${
+            with(data) {
+                midi.tracks[0].events.forEach { event ->
+                    with(event) {
+                        when (this) {
+                            is TrackName -> DebugMode
+                                .assertState(trackName == "Acoustic Grand Piano")
+                            is TextualMetaEvent -> when (this) {
+                                is InstrumentName -> DebugMode
+                                    .assertState(name == "Acoustic Grand Piano")
+                                is CopyrightNotice -> DebugMode.assertState(
+                                    notice == "Used software created by Boris Shakhovsky"
+                                )
+                                is Text -> DebugMode.assertState(
+                                    text == "Automatically transcribed from ${
                                         youTubeLink?.let { "YouTube:\r\n\t$it" } ?: "audio:"
-                                    }\r\n\t$fileName"
-                                }
-                            )
-                            else -> DebugMode.assertState(false, "Wrong text meta-event")
-                        }
-                        is Tempo -> DebugMode.assertState(bpm == 120f)
-                        is ChannelEvent -> {
-                            DebugMode.assertState(channel == 0)
-                            when (this) {
-                                is NoteOn -> {
-                                    @Suppress("SpellCheckingInspection")
-                                    /* TODO: https://github.com/BShakhovsky/PianoAudioToMidi/
-                                        blob/master/PianoToMidi/PianoToMidi.cpp#L370
-                                        data_->pianoRoll.resize(data_->frameProbs.size()
-                                            / notesCount.size());
-                                        instead of notesCount.size() (= 12) should be 88
-                                            (e.g. data_->pianoRoll.front().size()) */
-                                    notesCount[noteValue % notesCount.size] += 1
-                                }
-                                else -> DebugMode.assertState(this is NoteOff)
+                                    }\r\n\t$fileName")
+                                else -> DebugMode.assertState(false, "Wrong text meta-event")
                             }
+                            is Tempo -> DebugMode.assertState(bpm == 120f)
+                            is ChannelEvent -> {
+                                DebugMode.assertState(channel == 0)
+                                when (this) {
+                                    is NoteOn -> {
+                                        @Suppress("SpellCheckingInspection")
+                                        notesCount[noteValue % notesCount.size] += 1
+                                    }
+                                    else -> DebugMode.assertState(this is NoteOff)
+                                }
+                            }
+                            else -> DebugMode.assertState(false, "Wrong Midi-event")
                         }
-                        else -> DebugMode.assertState(false, "Wrong Midi-event")
                     }
                 }
-            }
-            with(notesCount.mapIndexed { index, i ->
-                Pair(
-                    arrayOf("C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B")
-                            [index], i
-                )
-            }.sortedBy { it.second }.reversed().slice(0 until 7).map {
-                with(it)
-                { DebugMode.assertState(second >= 0).let { if (second > 0) first else "" } }
-            }) {
-                joinToString(" ", "Scale:\t\t")
-                    .let { withContext(Dispatchers.Main) { data.ffmpegLog.value += "\n${it}" } }
-                keySign(this)
+                with(notesCount.mapIndexed { index, i ->
+                    Pair(
+                        arrayOf("C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B")
+                                [index], i
+                    )
+                }.sortedBy { it.second }.reversed().slice(0 until 7).map {
+                    with(it)
+                    { DebugMode.assertState(second >= 0).let { if (second > 0) first else "" } }
+                }) {
+                    joinToString(" ", "${appContext().getString(string.scale)}:\t\t")
+                        .let { withContext(Dispatchers.Main) { data.ffmpegLog.value += "\n${it}" } }
+                    keySign(this)
+                }
             }
         }
     }
@@ -446,9 +441,16 @@ class TranscribeRoutine : ViewModel() {
             } else if (("B" !in gamma) and ("E" !in gamma)) result = majorMinor("B", "Ab")
             else if (("C" !in gamma) and ("F" !in gamma)) result = majorMinor("C#", "Bb")
 
-            if (result != null) addKeySign(result)
-            else result = "The scale does not correspond to any"
-            withContext(Dispatchers.Main) { data.ffmpegLog.value += "\nKey signature:\t$result" }
+            with(data) {
+                appContext().run {
+                    if (result != null) addKeySign(
+                        result ?: DebugMode.assertState(false).let { return@run }
+                    )
+                    else result = getString(string.badScale)
+                    withContext(Dispatchers.Main)
+                    { ffmpegLog.value += "\n${getString(string.keySign)}:\t$result" }
+                }
+            }
         }
     }
 

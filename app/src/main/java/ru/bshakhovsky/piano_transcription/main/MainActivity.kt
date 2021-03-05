@@ -52,9 +52,11 @@ import ru.bshakhovsky.piano_transcription.midi.MidiActivity
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
+import ru.bshakhovsky.piano_transcription.utils.Review
 import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
 
 import java.io.FileNotFoundException
+import java.util.Locale
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
@@ -165,11 +167,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 )
 
                 Intent.ACTION_VIEW -> DebugMode.assertState(
-                    (categories.size in arrayOf(1, 2)) and (hasCategory(Intent.CATEGORY_DEFAULT)
-                            or hasCategory(Intent.CATEGORY_BROWSABLE))
-                            and (type == null) and (data != null) and (dataString in arrayOf(
-                        "http://bshakhovsky.github.io", "https://bshakhovsky.github.io"
-                    )) and (extras == null) and (clipData == null)
+                    // (categories.size in arrayOf(1, 2)) and (hasCategory(Intent.CATEGORY_DEFAULT)
+                    //        or hasCategory(Intent.CATEGORY_BROWSABLE)) and
+                    // categories = null when tried to go to website from Google Play
+                    (type == null) and (data != null)
+                            and with(dataString!!.toLowerCase(Locale.getDefault())) {
+                        startsWith("http://bshakhovsky.github.io") or
+                                startsWith("https://bshakhovsky.github.io")
+                    } and (extras == null) and (clipData == null)
                 )
 
                 Intent.ACTION_SEND -> {
@@ -216,6 +221,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 id.menuTracks -> binding.drawerLayout.openDrawer(GravityCompat.START)
                 id.menuMidi -> midi()
                 id.menuGuide -> guide()
+                id.menuRate -> Review.review(applicationContext, this)
                 else -> DebugMode.assertArgument(false)
             }
         }
@@ -224,6 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             id.drawerMidi -> midi()
             id.drawerGuide -> guide()
+            id.drawerRate -> Review.review(applicationContext, this)
             else -> {
                 checkGroup(item.groupId, item.itemId)
                 (item.actionView as Switch).toggle()

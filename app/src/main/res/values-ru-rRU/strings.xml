@@ -1,0 +1,166 @@
+<!DOCTYPE resources [<!ENTITY exists      "Файл в заданной папке уже существует.">
+                 <!ENTITY tryAgain    ".\nПопробуйте снова, выберите куда, и введите имя файла.">
+                 <!ENTITY memory      "Недостаточно памяти на устройстве, SD-карта переполнена.\n">
+                 <!ENTITY permissions "Откройте Разрешения --> ">]>
+
+<resources>
+
+    <string name="stop">Стоп</string>
+    <string name="error">Ошибка</string>
+    <string name="loadSound">Загружено %1$d из 88 звуков нот</string>
+
+    ДИАЛОГ-МЕНЮ
+
+    <string name="mediaFile">Аудио/видео</string>
+    <string name="midiFile">Миди-файл</string>
+    <string name="recordAudio">Диктофон</string>
+
+    МЕНЮ
+
+    <string name="midiSettings">Проигрываемое Миди</string>
+    <string name="selectBelow">Выберите инструменты</string>
+    <string name="selectAll">Выбрать все</string>
+    <string name="midiSum">Инфа из Миди</string>
+    <string name="userGuide">Инструкция</string>
+    <string name="review">Оставить отзыв</string>
+    <string name="justTracks">Инструменты</string>
+    <string name="justMidi">Миди</string>
+    <string name="justGuide">Справка</string>
+    <string name="justReview">Отзыв</string>
+
+    ШТОРКА
+
+    <string name="tracks">%1$d из %2$d</string>
+    <string name="keyTemp">%1$s %2$d уд/мин</string>
+    <string name="noMidi">не загружено</string>
+
+    МИДИ
+
+    <string name="midiShare">Переслать описание Миди в текстовом виде</string>
+
+    Ошибки
+    <string name="noFile">Файл не найден</string>
+    <string name="badFile">Файл не поддерживается</string>
+    <string name="notMidi">Это не Миди-файл</string>
+    <string name="emptyMidi">Пустой Миди</string>
+    <string name="noTracks">Этот Миди-файл не содержит ни одной гармонической ноты.
+        \nНечего играть на пианино.</string>
+    <string name="zeroDur">Этот Миди-файл не содержит информацию о времени.
+        \nНевозможно проиграть его.</string>
+    <string name="trackNotSel">Ни один инструмент не выбран</string>
+    <string name="trackNotSelPlaying">Хотя бы 1 инструмент всегда должен быть выбран
+        во время проигрывания</string>
+
+    Информация
+    <string name="timeCur">Время %1$02d:%2$02d</string>
+    <string name="timeOf">" из %1$02d:%2$02d"</string>
+    <string name="copyright">Авторские права</string>
+    <string name="keys">Тональности</string>
+    <string name="tempos">Темпы</string>
+    <string name="lyrics">Текст песни</string>
+    <string name="marker">Пометки</string>
+    <string name="cue">Ключевые точки</string>
+    <string name="otherText">Другой текст</string>
+    <string name="garbage">Лишние дорожки</string>
+    <string name="harm">Гармонические инструменты</string>
+    <string name="percuss">Ударные инструменты</string>
+    <string name="untitled">Безымянный</string>
+
+
+    ДИКТОФОН
+
+    Разрешения
+    <string name="settings">Настройки</string>
+    <string name="grantRec">&permissions;Микрофон</string>
+    <string name="micError">Не получилось записать аудио</string>
+    <string name="prepError">Не получилось подготовить диктофон:\n%1$s</string>
+    <string name="record">Аудио</string>
+
+    Ошибки
+    <string name="warning">Предупреждение!</string>
+    <string name="notSaved">Сохраняемый %1$s-файл не выбран&tryAgain;</string>
+    <string name="existsTryAgain">&exists;\n%1$s&tryAgain;</string>
+    <string name="save">Выберите куда, и введите имя %1$s-файла</string>
+
+    Запись
+    <string name="recording">Записываю…</string>
+    <string name="tapStop">Нажмите стоп, когда решите закончить запись и сохранить запись</string>
+    <string name="recFormat">%1$s кГц, %2$s, кодирование “%3$s” в “AMR-NB”</string>
+    <string name="mono">Моно</string>
+    <string name="stereo">Стерео</string>
+    <string name="invalidChannels">Неверное число каналов</string>
+    <string name="invalid">N/A</string>
+
+
+    ПЕРЕЛОЖЕНИЕ
+
+    <string name="transcription">Конвертирование</string>
+    <string name="transGuide">Тут всё просто.\n
+        Если аудио/видео-файл не испорчен, декодирование и конвертирование начнутся автоматически.\n
+        По завершению, будет предложено сохранить получившийся Миди-файл.\n
+        Потом можете нажать назад, вернуться на главный экран,
+        и это Миди начнёт проигрываться на 3Д-пианино.</string>
+
+    FFmpeg
+    <string name="probeFail">Не получилось распознать формат медиа-файла</string>
+    <string name="probeFmt">Длительность %1$d мин : %2$d сек
+        \nФормат %3$s\n\nМетаданные:\n%4$s\n\nДорожки:\n%5$s</string>
+    <string name="cancel">Отбой</string>
+    <string name="cancelled">Отменено пользователем</string>
+    <string name="decodeSuccess">Декодирование успешно</string>
+    <string name="decodeFail">Не получилось декодировать медиа-файл,
+        возможно, потому что его формат не поддерживается</string>
+    <string name="noAudioStream">Не найден аудио-поток</string>
+
+    <string name="ffmpegOut">Информация из FFmpeg:</string>
+    <string name="fileInterrupt">Чтение/запись файла прервано:\n\n%1$s</string>
+
+    <string name="memoryCopyFile">&memory;Не получилось открыть медиа-файл:\n\n%1$s</string>
+    <string name="memoryDecode">&memory;Не получилось декодировать медиа-файл:\n\n%1$s</string>
+    <string name="memoryRawGraph">&memory;Не получилось нарисовать звуковую волну:\n\n%1$s</string>
+
+    <string name="memoryRollGraph">&memory;Не получилось нарисовать piano-roll:\n\n%1$s</string>
+    <string name="waveTitle">Звуковая волна первой секунды</string>
+
+    TfLite
+    <string name="rollTitle">Piano-roll предсказанных нот</string>
+    <string name="duration">%1$d мин : %2$d сек</string>
+
+    <string name="compat">может</string>
+    <string name="inCompat">не может</string>
+    <string name="gpuCompat">Это устройство %1$s использовать графический процессор</string>
+
+    <string name="transComplete">Конвертирование завершено :=)</string>
+    <string name="transInProgress">Конвертирование ещё в процессе.
+        \nУверены, что хотите его прервать?</string>
+    <string name="contTrans">Продолжить конвертирование</string>
+    <string name="saveMidi">Сохранить Миди</string>
+
+    <string name="scale">Гамма</string>
+    <string name="keySign">Тональность</string>
+    <string name="badScale">Эта гамма не соответствует никакой тональности</string>
+
+
+    ИНСТРУКЦИЯ
+
+    <string name="guideShare">Поделитесь ссылкой на приложение на Плей Маркете</string>
+
+    <string name="userGuide1">Откройте Миди- или Караоке-файл или любой другой аудио/видео-файл
+        (например, MP3, MP4, и т.п.) или запишите пианино с помощью диктофона</string>
+    <string name="userGuide2">Программа автоматически сконвертирует аудио
+        и сохранит Миди-файл</string>
+    <string name="userGuide3">Впрочем, информация о инструментах не будет распознана,
+        и все ноты будут смешаны в одной Миди-дорожке (фортепиано).
+        Чёткость распознавания зависит от качества музыкальной записи, и, очевидно,
+        будет наилучшей для фортепианного соло (без пения и других инструментов).
+        Точность для фортепианных композиций примерно =~ 75%.</string>
+    <string name="userGuide4">Если хотите проиграть чей-то готовый Миди-файл, выберите инструменты.
+        Ударные (например, “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, и т. д.)
+        будут недоступны.</string>
+    <string name="userGuide5">В некоторых Миди-файлах, скачанных из интернета,
+        может быть с десяток инструментов</string>
+    <string name="userGuide6">Для проигрывания/паузы Миди коснитесь в верхней-средней части экрана.
+        Или если хотите идти аккорд за аккордом по шагам, остановите на паузу,
+        и коснитесь в верхней левой или правой части экрана соответственно.</string>
+
+</resources>

@@ -22,8 +22,7 @@ open class Graphs : ViewModel() {
 
     val graphDrawable: MutableLiveData<BitmapDrawable> = MutableLiveData()
 
-    lateinit var isVisible: LiveData<Int>
-        private set
+    lateinit var isVisible: LiveData<Int> private set
 
     @MainThread
     protected fun initialize(s: Int, vis: LiveData<Int>) {

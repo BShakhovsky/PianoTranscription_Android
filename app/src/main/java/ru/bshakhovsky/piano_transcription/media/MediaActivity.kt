@@ -18,6 +18,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import ru.bshakhovsky.piano_transcription.R.anim.anim_graph
 import ru.bshakhovsky.piano_transcription.R.id.menuGuide
+import ru.bshakhovsky.piano_transcription.R.id.menuRate
 import ru.bshakhovsky.piano_transcription.R.layout.activity_media
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
@@ -30,6 +31,7 @@ import ru.bshakhovsky.piano_transcription.media.background.TranscribeRoutine
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MinSec
+import ru.bshakhovsky.piano_transcription.utils.Review
 
 import kotlin.io.path.ExperimentalPathApi
 
@@ -217,6 +219,7 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
                 menuGuide -> InfoMessage.dialog(this, string.userGuide, string.transGuide)
+                menuRate -> Review.review(applicationContext, this)
                 else -> DebugMode.assertArgument(false)
             }
         }

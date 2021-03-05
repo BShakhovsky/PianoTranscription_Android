@@ -28,8 +28,7 @@ class WaveGraph : Graphs() {
             "Raw wave graph should be initialized by MediaActivity UI-thread"
         )
         super.initialize(
-            10, Transformations.map(graphDrawable)
-            { if (it.bitmap == null) View.VISIBLE else View.GONE }
+            10, Transformations.map(graphBitmap) { if (it == null) View.VISIBLE else View.GONE }
         )
     }
 

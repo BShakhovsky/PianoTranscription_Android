@@ -25,8 +25,7 @@ class PipeTransfer(private val outPath: Path) : Thread() {
             DebugMode.assertState(inStream != null)
             inStream?.use { inS ->
                 try {
-                    // TODO: reduce buffer from 64 Mb to smaller size
-                    ByteArray(64 * 1_024f.pow(2).toInt()).also { buf ->
+                    ByteArray(32 * 1_024f.pow(2).toInt()).also { buf ->
                         var len: Int
                         while (inS.read(buf).also { len = it } > 0)
                             if (interrupted()) throw InterruptedIOException()
@@ -35,8 +34,7 @@ class PipeTransfer(private val outPath: Path) : Thread() {
                     }
                 } catch (e: Throwable) {
                     error = e
-                } finally {
-                    inS.close()
+//                } finally { inS.close()
                 }
             }
         }

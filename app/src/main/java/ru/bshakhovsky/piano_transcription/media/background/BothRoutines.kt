@@ -18,20 +18,18 @@ class BothRoutines(application: Application) : AndroidViewModel(application) {
     //                              <titleId, msgStr?, msgId?>
     val alertMsg: MutableLiveData<Triple<Int, String?, Int?>> = MutableLiveData()
     val ffmpegLog: MutableLiveData<String> = MutableLiveData()
-    var rawData: RandomFileArray = RandomFileArray()
+    val rawData: RandomFileArray = RandomFileArray()
 
     /* Uri is not WeakReference, because we need it during DecodeThread.decode(),
     and after that will need file name during TranscribeThread.makeMidi() and gamma(),
     but the WeakReference would be null for short time during orientation change
     (its lifecycle callback onDestroy will be called) */
-    lateinit var mediaFile: Uri
-        private set
+    lateinit var mediaFile: Uri private set
 
     /* File name is not WeakReference, because we need it during makeMidi() and gamma(),
     but the WeakReference would be null for short time during orientation change
     (its lifecycle callback onDestroy will be called) */
-    lateinit var fileName: String
-        private set
+    lateinit var fileName: String private set
 
     var youTubeLink: String? = null
         private set

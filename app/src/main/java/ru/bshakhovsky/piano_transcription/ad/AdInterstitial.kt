@@ -29,7 +29,7 @@ class AdInterstitial(lifecycle: Lifecycle, a: Activity) :
     }
 
     private fun load() = activity.get().applicationContext.let { appContext ->
-        InterstitialAd.load(
+        InterstitialAd.load( // TODO Interstitial unit ID
             appContext, "ca-app-pub-3940256099942544/1033173712", AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) = super.onAdLoaded(ad)

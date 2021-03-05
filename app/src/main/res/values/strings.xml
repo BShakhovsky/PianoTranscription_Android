@@ -5,8 +5,8 @@
 
 <resources>
 
-    <string name="app_name">Piano Transcription</string>
-    <string name="ok">OK</string>
+    <string name="app_name" translatable="false">Piano Transcription</string>
+    <string name="ok" translatable="false">OK</string>
     <string name="stop">Stop</string>
     <string name="error">Error</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
@@ -24,9 +24,11 @@
     <string name="selectAll">Select all</string>
     <string name="midiSum">Midi summary</string>
     <string name="userGuide">User guide</string>
+    <string name="review">Rate and review</string>
     <string name="justTracks">Tracks</string>
     <string name="justMidi">Midi</string>
     <string name="justGuide">Guide</string>
+    <string name="justReview">Review</string>
 
     DRAWER
 
@@ -133,6 +135,10 @@
         \nAre you sure you want to cancel it?</string>
     <string name="contTrans">Continue transcribing</string>
     <string name="saveMidi">Save MIDI</string>
+
+    <string name="scale">Scale</string>
+    <string name="keySign">Key signature</string>
+    <string name="badScale">The scale does not correspond to any</string>
 
 
     USER GUIDE

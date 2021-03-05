@@ -32,7 +32,7 @@ class AdBanner(lifecycle: Lifecycle, c: Context, adContainer: FrameLayout) :
     However, Interstitial-AdView may still leak */
     private val adView = AdView(c).apply {
         adSize = AdSize.BANNER
-        adUnitId = "ca-app-pub-3940256099942544/6300978111"
+        adUnitId = "ca-app-pub-3940256099942544/6300978111" // TODO Banner unit ID
         adListener = this@AdBanner
 
         adContainer.addView(this)
