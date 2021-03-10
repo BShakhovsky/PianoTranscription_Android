@@ -13,6 +13,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
+import ru.bshakhovsky.piano_transcription.R.string.adInterId
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
@@ -28,15 +29,14 @@ class AdInterstitial(lifecycle: Lifecycle, a: Activity) :
         load()
     }
 
-    private fun load() = activity.get().applicationContext.let { appContext ->
-        InterstitialAd.load( // TODO Interstitial unit ID
-            appContext, "ca-app-pub-3940256099942544/1033173712", AdRequest.Builder().build(),
+    private fun load() = with(activity.get().applicationContext) {
+        InterstitialAd.load(this, getString(adInterId), AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) = super.onAdLoaded(ad)
                     .also { adInter = ad.apply { fullScreenContentCallback = this@AdInterstitial } }
 
                 override fun onAdFailedToLoad(error: LoadAdError) = super.onAdFailedToLoad(error)
-                    .also { AdLoadFailed.showError(appContext, "interstitial", error) }
+                    .also { AdLoadFailed.showError(this@with, "interstitial", error) }
             }
         )
     }

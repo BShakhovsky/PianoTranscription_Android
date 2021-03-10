@@ -28,6 +28,14 @@
         </menu>
     </item>
 
+    <item android:title="@string/justShare">
+        <menu>
+            <item android:id="@+id/drawerShare"
+                android:icon="@android:drawable/ic_menu_share"
+                android:title="@string/guideShare" />
+        </menu>
+    </item>
+
     <item android:title="@string/justReview">
         <menu>
             <item android:id="@+id/drawerRate"

@@ -17,8 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
 import ru.bshakhovsky.piano_transcription.R.anim.anim_graph
-import ru.bshakhovsky.piano_transcription.R.id.menuGuide
-import ru.bshakhovsky.piano_transcription.R.id.menuRate
+import ru.bshakhovsky.piano_transcription.R.id
 import ru.bshakhovsky.piano_transcription.R.layout.activity_media
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
@@ -31,7 +30,7 @@ import ru.bshakhovsky.piano_transcription.media.background.TranscribeRoutine
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MinSec
-import ru.bshakhovsky.piano_transcription.utils.Review
+import ru.bshakhovsky.piano_transcription.utils.ShareReview
 
 import kotlin.io.path.ExperimentalPathApi
 
@@ -75,7 +74,7 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
                     setNavigationOnClickListener(this@MediaActivity)
                 }
-                AdBanner(lifecycle, applicationContext, adTrans)
+                AdBanner(lifecycle, applicationContext, adTrans, getString(string.bannerTrans))
             }
         }
 
@@ -218,8 +217,9 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
-                menuGuide -> InfoMessage.dialog(this, string.userGuide, string.transGuide)
-                menuRate -> Review.review(applicationContext, this)
+                id.menuGuide -> InfoMessage.dialog(this, string.userGuide, string.transGuide)
+                id.menuShare -> ShareReview.share(this)
+                id.menuRate -> ShareReview.review(this)
                 else -> DebugMode.assertArgument(false)
             }
         }

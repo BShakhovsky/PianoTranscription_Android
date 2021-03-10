@@ -357,10 +357,7 @@ class TranscribeRoutine : ViewModel() {
                             is ChannelEvent -> {
                                 DebugMode.assertState(channel == 0)
                                 when (this) {
-                                    is NoteOn -> {
-                                        @Suppress("SpellCheckingInspection")
-                                        notesCount[noteValue % notesCount.size] += 1
-                                    }
+                                    is NoteOn -> notesCount[noteValue % notesCount.size] += 1
                                     else -> DebugMode.assertState(this is NoteOff)
                                 }
                             }
@@ -443,9 +440,8 @@ class TranscribeRoutine : ViewModel() {
 
             with(data) {
                 appContext().run {
-                    if (result != null) addKeySign(
-                        result ?: DebugMode.assertState(false).let { return@run }
-                    )
+                    if (result != null)
+                        addKeySign(result ?: DebugMode.assertState(false).let { return@run })
                     else result = getString(string.badScale)
                     withContext(Dispatchers.Main)
                     { ffmpegLog.value += "\n${getString(string.keySign)}:\t$result" }

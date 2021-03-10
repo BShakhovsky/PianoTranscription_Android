@@ -16,7 +16,7 @@ import com.google.android.gms.ads.LoadAdError
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
-class AdBanner(lifecycle: Lifecycle, c: Context, adContainer: FrameLayout) :
+class AdBanner(lifecycle: Lifecycle, c: Context, adContainer: FrameLayout, bannerId: String) :
     AdListener(), LifecycleObserver {
 
     private val context = WeakPtr(lifecycle, c)
@@ -32,7 +32,7 @@ class AdBanner(lifecycle: Lifecycle, c: Context, adContainer: FrameLayout) :
     However, Interstitial-AdView may still leak */
     private val adView = AdView(c).apply {
         adSize = AdSize.BANNER
-        adUnitId = "ca-app-pub-3940256099942544/6300978111" // TODO Banner unit ID
+        adUnitId = bannerId
         adListener = this@AdBanner
 
         adContainer.addView(this)

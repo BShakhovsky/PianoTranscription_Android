@@ -4,6 +4,7 @@ import android.content.res.AssetManager
 import android.content.res.Resources
 import android.graphics.PointF
 import android.opengl.GLES32
+import android.opengl.GLException
 import android.opengl.GLSurfaceView
 import android.opengl.GLU
 import android.os.SystemClock
@@ -90,6 +91,20 @@ class Render(
             draw(width, height)
             geom.keys.forEach { it.rotate(SystemClock.uptimeMillis() - prevTime) }
             prevTime = SystemClock.uptimeMillis()
+        }
+        if (DebugMode.debug) GLES32.glGetError().let {
+            if (it != GLES32.GL_NO_ERROR) throw GLException(
+                it, @Suppress("LongLine") when (it) {
+                    GLES32.GL_INVALID_ENUM -> "An unacceptable value is specified for an enumerated argument"
+                    GLES32.GL_INVALID_VALUE -> "A numeric argument is out of range"
+                    GLES32.GL_INVALID_OPERATION -> "The specified operation is not allowed in the current state"
+                    GLES32.GL_INVALID_FRAMEBUFFER_OPERATION -> "The command is trying to render to or read from the framebuffer while the currently bound framebuffer is not framebuffer complete (i.e. the return value from glCheckFramebufferStatus is not GL_FRAMEBUFFER_COMPLETE)"
+                    GLES32.GL_STACK_OVERFLOW -> "An attempt has been made to perform an operation that would cause an internal stack to underflow"
+                    GLES32.GL_STACK_UNDERFLOW -> "An attempt has been made to perform an operation that would cause an internal stack to overflow"
+                    GLES32.GL_OUT_OF_MEMORY -> "There is not enough memory left to execute the function. The state of OpenGL is undefined."
+                    else -> "Unknown error code: $it"
+                }
+            )
         }
     }
 

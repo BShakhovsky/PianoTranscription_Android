@@ -18,6 +18,11 @@
 
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/menuShare"
+        android:title="@string/justShare"
+
+        app:showAsAction="ifRoom" />
+
     <item android:id="@+id/menuRate"
         android:title="@string/justReview"
 

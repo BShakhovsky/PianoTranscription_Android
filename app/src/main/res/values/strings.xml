@@ -28,11 +28,13 @@
     <string name="justTracks">Tracks</string>
     <string name="justMidi">Midi</string>
     <string name="justGuide">Guide</string>
+    <string name="justShare">Share</string>
     <string name="justReview">Review</string>
 
     DRAWER
 
     <string name="tracks">%1$d of %2$d</string>
+    <string name="tempo">BPM %1$d</string>
     <string name="keyTemp">%1$s %2$d bpm</string>
     <string name="noMidi">not loaded</string>
 

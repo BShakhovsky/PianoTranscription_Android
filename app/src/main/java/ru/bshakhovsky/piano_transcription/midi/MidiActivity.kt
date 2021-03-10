@@ -54,7 +54,7 @@ class MidiActivity : AppCompatActivity(), View.OnClickListener {
                             with(it) {
                                 "${
                                     Midi.minSecStr(context, string.timeCur, milSec)
-                                } BPM ${bpm.roundToInt()}"
+                                } ${getString(string.tempo, bpm.roundToInt())}"
                             }
                         }.also { content += "\n\n\n${getString(string.tempos)}\n\n$it" }
 

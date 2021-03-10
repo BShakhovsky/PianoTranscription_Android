@@ -52,7 +52,7 @@ import ru.bshakhovsky.piano_transcription.midi.MidiActivity
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
-import ru.bshakhovsky.piano_transcription.utils.Review
+import ru.bshakhovsky.piano_transcription.utils.ShareReview
 import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
 
 import java.io.FileNotFoundException
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
                 ).build()
             )
-            AdBanner(lifecycle, applicationContext, adMain)
+            AdBanner(lifecycle, applicationContext, adMain, getString(string.bannerMain))
             interstitial = AdInterstitial(lifecycle, this@MainActivity)
         }
 
@@ -221,7 +221,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 id.menuTracks -> binding.drawerLayout.openDrawer(GravityCompat.START)
                 id.menuMidi -> midi()
                 id.menuGuide -> guide()
-                id.menuRate -> Review.review(applicationContext, this)
+                id.menuShare -> ShareReview.share(this)
+                id.menuRate -> ShareReview.review(this)
                 else -> DebugMode.assertArgument(false)
             }
         }
@@ -230,7 +231,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             id.drawerMidi -> midi()
             id.drawerGuide -> guide()
-            id.drawerRate -> Review.review(applicationContext, this)
+            id.drawerShare -> ShareReview.share(this)
+            id.drawerRate -> ShareReview.review(this)
             else -> {
                 checkGroup(item.groupId, item.itemId)
                 (item.actionView as Switch).toggle()

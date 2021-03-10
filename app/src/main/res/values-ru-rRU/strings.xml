@@ -26,11 +26,13 @@
     <string name="justTracks">Инструменты</string>
     <string name="justMidi">Миди</string>
     <string name="justGuide">Справка</string>
+    <string name="justShare">Поделиться</string>
     <string name="justReview">Отзыв</string>
 
     ШТОРКА
 
     <string name="tracks">%1$d из %2$d</string>
+    <string name="tempo">%1$d уд/мин</string>
     <string name="keyTemp">%1$s %2$d уд/мин</string>
     <string name="noMidi">не загружено</string>
 
@@ -84,7 +86,7 @@
 
     Запись
     <string name="recording">Записываю…</string>
-    <string name="tapStop">Нажмите стоп, когда решите закончить запись и сохранить запись</string>
+    <string name="tapStop">Нажмите стоп, когда решите закончить запись и сохранить аудио</string>
     <string name="recFormat">%1$s кГц, %2$s, кодирование “%3$s” в “AMR-NB”</string>
     <string name="mono">Моно</string>
     <string name="stereo">Стерео</string>
