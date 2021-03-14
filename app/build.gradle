@@ -9,8 +9,8 @@ android {
         applicationId 'ru.BShakhovsky.Piano_Transcription'
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 4
-        versionName '1.0'
+        versionCode 5
+        versionName '1.1'
     }
     buildTypes.release {
         shrinkResources true

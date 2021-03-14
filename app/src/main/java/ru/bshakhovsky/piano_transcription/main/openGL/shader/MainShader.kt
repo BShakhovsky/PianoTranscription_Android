@@ -77,7 +77,6 @@ class MainShader(assets: AssetManager) : Shader(assets, "Main") {
         GLES32.glUniform1i(shadow, GLES32.GL_FALSE)
 
         TextureShader.sendTexture(textures, texInd, deskTex, texPos)
-        GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, desk.withTex)
         drawCommon(desk, floatArrayOf(.15f, .15f, .15f, .9f), view, viewProjection, invTransView)
 
         GLES32.glDisable(GLES32.GL_BLEND)
@@ -95,16 +94,14 @@ class MainShader(assets: AssetManager) : Shader(assets, "Main") {
     fun drawKey(
         key: Primitive, offset: Float, angle: Float, col: FloatArray,
         view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray, lights: Array<Light>
-    ) {
-        GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, key.withTex)
-        drawCommon(key, col, view, viewProjection, invTransView, lights, offset, angle)
-    }
+    ): Unit = drawCommon(key, col, view, viewProjection, invTransView, lights, offset, angle)
 
     private fun drawCommon(
         shape: Primitive, col: FloatArray,
         view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray,
         lights: Array<Light>? = null, offset: Float = 0f, angle: Float = 0f
     ) {
+        GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, shape.withTex)
         GLES32.glUniform4fv(color, 1, col, 0)
         shiftRotate(view, mv, offset, angle)
         shiftRotate(viewProjection, mvp, offset, angle)

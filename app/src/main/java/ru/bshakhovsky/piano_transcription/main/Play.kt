@@ -50,16 +50,13 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     private lateinit var drawer: WeakPtr<DrawerLayout>
     private lateinit var render: Render
 
-    private val _isPlaying = MutableLiveData<Boolean>().apply { value = false }
-    val isPlaying: LiveData<Boolean>
-        get() = _isPlaying
+    private val _isPlaying = MutableLiveData(false)
+    val isPlaying: LiveData<Boolean> get() = _isPlaying
 
     private val _duration = MutableLiveData<Int>()
-    val duration: LiveData<Int>
-        get() = _duration
+    val duration: LiveData<Int> get() = _duration
     private val _progress = MutableLiveData<Int>()
-    val progress: LiveData<Int>
-        get() = _progress
+    val progress: LiveData<Int> get() = _progress
 
     val durText: LiveData<String> = Transformations.map(duration)
     { Midi.minSecStr(activity.get(), string.timeOf, it.toLong()) }
@@ -67,11 +64,9 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     { Midi.minSecStr(activity.get(), string.timeCur, it.toLong()) }
 
     private val _prevVis = MutableLiveData<Int>()
-    val prevVis: LiveData<Int>
-        get() = _prevVis
+    val prevVis: LiveData<Int> get() = _prevVis
     private val _nextVis = MutableLiveData<Int>()
-    val nextVis: LiveData<Int>
-        get() = _nextVis
+    val nextVis: LiveData<Int> get() = _nextVis
 
     /* Sound is smoother with Java Executor than with Android Handler,
     all quick notes are caught and played, because a separate non-UI-thread is created.

@@ -52,8 +52,7 @@ class DecodeRoutine : ViewModel() {
     val waveGraph: WaveGraph = WaveGraph()
 
     private val _logVis = MutableLiveData<Int>()
-    val logVis: LiveData<Int>
-        get() = _logVis
+    val logVis: LiveData<Int> get() = _logVis
 
     private var decodeStarted = false
     private var pipeThread: PipeTransfer? = null

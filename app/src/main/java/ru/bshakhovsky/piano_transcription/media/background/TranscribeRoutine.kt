@@ -67,8 +67,7 @@ class TranscribeRoutine : ViewModel() {
 
     // Otherwise can be saved many times due to orientation change
     private val _midiSaveStart = SingleLiveEvent()
-    val midiSaveStart: LiveData<Unit>
-        get() = _midiSaveStart
+    val midiSaveStart: LiveData<Unit> get() = _midiSaveStart
 
     val savedMidi: MutableLiveData<Uri> = MutableLiveData()
     private val midi = MidiFile().apply { addTrack(MidiTrack()) }

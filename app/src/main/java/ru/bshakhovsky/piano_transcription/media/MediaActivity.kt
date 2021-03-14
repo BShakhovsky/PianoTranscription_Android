@@ -74,7 +74,7 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
                     setNavigationOnClickListener(this@MediaActivity)
                 }
-                AdBanner(lifecycle, applicationContext, adTrans, getString(string.bannerTrans))
+                AdBanner(lifecycle, applicationContext, adTrans, string.bannerTrans)
             }
         }
 

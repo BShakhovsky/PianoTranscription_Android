@@ -1,8 +1,12 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
+import ru.bshakhovsky.piano_transcription.utils.DebugMode
+
 class Geometry {
 
     companion object {
+        const val maxVertices: Int = 42
+
         const val blackLen: Float = 85f
         const val blackWid: Float = 9f
 
@@ -40,7 +44,7 @@ class Geometry {
         ),
         intArrayOf(
             0, 2, 1,  1, 2, 3,    2, 4, 3,  3, 4, 5,    0, 6, 2,  2, 6, 4,    1, 3, 7,  7, 3, 5,
-            0, 1, 6,  6, 1, 7)
+            0, 1, 6,  6, 1, 7).also { DebugMode.assertArgument(it.size < maxVertices) }
     )
     @Suppress("Reformat") val desk: Primitive = Primitive(
         floatArrayOf(
@@ -54,10 +58,8 @@ class Geometry {
                         - deskOver,     deskHeight,     -deskThick,
             overallLen  + deskOver,     deskHeight,     -deskThick
         ),
-        intArrayOf(
-            0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7,
-            0, 2, 6,  6, 4, 0,    1, 5, 3,  3, 5, 7
-        ),
+        intArrayOf(0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7)
+            .also { DebugMode.assertArgument(it.size < maxVertices) },
         floatArrayOf(1f, 1f, 1f,    1f, 1f, 1f)
     )
     @Suppress("Reformat") val cotton: Primitive = Primitive(
@@ -72,11 +74,8 @@ class Geometry {
             0f,             whiteWid + cotThick,    0f,
             overallLen,     whiteWid + cotThick,    0f
         ),
-        intArrayOf(
-            0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7,
-            0, 2, 6,  6, 4, 0,    1, 5, 3,  3, 5, 7
-        ),
-        floatArrayOf(1f, 1f, 1f,    1f, 1f, 1f))
+        intArrayOf(0, 1, 2,  2, 1, 3,    2, 3, 6,  6, 3, 7)
+            .also { DebugMode.assertArgument(it.size < maxVertices) })
 
     val keys: Array<Key> = Array(88) { Key(it) }
 
@@ -106,6 +105,8 @@ class Geometry {
                 0, 10, 2,   2,  10, 12,  4, 14, 6,   6, 14, 8,
                 1, 3,  11,  11, 3,  13,  5, 7,  15,  15, 7, 9
             ).also { whiteOrder ->
+                DebugMode.assertArgument(whiteOrder.size == maxVertices)
+
                 whiteMid = Primitive(whiteMidCords, whiteOrder)
                 whiteMidCords.copyOf().also { whiteLeftCords ->
                     for (i in intArrayOf(0, 6, 30, 36)) whiteLeftCords[i] = whiteGap
@@ -126,11 +127,11 @@ class Geometry {
         with(it) {
             drawKey(
                 @Suppress("Reformat") when (key) {
-                    Key.Companion.KeyType.WHITE_LEFT    -> whiteLeft
-                    Key.Companion.KeyType.WHITE_RIGHT   -> whiteRight
-                    Key.Companion.KeyType.WHITE_MID     -> whiteMid
-                    Key.Companion.KeyType.WHITE_FULL    -> whiteFull
-                    Key.Companion.KeyType.BLACK         -> black
+                    Key.KeyType.WHITE_LEFT  -> whiteLeft
+                    Key.KeyType.WHITE_RIGHT -> whiteRight
+                    Key.KeyType.WHITE_MID   -> whiteMid
+                    Key.KeyType.WHITE_FULL  -> whiteFull
+                    Key.KeyType.BLACK       -> black
                 }, offset, angle, color()
             )
         }

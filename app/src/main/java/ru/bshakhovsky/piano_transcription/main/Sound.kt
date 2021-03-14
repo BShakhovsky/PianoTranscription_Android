@@ -16,8 +16,7 @@ import ru.bshakhovsky.piano_transcription.utils.DebugMode
 class Sound : SoundPool.OnLoadCompleteListener, ViewModel() {
 
     private val _visibility = MutableLiveData<Int>()
-    val visibility: LiveData<Int>
-        get() = _visibility
+    val visibility: LiveData<Int> get() = _visibility
 
     private val _loaded = MutableLiveData<MutableSet<Int>>().apply { value = mutableSetOf() }
     val count: LiveData<Int> = Transformations.map(_loaded) { it.size }

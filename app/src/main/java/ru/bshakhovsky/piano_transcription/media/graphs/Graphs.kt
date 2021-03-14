@@ -17,8 +17,7 @@ open class Graphs : ViewModel() {
 
     @Suppress("PropertyName")
     protected val _graphBitmap: MutableLiveData<Bitmap> = MutableLiveData()
-    val graphBitmap: LiveData<Bitmap>
-        get() = _graphBitmap
+    val graphBitmap: LiveData<Bitmap> get() = _graphBitmap
 
     val graphDrawable: MutableLiveData<BitmapDrawable> = MutableLiveData()
 

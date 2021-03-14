@@ -6,9 +6,8 @@ import kotlin.math.atan
 
 class Key(note: Int) {
 
+    enum class KeyType { WHITE_LEFT, WHITE_RIGHT, WHITE_MID, WHITE_FULL, BLACK }
     @Suppress("Reformat") companion object {
-        enum class KeyType { WHITE_LEFT, WHITE_RIGHT, WHITE_MID, WHITE_FULL, BLACK }
-
         private val aliceBlue   = floatArrayOf(240 / 255f, 248 / 255f, 255 / 255f, 1f)
         private val lightSilver = floatArrayOf(211 / 255f, 211 / 255f, 211 / 255f, 1f)
         private val slateGray   = floatArrayOf(112 / 255f, 128 / 255f, 144 / 255f, 1f)

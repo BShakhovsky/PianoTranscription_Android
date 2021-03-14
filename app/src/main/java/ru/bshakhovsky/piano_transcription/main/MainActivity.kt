@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
                 ).build()
             )
-            AdBanner(lifecycle, applicationContext, adMain, getString(string.bannerMain))
+            AdBanner(lifecycle, applicationContext, adMain, string.bannerMain)
             interstitial = AdInterstitial(lifecycle, this@MainActivity)
         }
 

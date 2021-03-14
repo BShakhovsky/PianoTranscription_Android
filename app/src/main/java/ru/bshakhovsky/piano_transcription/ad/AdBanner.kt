@@ -3,6 +3,7 @@ package ru.bshakhovsky.piano_transcription.ad
 import android.content.Context
 import android.widget.FrameLayout
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -16,8 +17,9 @@ import com.google.android.gms.ads.LoadAdError
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
-class AdBanner(lifecycle: Lifecycle, c: Context, adContainer: FrameLayout, bannerId: String) :
-    AdListener(), LifecycleObserver {
+class AdBanner(
+    lifecycle: Lifecycle, c: Context, adContainer: FrameLayout, @StringRes bannerId: Int
+) : AdListener(), LifecycleObserver {
 
     private val context = WeakPtr(lifecycle, c)
 
@@ -32,7 +34,7 @@ class AdBanner(lifecycle: Lifecycle, c: Context, adContainer: FrameLayout, banne
     However, Interstitial-AdView may still leak */
     private val adView = AdView(c).apply {
         adSize = AdSize.BANNER
-        adUnitId = bannerId
+        adUnitId = context.getString(bannerId)
         adListener = this@AdBanner
 
         adContainer.addView(this)
