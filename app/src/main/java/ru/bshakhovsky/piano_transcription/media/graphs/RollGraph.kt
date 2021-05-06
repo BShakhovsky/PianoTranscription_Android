@@ -15,6 +15,7 @@ import androidx.lifecycle.Transformations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+import ru.bshakhovsky.piano_transcription.media.utils.TfLiteModel
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import kotlin.math.roundToInt
@@ -37,28 +38,23 @@ class RollGraph : Graphs() {
     }
 
     @WorkerThread
-    suspend fun drawNextRoll(frames: FloatArray, onsets: FloatArray, threshold: Float) {
+    suspend fun drawRoll(frames: FloatArray) {
         DebugMode.assertState(
             Looper.myLooper() != Looper.getMainLooper(),
             "Piano-roll should be drawn in background thread"
         )
         if (outOfMem) return
         try {
-            Bitmap.createBitmap(
-                (graphBitmap.value?.width ?: 0) + frames.size / 88, 88 * scale,
-                Bitmap.Config.ARGB_8888
-            ).let { bitmap ->
-                DebugMode.assertArgument(frames.size == onsets.size)
+            Bitmap.createBitmap(frames.size / 88, 88 * scale, Bitmap.Config.ARGB_8888)
+                .let { bitmap ->
                 with(Canvas(bitmap)) {
-                    graphBitmap.value
-                        ?.let { drawBitmap(it, 0f, 0f, Paint(Paint.FILTER_BITMAP_FLAG)) }
                     frames.forEachIndexed { index, value ->
-                        if (maxOf(value, onsets[index]) > threshold) drawCircle(
+                        if (value > TfLiteModel.threshold) drawCircle(
                             bitmap.width - frames.size / 88 + (index / 88).toFloat(),
                             (88f - index % 88) * scale, 1f,
                             Paint().apply {
                                 color = Color.BLUE
-                                alpha = (maxOf(value, onsets[index]) * 0xFF).roundToInt()
+                                alpha = (value * 0xFF).roundToInt()
                             }
                         )
                     }

@@ -1,31 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/menuMidi"
-        android:title="@string/justMidi"
-        android:visible="false"
+    <item android:id="@+id/menuMic"
+        android:title="@string/realTime"
+        android:icon="@drawable/mic_off"
 
-        app:showAsAction="ifRoom" />
-
-    <item android:id="@+id/menuTracks"
-        android:title="@string/justTracks"
-        android:visible="false"
-
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item android:id="@+id/menuGuide"
         android:title="@string/justGuide"
+        android:icon="@drawable/question"
 
         app:showAsAction="ifRoom" />
 
     <item android:id="@+id/menuShare"
         android:title="@string/justShare"
+        android:icon="@android:drawable/ic_menu_share"
 
-        app:showAsAction="ifRoom" />
-
-    <item android:id="@+id/menuRate"
-        android:title="@string/justReview"
-
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

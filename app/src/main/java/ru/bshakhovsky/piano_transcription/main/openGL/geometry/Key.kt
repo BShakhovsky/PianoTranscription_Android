@@ -12,6 +12,9 @@ class Key(note: Int) {
         private val lightSilver = floatArrayOf(211 / 255f, 211 / 255f, 211 / 255f, 1f)
         private val slateGray   = floatArrayOf(112 / 255f, 128 / 255f, 144 / 255f, 1f)
         private val black       = floatArrayOf(.15f, .15f, .15f, 1f)
+
+        private val red         = floatArrayOf(1f, 0f, 0f, 1f)
+        private val emerald     = floatArrayOf(0f, 155 / 255f, 119 / 255f, 1f)
     }
 
     @Suppress("Reformat") val key: KeyType = when (note) {
@@ -41,6 +44,9 @@ class Key(note: Int) {
         } + (note - 3) / 12 * 7
     } * Geometry.whiteWid
 
+    var isCorrect: Boolean = false
+    var isWrong: Boolean = false
+
     var isPressed: Boolean = false
     var isTapped: Boolean = false
     var angle: Float = 0f
@@ -50,10 +56,12 @@ class Key(note: Int) {
     else Math.toDegrees(atan(.6 * Geometry.whiteWid / Geometry.whiteLen)).toFloat()
 
     @CheckResult
-    fun color(): FloatArray =
-        if (isPressed or isTapped) if (key == KeyType.BLACK) slateGray else lightSilver
-        else if (key == KeyType.BLACK) black
-        else aliceBlue
+    fun color(): FloatArray = when {
+        isCorrect -> emerald; isWrong -> red
+        isPressed or isTapped -> if (key == KeyType.BLACK) slateGray else lightSilver
+        key == KeyType.BLACK -> black
+        else -> aliceBlue
+    }
 
     fun rotate(deltaTime: Long): Unit = @Suppress("Reformat") when {
         isPressed   -> when {

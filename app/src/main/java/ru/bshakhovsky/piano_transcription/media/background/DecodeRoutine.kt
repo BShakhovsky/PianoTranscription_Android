@@ -153,9 +153,10 @@ class DecodeRoutine : ViewModel() {
 
                     I don't know how to get file path from URI,
                     so have to temporarily copy it, so that we know its path */
-                    createTempFile(
-                        createTempDirectory(cachePrefDecode), "InputMedia_"
-                    ).let { copiedMedia ->
+                    withContext(Dispatchers.IO) {
+                        @Suppress("BlockingMethodInNonBlockingContext")
+                        createTempFile(createTempDirectory(cachePrefDecode), "InputMedia_")
+                    }.let { copiedMedia ->
                         PipeTransfer.streamToPath(withContext(Dispatchers.IO) {
                             @Suppress("BlockingMethodInNonBlockingContext")
                             openInputStream(mediaFile)
@@ -232,7 +233,10 @@ class DecodeRoutine : ViewModel() {
     @WorkerThread
     @ExperimentalPathApi
     private suspend fun ffmpeg(inPath: Path) =
-        createTempFile(inPath.parent, "DecodedRawFloatArray_", ".pcm").let {
+        withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext")
+            createTempFile(inPath.parent, "DecodedRawFloatArray_", ".pcm")
+        }.let {
             DebugMode.assertState(
                 Looper.myLooper() != Looper.getMainLooper(),
                 "FFmpeg should be called from background thread"
@@ -251,7 +255,10 @@ class DecodeRoutine : ViewModel() {
                         )) {
                             Config.RETURN_CODE_SUCCESS -> {
                                 decodeSuccess(it.toFile())
-                                inPath.deleteExisting()
+                                withContext(Dispatchers.IO) {
+                                    @Suppress("BlockingMethodInNonBlockingContext")
+                                    inPath.deleteExisting()
+                                }
                             }
                             Config.RETURN_CODE_CANCEL -> {
                                 decodeCancelled()

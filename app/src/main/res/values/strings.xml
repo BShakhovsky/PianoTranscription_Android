@@ -31,6 +31,11 @@
     <string name="justShare">Share</string>
     <string name="justReview">Review</string>
 
+    RealTime
+    <string name="realTime">Realtime</string>
+    <string name="recognizing">You can now play on real piano.
+        \nNotes will be recognized and highlighted in real time.</string>
+
     DRAWER
 
     <string name="tracks">%1$d of %2$d</string>
@@ -149,20 +154,44 @@
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio/video-file
         (such as MP3, MP4, etc.) or record a piano piece with microphone</string>
+
     <string name="userGuide2">The program will automatically transcribe audio
         and save as a MIDI-file</string>
     <string name="userGuide3">However, no instrument information is extracted,
         and all transcribed notes get combined into one part.
         The accuracy depends on the complexity of the song, and is
         obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
+
     <string name="userGuide4">If you opened an existing MIDI-file, select tracks.
         Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.)
         will be disabled.</string>
     <string name="userGuide5">For some MIDI-files downloaded from Internet,
         there can be dozens of tracks</string>
+
     <string name="userGuide6">If you want just to play the song in real time,
         tap in the upper-middle area of the screen.
         Or if you want to go forward or backwards chord-by-chord,
         you can pause and tap in the upper-left or upper-right areas of the screen</string>
+
+    <string name="userGuide7">If you want to learn the MIDI chords on your real piano,
+        you can use the real-time transcription feature</string>
+    <string name="userGuide8">Correctly played notes will be highlighted with green color,
+        mistakes - with red</string>
+
+    <string name="userGuide9_1">If somebody talks near your phone,
+        or if you sit it in a loud environment, it will incorrectly recognize too many notes
+        which you actually do not play.
+        Too many keys will be red in this case and it will be annoying.
+        \nSo, if you want better recognition accuracy,
+        ideally there should be no other sounds than your piano</string>
+    <string name="userGuide9_2">If you have convenient headphones which you can connect
+        to your electric piano, there is a life-hack - you can
+        “put on headphones on mobile device” like on the following photo:</string>
+    <string name="userGuide10">Turn the volume louder</string>
+
+    <string name="userGuide11">Ones you correctly play all the notes of the chord simultaneously
+        (all of the pressed keys are green), it will automatically proceed to the next MIDI chord,
+        and so on</string>
+    <string name="userGuide12">Enjoy!</string>
 
 </resources>

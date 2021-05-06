@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
-open class Graphs : ViewModel() {
+abstract class Graphs : ViewModel() {
 
     protected var scale: Int = 0
 

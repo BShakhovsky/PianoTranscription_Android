@@ -3,11 +3,9 @@ package ru.bshakhovsky.piano_transcription.utils
 import android.app.Activity
 import android.content.Intent
 
-import com.google.android.play.core.review.ReviewManagerFactory
-
 import ru.bshakhovsky.piano_transcription.R.string
 
-object ShareReview {
+object Share {
 
     fun share(activity: Activity): Unit = with(activity) {
         startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
@@ -20,11 +18,4 @@ object ShareReview {
             InfoMessage.toast(applicationContext, string.guideShare)
         }, null))
     }
-
-    fun review(activity: Activity): Unit =
-        with(ReviewManagerFactory.create(activity.applicationContext)) {
-            requestReviewFlow().addOnCompleteListener {
-                with(it) { if (isSuccessful) launchReviewFlow(activity, result) }
-            }
-        }
 }

@@ -1,8 +1,8 @@
 <layout>
     <data>
         <variable name="mainModel" type="ru.bshakhovsky.piano_transcription.main.MainModel" />
-        <variable name="soundModel" type="ru.bshakhovsky.piano_transcription.main.Sound" />
-        <variable name="playModel" type="ru.bshakhovsky.piano_transcription.main.Play" />
+        <variable name="soundModel" type="ru.bshakhovsky.piano_transcription.main.play.Sound" />
+        <variable name="playModel" type="ru.bshakhovsky.piano_transcription.main.play.Play" />
     </data>
     <androidx.drawerlayout.widget.DrawerLayout
         xmlns:android="http://schemas.android.com/apk/res/android"

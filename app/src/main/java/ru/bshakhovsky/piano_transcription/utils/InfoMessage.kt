@@ -23,7 +23,7 @@ object InfoMessage {
     fun dialog(
         context: Context?, @StringRes titleId: Int, msgStr: String,
         @StringRes okId: Int = string.ok, twoButtons: Boolean = false,
-        cancelAction: (() -> Unit) = {}, okAction: (() -> Unit) = {}
+        cancelAction: () -> Unit = {}, okAction: () -> Unit = {}
     ): AlertDialog? = DebugMode.assertState(context != null).let {
         context?.let {
             AlertDialog.Builder(it).setTitle(titleId).setMessage(msgStr).setIcon(info)
@@ -36,7 +36,7 @@ object InfoMessage {
     fun dialog(
         context: Context?, @StringRes titleId: Int, @StringRes msgId: Int,
         @StringRes okId: Int = string.ok, twoButtons: Boolean = false,
-        cancelAction: (() -> Unit) = {}, okAction: (() -> Unit) = {}
+        cancelAction: () -> Unit = {}, okAction: () -> Unit = {}
     ): AlertDialog? = DebugMode.assertState(context != null).let {
         context?.run {
             dialog(this, titleId, getString(msgId), okId, twoButtons, cancelAction, okAction)

@@ -15,10 +15,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
-import ru.bshakhovsky.piano_transcription.main.Sound
-import ru.bshakhovsky.piano_transcription.main.mainUI.Touch
+import ru.bshakhovsky.piano_transcription.main.mainUI.touchScreen.Touch
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Geometry
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Model
+import ru.bshakhovsky.piano_transcription.main.play.Sound
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
@@ -29,6 +29,14 @@ class Render(
     lifecycle: Lifecycle, a: AssetManager, res: Resources, surface: GLSurfaceView,
     play: ImageButton, prv: ImageButton, nxt: ImageButton, private val sound: Sound
 ) : GLSurfaceView.Renderer, LifecycleObserver {
+
+    /* Not array, because do not need to access by index, but need to quickly insert/erase.
+    Set, because Midi note can be added multiple times, and trueChord.remove()
+    will remove just a single instance. Mutable, because need to clear */
+    val trueChord: MutableSet<Int> = mutableSetOf() // for realtime transcription
+    /* prevChord used only in releaseAllKeys() to copy trueChord before clearing,
+    so can be List instead of Set */
+    val prevChord: MutableList<Int> = mutableListOf() // to stop highlighting prev keys as wrong
 
     private val assets = WeakPtr(lifecycle, a)
     private val resources = WeakPtr(lifecycle, res)
@@ -257,9 +265,27 @@ class Render(
         }
     }
 
+    fun highlightKey(note: Int, isGood: Boolean) {
+        if (check(note)) with(model.geom.keys[note]) {
+            isCorrect = isGood
+            isWrong = !isGood
+        }
+    }
+
+    fun unHighlightAll() {
+        // For some reason, not yet initialized if MIDI is received from another App through Intent
+        if (::model.isInitialized) model.geom.keys.forEach {
+            with(it) {
+                isCorrect = false
+                isWrong = false
+            }
+        }
+    }
+
     fun pressKey(note: Int, velocity: Float) {
         if (check(note)) {
             model.geom.keys[note].isPressed = true
+            trueChord += note
             sound.play(note, velocity)
         }
     }
@@ -267,19 +293,28 @@ class Render(
     fun releaseKey(note: Int) {
         if (check(note)) {
             model.geom.keys[note].isPressed = false
+            trueChord -= note
             sound.stop(note)
         }
     }
 
     fun releaseAllKeys() {
+        // Play.nextChord() usually called multiple times, we do not want to clear prevNotes:
+        if (trueChord.isEmpty()) return // Already cleared
+        prevChord.clear()
+        prevChord += trueChord // Copy, not reference
+        trueChord.clear()
+
         // For some reason, not yet initialized if MIDI is received from another App through Intent
         if (::model.isInitialized) model.geom.keys.forEachIndexed { note, key ->
             key.isPressed = false
             sound.stop(note)
         }
+        unHighlightAll()
     }
 
     @CheckResult
     private fun check(note: Int) =
+        // For some reason, not yet initialized if MIDI is received from another App through Intent
         ::model.isInitialized.also { DebugMode.assertArgument(note in 0..87) }
 }

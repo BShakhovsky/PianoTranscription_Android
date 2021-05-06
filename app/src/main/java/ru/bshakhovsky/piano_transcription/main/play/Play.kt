@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.main
+package ru.bshakhovsky.piano_transcription.main.play
 
 import android.app.Activity
 import android.os.Looper
@@ -52,6 +52,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
 
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> get() = _isPlaying
+    val isRecognizing: MutableLiveData<Boolean> = MutableLiveData(false)
 
     private val _duration = MutableLiveData<Int>()
     val duration: LiveData<Int> get() = _duration
@@ -77,7 +78,11 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         buttons _prevVis, _nextVis  prevNext()
 
     New Midi-tracks are reset only from MainActivity UI-thread:
-        seek bar _duration          newMidi() */
+        seek bar _duration          newMidi()
+
+    isRecognizing is reset and also observed from MainActivity, here it is just read
+    from background thread (to know whether to play sound or to set velocity = 0):
+                                    nextChord(), prevChord() */
     private var schedule: ScheduledExecutorService? = null
 
     @MainThread
@@ -307,7 +312,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
                                     when (vel) {
                                         0f -> render.releaseKey(note)
                                         else -> {
-                                            render.pressKey(note, vel)
+                                            pressKey(note, vel)
                                             anyPressed = true
                                         }
                                     }
@@ -367,7 +372,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
                         if (get(curIndices[trackNo]).mSec == curMilSec) {
                             get(curIndices[trackNo]).notes.forEach { (note, vel) ->
                                 if (vel != 0f) {
-                                    render.pressKey(note, vel)
+                                    pressKey(note, vel)
                                     anyPressed = true
                                 }
                             }
@@ -378,4 +383,8 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
         }
         return anyPressed
     }
+
+    private fun pressKey(note: Int, velocity: Float) = render.pressKey(
+        note, if ((isRecognizing.value == true) and (isPlaying.value == false)) 0f else velocity
+    )
 }

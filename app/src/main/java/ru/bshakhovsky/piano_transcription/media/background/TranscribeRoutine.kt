@@ -30,9 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-
 import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.media.graphs.RollGraph
 import ru.bshakhovsky.piano_transcription.media.utils.SingleLiveEvent
@@ -60,7 +57,6 @@ class TranscribeRoutine : ViewModel() {
 
     var transStarted: Boolean = false
         private set
-    private val threshold = 0f
     private var frames = floatArrayOf()
     private var onsets = floatArrayOf()
     private var volumes = floatArrayOf()
@@ -123,42 +119,41 @@ class TranscribeRoutine : ViewModel() {
             rollGraph.isTranscribed.value == false, "Transcription has already been completed"
         )
 
-        TensorBuffer.createFixedSize(intArrayOf(17_920), DataType.FLOAT32).run {
-            with(data) {
-                val outStepNotes = 32
-                val outStepSecs = outStepNotes * hopSize
-                val paddedSong = with(rawData)
-                { getZeroPadded(floatLen() + outStepSecs - (floatLen() - shape[0]) % outStepSecs) }
-                TfLiteModel().apply { initialize(appContext(), ffmpegLog) }.use { model ->
-                    // var (numThreads, nThFound, nanoSecs) = Triple(1, false, Long.MAX_VALUE)
-                    (0..(paddedSong.size - shape[0]) / outStepSecs).forEach {
-                        nextSecond(it, outStepNotes, outStepSecs, model, this@run, paddedSong)
-                    }
-                    appContext().getString(string.transComplete).let { msg ->
-                        withContext(Dispatchers.Main) {
-                            rollGraph.isTranscribed.value = true
-                            ffmpegLog.value += "\n$msg"
+        with(data) {
+            (TfLiteModel.outStepNotes * hopSize).let { outStepSamples ->
+                with(rawData) {
+                    getZeroPadded(
+                        floatLen() + outStepSamples -
+                                (floatLen() - TfLiteModel.inNumSamples) % outStepSamples
+                    )
+                }.let { paddedSong ->
+                    DebugMode.assertState(
+                        (paddedSong.size - TfLiteModel.inNumSamples) % outStepSamples == 0
+                    )
+                    TfLiteModel().apply { initialize(appContext(), ffmpegLog) }.use { model ->
+                        // var (numThreads, nThFound, nanoSecs) = Triple(1, false, Long.MAX_VALUE)
+                        (0..(paddedSong.size - TfLiteModel.inNumSamples) / outStepSamples)
+                            .forEach { nextSecond(it, outStepSamples, model, paddedSong) }
+                        appContext().getString(string.transComplete).let { msg ->
+                            withContext(Dispatchers.Main) {
+                                rollGraph.isTranscribed.value = true
+                                ffmpegLog.value += "\n$msg"
+                            }
                         }
+                        clearCache()
+                        makeMidi()
+                        withContext(Dispatchers.Main) { _midiSaveStart.call() }
                     }
-                    clearCache()
-                    makeMidi()
-                    withContext(Dispatchers.Main) { _midiSaveStart.call() }
                 }
             }
         }
     }
 
+    @Suppress("SpellCheckingInspection")
     private suspend fun nextSecond(
-        curStep: Int, outStepNotes: Int, outStepSecs: Int,
-        model: TfLiteModel, tensBuff: TensorBuffer, paddedSong: FloatArray
+        curStep: Int, outStepSecs: Int, model: TfLiteModel, paddedSong: FloatArray
     ) {
-        with(tensBuff) {
-            loadArray(
-                paddedSong.sliceArray(curStep * outStepSecs until curStep * outStepSecs + shape[0])
-            )
-        }
-        @Suppress("SpellCheckingInspection") /*
-        with(if (nThFound) model.process(this@run) else {
+        /* with(if (nThFound) model.process(this@run) else {
             model.initialize(appContext(), ffmpegLog, numThreads)
             var output: OnsetsFramesWavinput.Outputs
             measureNanoTime { output = model.process(this@run) }.let {
@@ -173,35 +168,25 @@ class TranscribeRoutine : ViewModel() {
             }
             output
         }) { */
-        with(model.process(tensBuff)) {
-            DebugMode.assertArgument(
-                outputFeature0AsTensorBuffer.shape
-                    .contentEquals(intArrayOf(1, outStepNotes, 88))
-                        and outputFeature1AsTensorBuffer.shape
-                    .contentEquals(intArrayOf(1, outStepNotes, 88))
-                        and outputFeature2AsTensorBuffer.shape
-                    .contentEquals(intArrayOf(1, outStepNotes, 88))
-                        and outputFeature3AsTensorBuffer.shape
-                    .contentEquals(intArrayOf(1, outStepNotes, 88))
+        val (nextFrames, nextOnsets, nextVolumes) = model.process(
+            paddedSong.sliceArray(
+                curStep * outStepSecs until curStep * outStepSecs + TfLiteModel.inNumSamples
             )
-            try {
-                rollGraph.drawNextRoll(
-                    outputFeature0AsTensorBuffer.floatArray,
-                    outputFeature1AsTensorBuffer.floatArray, threshold
-                )
-                frames += outputFeature0AsTensorBuffer.floatArray
-                onsets += outputFeature1AsTensorBuffer.floatArray
-                volumes += outputFeature3AsTensorBuffer.floatArray
-            } catch (e: OutOfMemoryError) {
-                with(data) {
-                    appContext().getString(string.memoryRollGraph, e.localizedMessage ?: e)
-                        .let { errMsg ->
-                            withContext(Dispatchers.Main) {
-                                ffmpegLog.value += "\n\n$errMsg"
-                                alertMsg.value = Triple(string.error, errMsg, null)
-                            }
+        )
+        try {
+            frames += nextFrames
+            onsets += nextOnsets
+            volumes += nextVolumes
+            rollGraph.drawRoll(frames)
+        } catch (e: OutOfMemoryError) {
+            with(data) {
+                appContext().getString(string.memoryRollGraph, e.localizedMessage ?: e)
+                    .let { errMsg ->
+                        withContext(Dispatchers.Main) {
+                            ffmpegLog.value += "\n\n$errMsg"
+                            alertMsg.value = Triple(string.error, errMsg, null)
                         }
-                }
+                    }
             }
         }
     }
@@ -245,12 +230,9 @@ class TranscribeRoutine : ViewModel() {
             rollGraph.isTranscribed.value == true, "Transcription has not yet been completed"
         )
 
-        frames
-            .forEachIndexed { i, f -> frames[i] = if (maxOf(onsets[i], f) > threshold) 1f else 0f }
-
         DebugMode.assertState(midi.trackCount == 1)
         with(midi.tracks[0]) {
-            insertEvent(CopyrightNotice(0, 0, "Used software created by Boris Shakhovsky"))
+            insertEvent(CopyrightNotice(0, 0, "Used Android App created by Boris Shakhovsky"))
             insertEvent(
                 Text(
                     0, 0, with(data) {
@@ -288,26 +270,26 @@ class TranscribeRoutine : ViewModel() {
 
             // Add silent frame at the end so we can do a final loop
             // and terminate any notes that are still active
-            frames += FloatArray(starts.size) { 0f }
+            frames += FloatArray(starts.size) { Float.NEGATIVE_INFINITY }
             (0 until frames.size / starts.size).forEach { i ->
                 starts.indices.forEach { pitch ->
                     (i * starts.size + pitch).let { index ->
-                        if (frames[index] == 1f) {
+                        if (frames[index] > TfLiteModel.threshold) {
                             if (starts[pitch] == -1L) {
-                                if (onsets[i * starts.size + pitch] > threshold)
+                                if (onsets[i * starts.size + pitch] > TfLiteModel.threshold)
                                 // Start a note only if we have predicted an onset
                                     starts[pitch] = i.toLong()
                                 // else; // Even though the frame is active,
                                 // there is no onset, so ignore it
-                            } else if ((onsets[index] > threshold) and
-                                (onsets[(i - 1) * starts.size + pitch] > threshold)
+                            } else if ((onsets[index] > TfLiteModel.threshold) and
+                                (onsets[(i - 1) * starts.size + pitch] > TfLiteModel.threshold)
                             ) {
                                 // Pitch is already active, but because of a new onset,
                                 endPitch(pitch, i) // we should end the note
                                 starts[pitch] = i.toLong() // and start a new one
                             }
                         } else {
-                            DebugMode.assertState(frames[index] == 0f)
+                            DebugMode.assertState(frames[index] < TfLiteModel.threshold)
                             if (starts[pitch] != -1L) endPitch(pitch, i)
                         }
                     }
@@ -344,7 +326,7 @@ class TranscribeRoutine : ViewModel() {
                                 is InstrumentName -> DebugMode
                                     .assertState(name == "Acoustic Grand Piano")
                                 is CopyrightNotice -> DebugMode.assertState(
-                                    notice == "Used software created by Boris Shakhovsky"
+                                    notice == "Used Android App created by Boris Shakhovsky"
                                 )
                                 is Text -> DebugMode.assertState(
                                     text == "Automatically transcribed from ${

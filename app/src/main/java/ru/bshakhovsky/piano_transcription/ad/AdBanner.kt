@@ -45,12 +45,15 @@ class AdBanner(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     private fun destroyAd() = with(adView) {
-        adListener = null
+//        adListener = null
         DebugMode.assertState(parent is FrameLayout)
         (parent as FrameLayout).removeAllViews()
         destroy()
     }
 
-    override fun onAdFailedToLoad(error: LoadAdError?): Unit = super.onAdFailedToLoad(error)
-        .also { AdLoadFailed.showError(context.get(), "banner", error) }
+    override fun onAdFailedToLoad(error: LoadAdError?) {
+        DebugMode.assertArgument(error != null)
+        error?.let { super.onAdFailedToLoad(it) }
+        AdLoadFailed.showError(context.get(), "banner", error)
+    }
 }

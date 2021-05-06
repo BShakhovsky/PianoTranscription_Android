@@ -1,12 +1,8 @@
 package ru.bshakhovsky.piano_transcription.addDialog
 
-import android.Manifest
 import android.app.Dialog
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -16,18 +12,16 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 
-import com.google.android.material.snackbar.Snackbar
-
 import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.DialogAddBinding
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
+import ru.bshakhovsky.piano_transcription.utils.MicPermission
 
 class AddDialog : DialogFragment() {
 
-    enum class RequestCode(val id: Int) { SURF(20), OPEN_MEDIA(21), OPEN_MIDI(22), WRITE_3GP(23) }
-    enum class Permission(val id: Int) { RECORD(30), RECORD_SETTINGS(31) }
+    enum class RequestCode(val id: Int) { /*SURF(20)*/OPEN_MEDIA(21), OPEN_MIDI(22), WRITE_3GP(23) }
 
     private lateinit var binding: DialogAddBinding
     private lateinit var model: AddModel
@@ -55,14 +49,12 @@ class AddDialog : DialogFragment() {
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    ): Unit = super.onRequestPermissionsResult(requestCode, permissions, grantResults).also {
         when (requestCode) {
-            Permission.RECORD.id ->
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) model.writeWav()
-                else settings()
+            MicPermission.RecPermission.RECORD.id -> MicPermission.onRequestResult(
+                MicPermission.RecPermission.RECORD_SETTINGS.id, grantResults,
+                binding.root, activity, this
+            ) { model.writeWav() }
             else -> DebugMode.assertArgument(false)
         }
     }
@@ -70,15 +62,11 @@ class AddDialog : DialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Unit =
         super.onActivityResult(requestCode, resultCode, data).also {
             when (requestCode) {
-                Permission.RECORD_SETTINGS.id -> {
-                    DebugMode.assertState(
-                        (resultCode != FragmentActivity.RESULT_OK) and (activity != null)
-                    )
-                    if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                        == PackageManager.PERMISSION_GRANTED
-                    ) model.writeWav()
-                    else settings()
-                }
+                MicPermission.RecPermission.RECORD_SETTINGS.id -> MicPermission.onSettingsResult(
+                    resultCode, MicPermission.RecPermission.RECORD_SETTINGS.id,
+                    binding.root, activity, this
+                ) { model.writeWav() }
+
                 RequestCode.WRITE_3GP.id ->
                     if (resultCode != FragmentActivity.RESULT_OK) {
                         InfoMessage.dialog(
@@ -95,19 +83,4 @@ class AddDialog : DialogFragment() {
                 else -> DebugMode.assertArgument(false)
             }
         }
-
-    private fun settings() = Snackbar
-        .make(binding.frameLayout, string.grantRec, Snackbar.LENGTH_LONG)
-        .setAction(string.settings) {
-            DebugMode.assertState(context != null)
-            context?.run {
-                startActivityForResult(
-                    Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:$packageName")
-                    ), Permission.RECORD_SETTINGS.id
-                )
-                InfoMessage.toast(applicationContext, string.grantRec)
-            }
-        }.show()
 }

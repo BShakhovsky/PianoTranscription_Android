@@ -1,19 +1,21 @@
 package ru.bshakhovsky.piano_transcription.media.background
 
 import android.app.Application
-import android.content.Context
 import android.net.Uri
 import android.os.Looper
 
 import androidx.annotation.MainThread
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 
 import ru.bshakhovsky.piano_transcription.media.utils.RandomFileArray
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.FileName
+import ru.bshakhovsky.piano_transcription.utils.VmAppContext
 
-class BothRoutines(application: Application) : AndroidViewModel(application) {
+class BothRoutines(application: Application) :
+    VmAppContext(application) { /* appContext():
+        File name initialized in TranscribeThread from MediaActivity UI-thread
+        All other calls are from background thread */
 
     //                              <titleId, msgStr?, msgId?>
     val alertMsg: MutableLiveData<Triple<Int, String?, Int?>> = MutableLiveData()
@@ -47,10 +49,6 @@ class BothRoutines(application: Application) : AndroidViewModel(application) {
         }
         youTube?.let { youTubeLink = it }
     }
-
-    // File name initialized in TranscribeThread from MediaActivity UI-thread
-    // All other calls are from background thread
-    fun appContext(): Context = getApplication<Application>().applicationContext
 
     // Both threads
     fun clearCache(cachePref: String): Unit? =

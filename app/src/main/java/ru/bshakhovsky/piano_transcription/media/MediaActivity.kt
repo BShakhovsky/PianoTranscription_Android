@@ -30,7 +30,7 @@ import ru.bshakhovsky.piano_transcription.media.background.TranscribeRoutine
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MinSec
-import ru.bshakhovsky.piano_transcription.utils.ShareReview
+import ru.bshakhovsky.piano_transcription.utils.Share
 
 import kotlin.io.path.ExperimentalPathApi
 
@@ -212,14 +212,14 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
         menuInflater.inflate(menu_main, menu)
+        menu?.findItem(id.menuMic)?.isVisible = false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
                 id.menuGuide -> InfoMessage.dialog(this, string.userGuide, string.transGuide)
-                id.menuShare -> ShareReview.share(this)
-                id.menuRate -> ShareReview.review(this)
+                id.menuShare -> Share.share(this)
                 else -> DebugMode.assertArgument(false)
             }
         }

@@ -9,7 +9,7 @@ import ru.bshakhovsky.piano_transcription.R.id.fabGuide
 import ru.bshakhovsky.piano_transcription.databinding.ActivityGuideBinding
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
-import ru.bshakhovsky.piano_transcription.utils.ShareReview
+import ru.bshakhovsky.piano_transcription.utils.Share
 
 class GuideActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -33,7 +33,7 @@ class GuideActivity : AppCompatActivity(), View.OnClickListener {
         DebugMode.assertArgument(view != null)
         when (view?.id) {
             -1 -> onBackPressed() // not android.R.id.home
-            fabGuide -> ShareReview.share(this)
+            fabGuide -> Share.share(this)
             else -> DebugMode.assertState(false)
         }
     }

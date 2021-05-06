@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.main.mainUI
+package ru.bshakhovsky.piano_transcription.main.mainUI.touchScreen
 
 import android.annotation.SuppressLint
 import android.opengl.GLSurfaceView

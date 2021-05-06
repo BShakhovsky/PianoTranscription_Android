@@ -1,8 +1,6 @@
 package ru.bshakhovsky.piano_transcription.addDialog
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.icu.util.Calendar
 import android.media.MediaRecorder
 import android.net.Uri
@@ -20,6 +18,7 @@ import ru.bshakhovsky.piano_transcription.main.MainActivity
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.FileName
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
+import ru.bshakhovsky.piano_transcription.utils.MicPermission
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 import java.io.FileDescriptor
@@ -82,13 +81,9 @@ class AddModel : ViewModel(), LifecycleObserver {
         dialog?.dismiss()
     }
 
-    fun record(): Unit = with(fragment.get()) {
-        Manifest.permission.RECORD_AUDIO.let {
-            DebugMode.assertState(activity != null)
-            if (activity?.checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED)
-                requestPermissions(arrayOf(it), AddDialog.Permission.RECORD.id) else writeWav()
-        }
-    }
+    fun record(): Unit? = MicPermission.requestPermission(
+        MicPermission.RecPermission.RECORD.id, fragment.get().activity, fragment.get()
+    ) { writeWav() }
 
     fun writeWav(): Unit = with(fragment.get()) {
         startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -118,7 +113,7 @@ class AddModel : ViewModel(), LifecycleObserver {
 
     private fun startRecNonNull(outFile: FileDescriptor) = with(fragment.get()) {
         recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
             setOutputFile(outFile)

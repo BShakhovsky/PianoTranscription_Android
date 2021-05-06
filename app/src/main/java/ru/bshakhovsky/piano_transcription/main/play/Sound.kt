@@ -1,4 +1,4 @@
-package ru.bshakhovsky.piano_transcription.main
+package ru.bshakhovsky.piano_transcription.main.play
 
 import android.content.Context
 import android.media.SoundPool

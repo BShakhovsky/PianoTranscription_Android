@@ -1,12 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/drawerMidi"
-        android:icon="@drawable/info"
-        android:title="@string/midiSum"
-        android:enabled="false"
+    <item android:title="@string/midiSum">
+        <menu>
+            <item android:id="@+id/drawerMidi"
+                android:icon="@drawable/info"
+                android:title="@string/justMidi"
+                android:enabled="false"
 
-        app:actionViewClass="android.widget.TextView" />
+                app:actionViewClass="android.widget.TextView" />
+        </menu>
+    </item>
 
     <item android:id="@+id/drawerTracks"
         android:title="@string/justTracks">
@@ -25,14 +29,6 @@
             <item android:id="@+id/drawerGuide"
                 android:icon="@drawable/help"
                 android:title="@string/userGuide" />
-        </menu>
-    </item>
-
-    <item android:title="@string/justShare">
-        <menu>
-            <item android:id="@+id/drawerShare"
-                android:icon="@android:drawable/ic_menu_share"
-                android:title="@string/guideShare" />
         </menu>
     </item>
 

@@ -11,8 +11,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 
-import android.widget.CompoundButton
-import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 
@@ -29,37 +27,37 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 
-import com.google.android.material.navigation.NavigationView
-
 import ru.bshakhovsky.piano_transcription.R.color.colorAccent
 import ru.bshakhovsky.piano_transcription.R.drawable
-import ru.bshakhovsky.piano_transcription.R // id
 import ru.bshakhovsky.piano_transcription.R.id
 import ru.bshakhovsky.piano_transcription.R.layout.activity_main
 import ru.bshakhovsky.piano_transcription.R.menu.menu_main
 import ru.bshakhovsky.piano_transcription.R.string
 import ru.bshakhovsky.piano_transcription.databinding.ActivityMainBinding
 
-import ru.bshakhovsky.piano_transcription.GuideActivity
 import ru.bshakhovsky.piano_transcription.ad.AdBanner
 import ru.bshakhovsky.piano_transcription.ad.AdInterstitial
 import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
-import ru.bshakhovsky.piano_transcription.main.mainUI.Toggle
+import ru.bshakhovsky.piano_transcription.main.mainUI.DrawerMenu
+import ru.bshakhovsky.piano_transcription.main.mainUI.PlaySeekBar
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
+import ru.bshakhovsky.piano_transcription.main.play.Play
+import ru.bshakhovsky.piano_transcription.main.play.Sound
+import ru.bshakhovsky.piano_transcription.main.play.realtime.TranscribeRT
 import ru.bshakhovsky.piano_transcription.media.MediaActivity
 import ru.bshakhovsky.piano_transcription.midi.Midi
-import ru.bshakhovsky.piano_transcription.midi.MidiActivity
+
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
-import ru.bshakhovsky.piano_transcription.utils.ShareReview
+import ru.bshakhovsky.piano_transcription.utils.MicPermission
+import ru.bshakhovsky.piano_transcription.utils.Share
 import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
 
 import java.io.FileNotFoundException
 import java.util.Locale
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-    CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
+class MainActivity : AppCompatActivity() {
 
     internal enum class RequestCode(val id: Int) { SPECTRUM(10) }
     internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
@@ -73,10 +71,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var sound: Sound
 
     private lateinit var play: Play
+    private lateinit var realTime: TranscribeRT
     private lateinit var render: Render
 
-    private var midi: Midi? = null
     private var mainMenu: Menu? = null
+    private lateinit var drawerListener: DrawerMenu
+
     private lateinit var interstitial: AdInterstitial
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,6 +106,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     .apply { initialize(lifecycle, this@MainActivity, drawerLayout, render) }
                 playModel = play
 
+                realTime = get(TranscribeRT::class.java)
+                    .apply { initialize(application, lifecycle, this@MainActivity, next, render) }
+
                 lifecycleOwner = this@MainActivity
             }
         }
@@ -113,7 +116,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         with(binding) {
             setSupportActionBar(mainBar)
 
-            drawerMenu.setNavigationItemSelectedListener(this@MainActivity)
+            drawerListener = DrawerMenu(
+                lifecycle, mainLayout, this@MainActivity,
+                drawerLayout, drawerMenu, mainBar, render, play
+            ).apply { syncState() }
+            drawerMenu.setNavigationItemSelectedListener(drawerListener)
             with(drawerMenu.menu) {
                 intArrayOf(id.drawerMidi, id.drawerAll).forEach {
                     with(findItem(it).actionView as TextView) {
@@ -123,16 +130,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
                 with(findItem(id.drawerAll).actionView as Switch) {
                     id = DrawerItem.CHECK_ALL.id
-                    setOnCheckedChangeListener(this@MainActivity)
+                    setOnCheckedChangeListener(drawerListener)
                 }
             }
             midiEnabled(false)
             tracksEnabled(false)
 
-            drawerLayout.addDrawerListener(Toggle(
-                lifecycle, mainLayout, this@MainActivity, drawerLayout, mainBar
-            ).apply { syncState() })
-            seek.setOnSeekBarChangeListener(this@MainActivity)
+            drawerLayout.addDrawerListener(drawerListener)
+            seek.setOnSeekBarChangeListener(PlaySeekBar(play))
 
             MobileAds.initialize(applicationContext)
             if (DebugMode.debug) MobileAds.setRequestConfiguration(
@@ -142,6 +147,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
             AdBanner(lifecycle, applicationContext, adMain, string.bannerMain)
             interstitial = AdInterstitial(lifecycle, this@MainActivity)
+        }
+
+        with(realTime) {
+            isRecognizing.observe(this@MainActivity) {
+                play.isRecognizing.value = it
+                mainMenu?.findItem(id.menuMic)?.icon = ContextCompat
+                    .getDrawable(applicationContext, if (it) drawable.mic_on else drawable.mic_off)
+            }
+            play.isPlaying.observe(this@MainActivity)
+            { if (it and (isRecognizing.value == true)) toggle() }
         }
 
         onNewIntent(intent)
@@ -171,7 +186,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     //        or hasCategory(Intent.CATEGORY_BROWSABLE)) and
                     // categories = null when tried to go to website from Google Play
                     (type == null) and (data != null)
-                            and with(dataString!!.toLowerCase(Locale.getDefault())) {
+                            and with(dataString!!.lowercase(Locale.getDefault())) {
                         startsWith("http://bshakhovsky.github.io") or
                                 startsWith("https://bshakhovsky.github.io")
                     } and (extras == null) and (clipData == null)
@@ -213,94 +228,34 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
         menuInflater.inflate(menu_main, menu.also { mainMenu = it })
+        mainMenu?.findItem(id.menuGuide)?.isVisible = false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
-                id.menuTracks -> binding.drawerLayout.openDrawer(GravityCompat.START)
-                id.menuMidi -> midi()
-                id.menuGuide -> guide()
-                id.menuShare -> ShareReview.share(this)
-                id.menuRate -> ShareReview.review(this)
+                id.menuMic -> {
+                    realTime.toggle()
+                    if (play.isPlaying.value == true) play.playPause()
+                }
+                id.menuShare -> Share.share(this)
                 else -> DebugMode.assertArgument(false)
             }
         }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean = true.also {
-        when (item.itemId) {
-            id.drawerMidi -> midi()
-            id.drawerGuide -> guide()
-            id.drawerShare -> ShareReview.share(this)
-            id.drawerRate -> ShareReview.review(this)
-            else -> {
-                checkGroup(item.groupId, item.itemId)
-                (item.actionView as Switch).toggle()
-                return false
-            }
-        }
-        binding.drawerLayout.closeDrawer(GravityCompat.START)
-    }
-
-    override fun onCheckedChanged(button: CompoundButton?, checked: Boolean) {
-        DebugMode.assertArgument(button != null)
-        button?.run {
-            DebugMode.assertState(midi != null)
-            midi?.run {
-                binding.run {
-                    when (id) {
-                        DrawerItem.CHECK_ALL.id -> for (i in 0..tracks.lastIndex) {
-                            with(drawerMenu.menu.findItem(R.id.drawerTracks).subMenu.findItem(i)) {
-                                if (checkGroup(groupId, itemId))
-                                    (actionView as Switch).isChecked = button.isChecked
-                            }
-                        }
-                        else -> {
-                            DebugMode.assertState(id in 0..tracks.lastIndex)
-                            with(play) {
-                                DebugMode.assertState(isPlaying.value != null)
-                                when {
-                                    isChecked -> addTrack(id)
-                                    (isPlaying.value ?: return@with) and (numSelTracks() == 1) -> {
-                                        showError(string.justTracks, string.trackNotSelPlaying)
-                                        performClick()
-                                        return@with
-                                    }
-                                    else -> removeTrack(id)
-                                }
-                                (drawerMenu.menu.findItem(R.id.drawerAll).actionView as Switch)
-                                    .text = getString(string.tracks, numSelTracks(), tracks.size)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun midi() = startActivity(Intent(this, MidiActivity::class.java).apply {
-        DebugMode.assertState(midi != null)
-        midi?.run {
-            putExtra("Summary", summary)
-            putExtra("Tracks", tracks.map { it.info }.toTypedArray())
-            putExtra("Percuss", percuss)
-        }
-    })
-
-    private fun guide() = startActivity(Intent(this, GuideActivity::class.java))
-
-    @CheckResult
-    private fun checkGroup(groupId: Int, itemId: Int) = @Suppress("Reformat") when (groupId) {
-        0                       -> false.also { DebugMode.assertArgument(itemId == id.drawerAll) }
-        DrawerGroup.TRACKS.id   -> true.also {
-            DebugMode.assertState(midi != null)
-            midi?.run { DebugMode.assertArgument(itemId in 0..tracks.lastIndex) }
-        }
-        else                    -> false.also { DebugMode.assertArgument(false) }
-    }
-
     override fun onBackPressed(): Unit = with(binding.drawerLayout) {
         GravityCompat.START.let { if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed() }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ): Unit = when (requestCode) {
+        MicPermission.RecPermission.RECOGNIZE.id -> MicPermission.onRequestResult(
+            MicPermission.RecPermission.RECOGNIZE_SETTINGS.id, grantResults, binding.root, this
+        ) { realTime.toggle() }
+
+        // DialogFragment on super() will receive it:
+        else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -310,7 +265,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 DebugMode.assertState((data != null) and (data?.data != null))
                 data?.data?.let { uri -> openMidi(uri).let { ok -> DebugMode.assertState(ok) } }
             }
-            AddDialog.RequestCode.SURF.id, AddDialog.RequestCode.OPEN_MEDIA.id -> {
+            /*AddDialog.RequestCode.SURF.id,*/ AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
                 DebugMode.assertState(data != null)
                 data?.let { intent ->
@@ -323,7 +278,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 DebugMode.assertState((data != null) and (data?.data != null))
                 data?.data?.let { if (!openMidi(it)) showError(string.badFile, string.notMidi) }
             }
-            AddDialog.RequestCode.WRITE_3GP.id, AddDialog.Permission.RECORD_SETTINGS.id ->
+
+            MicPermission.RecPermission.RECOGNIZE_SETTINGS.id -> MicPermission.onSettingsResult(
+                resultCode, MicPermission.RecPermission.RECOGNIZE_SETTINGS.id, binding.root, this
+            ) { realTime.toggle() }
+            AddDialog.RequestCode.WRITE_3GP.id, MicPermission.RecPermission.RECORD_SETTINGS.id ->
                 super.onActivityResult(requestCode, resultCode, data)
             else -> DebugMode.assertArgument(false)
         }
@@ -346,9 +305,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 inputStream?.use { inStream ->
                     with(Midi(inStream, getString(string.untitled))) {
                         if (badMidi) return false
-                        interstitial.show()
 
-                        midi = this
+                        drawerListener.midi = this
                         midiEnabled(true)
                         tracksEnabled(false) // needs to know old play.isPlaying
                         when {
@@ -362,6 +320,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                 }
+                /* Show ad only after inputStream?.use closed.
+                Otherwise, if user quickly clicks on ad, then after returning
+                java.lang.SecurityException readExceptionWithFileNotFoundExceptionFromParcel */
+                interstitial.show()
             }
         } catch (e: FileNotFoundException) {
             InfoMessage.dialog(this, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
@@ -371,12 +333,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun midiEnabled(enabled: Boolean) =
         with(binding.drawerMenu.menu.findItem(id.drawerMidi)) {
-            mainMenu?.run { findItem(id.menuMidi).isVisible = enabled }
             isEnabled = enabled
             (actionView as TextView).let { t ->
                 if (enabled) {
-                    DebugMode.assertState((midi != null) and (midi?.summary != null))
-                    midi?.summary?.run {
+                    with(drawerListener) {
+                        DebugMode.assertState((midi != null) and (midi?.summary != null))
+                        midi?.summary
+                    }?.run {
                         t.text = getString(
                             string.keyTemp,
                             if (keys.isNullOrEmpty()) "" else keys.first().key,
@@ -389,34 +352,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
     private fun tracksEnabled(enabled: Boolean) = with(binding.drawerMenu.menu) {
-        mainMenu?.run { findItem(id.menuTracks).isVisible = enabled }
         model.contVis.value = if (enabled) View.VISIBLE else View.GONE
-        with(findItem(id.drawerTracks).subMenu) {
-            if (enabled) {
-                DebugMode.assertState((midi != null) and (midi?.tracks != null))
-                midi?.tracks?.forEachIndexed { i, track ->
-                    with(add(1, i, Menu.NONE, track.info.name)) {
-                        icon = ContextCompat.getDrawable(applicationContext, drawable.queue)
-                        actionView = Switch(this@MainActivity).apply {
-                            id = i
-                            showText = true
-                            textOn = "+"
-                            textOff = ""
-                            setOnCheckedChangeListener(this@MainActivity)
+        with(drawerListener) {
+            with(findItem(id.drawerTracks).subMenu) {
+                if (enabled) {
+                    DebugMode.assertState((midi != null) and (midi?.tracks != null))
+                    midi?.tracks?.forEachIndexed { i, track ->
+                        with(add(1, i, Menu.NONE, track.info.name)) {
+                            icon = ContextCompat.getDrawable(applicationContext, drawable.queue)
+                            actionView = Switch(this@MainActivity).apply {
+                                id = i
+                                showText = true
+                                textOn = "+"
+                                textOff = ""
+                                setOnCheckedChangeListener(drawerListener)
+                            }
                         }
                     }
-                }
-            } else removeGroup(DrawerGroup.TRACKS.id)
-        }
-        with(findItem(id.drawerAll)) {
-            isEnabled = enabled
-            with(actionView as Switch) {
+                } else removeGroup(DrawerGroup.TRACKS.id)
+            }
+            with(findItem(id.drawerAll)) {
                 isEnabled = enabled
-                text = getString(string.tracks, 0, if (enabled) midi?.tracks?.size else 0)
-                font(this, enabled)
-                if (enabled) {
-                    toggle()
-                    if (!isChecked) toggle()
+                with(actionView as Switch) {
+                    isEnabled = enabled
+                    text = getString(string.tracks, 0, if (enabled) midi?.tracks?.size else 0)
+                    font(this, enabled)
+                    if (enabled) {
+                        toggle()
+                        if (!isChecked) toggle()
+                    }
                 }
             }
         }
@@ -424,15 +388,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun font(t: TextView, enabled: Boolean) =
         t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
-
-    override fun onProgressChanged(bar: SeekBar?, pos: Int, fromUser: Boolean) {
-        DebugMode.assertArgument(bar != null)
-        play.prevNext()
-        if (fromUser) play.seek(pos)
-    }
-
-    override fun onStartTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
-    override fun onStopTrackingTouch(bar: SeekBar?): Unit = DebugMode.assertArgument(bar != null)
 
     @CheckResult
     private fun showError(@StringRes titleId: Int, @StringRes msgId: Int) =
