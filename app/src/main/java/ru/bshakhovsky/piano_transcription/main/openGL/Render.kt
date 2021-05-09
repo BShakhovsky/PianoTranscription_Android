@@ -31,9 +31,10 @@ class Render(
 ) : GLSurfaceView.Renderer, LifecycleObserver {
 
     /* Not array, because do not need to access by index, but need to quickly insert/erase.
-    Set, because Midi note can be added multiple times, and trueChord.remove()
+    Set, because MIDI note can be added multiple times, and trueChord.remove()
     will remove just a single instance. Mutable, because need to clear */
     val trueChord: MutableSet<Int> = mutableSetOf() // for realtime transcription
+
     /* prevChord used only in releaseAllKeys() to copy trueChord before clearing,
     so can be List instead of Set */
     val prevChord: MutableList<Int> = mutableListOf() // to stop highlighting prev keys as wrong
@@ -265,14 +266,14 @@ class Render(
         }
     }
 
-    fun highlightKey(note: Int, isGood: Boolean) {
+    fun highLightKey(note: Int, isGood: Boolean) {
         if (check(note)) with(model.geom.keys[note]) {
             isCorrect = isGood
             isWrong = !isGood
         }
     }
 
-    fun unHighlightAll() {
+    fun unHighLightAll() {
         // For some reason, not yet initialized if MIDI is received from another App through Intent
         if (::model.isInitialized) model.geom.keys.forEach {
             with(it) {
@@ -310,7 +311,7 @@ class Render(
             key.isPressed = false
             sound.stop(note)
         }
-        unHighlightAll()
+        unHighLightAll()
     }
 
     @CheckResult

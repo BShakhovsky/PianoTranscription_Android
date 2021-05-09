@@ -88,10 +88,10 @@ class TranscribeRT(application: Application) : RealTime(application) {
                             ?.let { it >= TfLiteModel.threshold } ?: false
                     }.let { userChord ->
                         with(render) {
-                            unHighlightAll()
+                            unHighLightAll()
                             with(trueChord) {
                                 if (isNotEmpty() and (userChord.containsAll(this))) {
-                                    forEach { highlightKey(it, true) }
+                                    forEach { highLightKey(it, true) }
                                     try {
                                         Thread.sleep(300)
                                     } catch (e: InterruptedException) {
@@ -100,8 +100,8 @@ class TranscribeRT(application: Application) : RealTime(application) {
                                     activity.get().runOnUiThread { next.get().performClick() }
                                 } else userChord.forEach {
                                     when (it) {
-                                        in this -> highlightKey(it, true)
-                                        !in prevChord -> highlightKey(it, false)
+                                        in this -> highLightKey(it, true)
+                                        !in prevChord -> highLightKey(it, false)
                                     }
                                 }
                             }

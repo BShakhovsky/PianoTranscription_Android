@@ -2,17 +2,10 @@ package ru.bshakhovsky.piano_transcription.main
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-
-import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-
-import android.widget.Switch
-import android.widget.TextView
 
 import androidx.annotation.CheckResult
 import androidx.annotation.StringRes
@@ -27,7 +20,6 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 
-import ru.bshakhovsky.piano_transcription.R.color.colorAccent
 import ru.bshakhovsky.piano_transcription.R.drawable
 import ru.bshakhovsky.piano_transcription.R.id
 import ru.bshakhovsky.piano_transcription.R.layout.activity_main
@@ -59,9 +51,7 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    internal enum class RequestCode(val id: Int) { SPECTRUM(10) }
-    internal enum class DrawerGroup(val id: Int) { TRACKS(1) }
-    internal enum class DrawerItem(val id: Int) { CHECK_ALL(-1) }
+    private enum class RequestCode(val id: Int) { SPECTRUM(10) }
 
     private lateinit var policy: StrictPolicy
 
@@ -115,28 +105,11 @@ class MainActivity : AppCompatActivity() {
 
         with(binding) {
             setSupportActionBar(mainBar)
-
             drawerListener = DrawerMenu(
                 lifecycle, mainLayout, this@MainActivity,
-                drawerLayout, drawerMenu, mainBar, render, play
+                drawerLayout, drawerMenu, mainBar, model, render, play
             ).apply { syncState() }
             drawerMenu.setNavigationItemSelectedListener(drawerListener)
-            with(drawerMenu.menu) {
-                intArrayOf(id.drawerMidi, id.drawerAll).forEach {
-                    with(findItem(it).actionView as TextView) {
-                        gravity = Gravity.CENTER_VERTICAL
-                        setTextColor(getColor(colorAccent))
-                    }
-                }
-                with(findItem(id.drawerAll).actionView as Switch) {
-                    id = DrawerItem.CHECK_ALL.id
-                    setOnCheckedChangeListener(drawerListener)
-                }
-            }
-            midiEnabled(false)
-            tracksEnabled(false)
-
-            drawerLayout.addDrawerListener(drawerListener)
             seek.setOnSeekBarChangeListener(PlaySeekBar(play))
 
             MobileAds.initialize(applicationContext)
@@ -196,9 +169,10 @@ class MainActivity : AppCompatActivity() {
                     if (categories != null) DebugMode.assertState(
                         (categories.size == 1) and hasCategory(Intent.CATEGORY_DEFAULT)
                     )
-                    DebugMode.assertState(
-                        (data == null) and (dataString == null)
-                                and (extras != null) and (clipData != null)
+                    DebugMode.assertState( // Not null when sent from another App, e.g. content://
+                        // com.*.*.rnshare.fileprovider/rnshare_sdcard/data/data/com.*.*/files/*.mid
+                        // (data == null) and (dataString == null) and
+                        (extras != null) and (clipData != null)
                     )
                     clipData?.run {
                         DebugMode.assertState((itemCount == 1) and (description != null))
@@ -265,7 +239,8 @@ class MainActivity : AppCompatActivity() {
                 DebugMode.assertState((data != null) and (data?.data != null))
                 data?.data?.let { uri -> openMidi(uri).let { ok -> DebugMode.assertState(ok) } }
             }
-            /*AddDialog.RequestCode.SURF.id,*/ AddDialog.RequestCode.OPEN_MEDIA.id -> {
+            // AddDialog.RequestCode.SURF.id,
+            AddDialog.RequestCode.OPEN_MEDIA.id -> {
                 if (resultCode != RESULT_OK) return
                 DebugMode.assertState(data != null)
                 data?.let { intent ->
@@ -306,16 +281,19 @@ class MainActivity : AppCompatActivity() {
                     with(Midi(inStream, getString(string.untitled))) {
                         if (badMidi) return false
 
-                        drawerListener.midi = this
-                        midiEnabled(true)
-                        tracksEnabled(false) // needs to know old play.isPlaying
-                        when {
-                            tracks.isNullOrEmpty() -> showError(string.emptyMidi, string.noTracks)
-                            dur == 0L -> showError(string.emptyMidi, string.zeroDur)
-                            else -> {
-                                DebugMode.assertState(::render.isInitialized)
-                                play.newMidi(tracks, dur)
-                                tracksEnabled(true)
+                        drawerListener.run {
+                            midi = this@with
+                            midiEnabled(true)
+                            tracksEnabled(false) // needs to know old play.isPlaying
+                            when {
+                                tracks.isNullOrEmpty() ->
+                                    showError(string.emptyMidi, string.noTracks)
+                                dur == 0L -> showError(string.emptyMidi, string.zeroDur)
+                                else -> {
+                                    DebugMode.assertState(::render.isInitialized)
+                                    play.newMidi(tracks, dur)
+                                    tracksEnabled(true)
+                                }
                             }
                         }
                     }
@@ -330,64 +308,6 @@ class MainActivity : AppCompatActivity() {
         }
         return true
     }
-
-    private fun midiEnabled(enabled: Boolean) =
-        with(binding.drawerMenu.menu.findItem(id.drawerMidi)) {
-            isEnabled = enabled
-            (actionView as TextView).let { t ->
-                if (enabled) {
-                    with(drawerListener) {
-                        DebugMode.assertState((midi != null) and (midi?.summary != null))
-                        midi?.summary
-                    }?.run {
-                        t.text = getString(
-                            string.keyTemp,
-                            if (keys.isNullOrEmpty()) "" else keys.first().key,
-                            if (tempos.isNullOrEmpty()) 0 else tempos.first().bpm.toInt()
-                        )
-                    }
-                } else t.text = getString(string.noMidi)
-                font(t, enabled)
-            }
-        }
-
-    private fun tracksEnabled(enabled: Boolean) = with(binding.drawerMenu.menu) {
-        model.contVis.value = if (enabled) View.VISIBLE else View.GONE
-        with(drawerListener) {
-            with(findItem(id.drawerTracks).subMenu) {
-                if (enabled) {
-                    DebugMode.assertState((midi != null) and (midi?.tracks != null))
-                    midi?.tracks?.forEachIndexed { i, track ->
-                        with(add(1, i, Menu.NONE, track.info.name)) {
-                            icon = ContextCompat.getDrawable(applicationContext, drawable.queue)
-                            actionView = Switch(this@MainActivity).apply {
-                                id = i
-                                showText = true
-                                textOn = "+"
-                                textOff = ""
-                                setOnCheckedChangeListener(drawerListener)
-                            }
-                        }
-                    }
-                } else removeGroup(DrawerGroup.TRACKS.id)
-            }
-            with(findItem(id.drawerAll)) {
-                isEnabled = enabled
-                with(actionView as Switch) {
-                    isEnabled = enabled
-                    text = getString(string.tracks, 0, if (enabled) midi?.tracks?.size else 0)
-                    font(this, enabled)
-                    if (enabled) {
-                        toggle()
-                        if (!isChecked) toggle()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun font(t: TextView, enabled: Boolean) =
-        t.setTypeface(null, if (enabled) Typeface.BOLD_ITALIC else Typeface.ITALIC)
 
     @CheckResult
     private fun showError(@StringRes titleId: Int, @StringRes msgId: Int) =

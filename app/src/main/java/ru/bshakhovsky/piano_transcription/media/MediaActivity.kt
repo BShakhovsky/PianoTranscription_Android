@@ -36,7 +36,7 @@ import kotlin.io.path.ExperimentalPathApi
 
 class MediaActivity : AppCompatActivity(), View.OnClickListener {
 
-    enum class RequestCode(val id: Int) { WRITE_MIDI(50) }
+    private enum class RequestCode(val id: Int) { WRITE_MIDI(50) }
 
     private lateinit var binding: ActivityMediaBinding
 

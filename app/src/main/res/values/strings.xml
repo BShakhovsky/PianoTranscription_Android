@@ -32,9 +32,9 @@
     <string name="justReview">Review</string>
 
     RealTime
-    <string name="realTime">Realtime</string>
+    <string name="realTime">RealTime</string>
     <string name="recognizing">You can now play on real piano.
-        \nNotes will be recognized and highlighted in real time.</string>
+        \nNotes will be recognized and highlighted in realtime.</string>
 
     DRAWER
 
@@ -151,6 +151,8 @@
     USER GUIDE
 
     <string name="guideShare">Share Google Play App link with other people</string>
+    <string name="feedBack">Thank you for your feedback</string>
+    <string name="unknown">Unknown error</string>
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio/video-file
         (such as MP3, MP4, etc.) or record a piano piece with microphone</string>
@@ -179,18 +181,18 @@
         mistakes - with red</string>
 
     <string name="userGuide9_1">If somebody talks near your phone,
-        or if you sit it in a loud environment, it will incorrectly recognize too many notes
+        or if you sit in a loud environment, it will incorrectly recognize too many notes
         which you actually do not play.
         Too many keys will be red in this case and it will be annoying.
         \nSo, if you want better recognition accuracy,
-        ideally there should be no other sounds than your piano</string>
-    <string name="userGuide9_2">If you have convenient headphones which you can connect
-        to your electric piano, there is a life-hack - you can
-        “put on headphones on mobile device” like on the following photo:</string>
+        ideally there should be no other sounds than your piano.</string>
+    <string name="userGuide9_2">If you have convenient headphones which you can
+        plug into your electric piano, there is a life-hack - you can
+        “put on the headphones on your mobile device” like on the following photo:</string>
     <string name="userGuide10">Turn the volume louder</string>
 
-    <string name="userGuide11">Ones you correctly play all the notes of the chord simultaneously
-        (all of the pressed keys are green), it will automatically proceed to the next MIDI chord,
+    <string name="userGuide11">Once you correctly play all the notes of the chord simultaneously
+        (all the pressed keys are green), it will automatically proceed to the next MIDI chord,
         and so on</string>
     <string name="userGuide12">Enjoy!</string>
 

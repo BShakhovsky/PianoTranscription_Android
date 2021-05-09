@@ -5,17 +5,16 @@ plugins {
 
 android {
     compileSdkVersion 30
+    buildToolsVersion '31.0.0 rc3'
     defaultConfig {
         applicationId 'ru.BShakhovsky.Piano_Transcription'
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 6
+        versionCode 7
         versionName '2.0'
     }
     buildTypes.release {
-        // With minifyEnabled in-app review does not show up, and it may also be a reason of crashes
-//        shrinkResources true
-        minifyEnabled false
+        minifyEnabled false // Just in case, not sure it will not cause crashes
         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         ndk.debugSymbolLevel 'FULL'
     }
@@ -37,8 +36,8 @@ dependencies {
     api 'com.google.android.play:core:1.10.0'
 
     api 'org.tensorflow:tensorflow-lite-gpu:2.4.0'
-    api 'org.tensorflow:tensorflow-lite-metadata:0.2.0-rc0'
-    api 'org.tensorflow:tensorflow-lite-support:0.2.0-rc0'
+    api 'org.tensorflow:tensorflow-lite-metadata:0.2.0-rc2'
+    api 'org.tensorflow:tensorflow-lite-support:0.2.0-rc2'
 
     api 'com.github.pdrogfer:MidiDroid:v1.1'
     api 'com.arthenica:mobile-ffmpeg-min:4.4.LTS'

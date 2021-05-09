@@ -47,20 +47,20 @@ class RollGraph : Graphs() {
         try {
             Bitmap.createBitmap(frames.size / 88, 88 * scale, Bitmap.Config.ARGB_8888)
                 .let { bitmap ->
-                with(Canvas(bitmap)) {
-                    frames.forEachIndexed { index, value ->
-                        if (value > TfLiteModel.threshold) drawCircle(
-                            bitmap.width - frames.size / 88 + (index / 88).toFloat(),
-                            (88f - index % 88) * scale, 1f,
-                            Paint().apply {
-                                color = Color.BLUE
-                                alpha = (value * 0xFF).roundToInt()
-                            }
-                        )
+                    with(Canvas(bitmap)) {
+                        frames.forEachIndexed { index, value ->
+                            if (value > TfLiteModel.threshold) drawCircle(
+                                bitmap.width - frames.size / 88 + (index / 88).toFloat(),
+                                (88f - index % 88) * scale, 1f,
+                                Paint().apply {
+                                    color = Color.BLUE
+                                    alpha = (value * 0xFF).roundToInt()
+                                }
+                            )
+                        }
                     }
+                    withContext(Dispatchers.Main) { _graphBitmap.value = bitmap }
                 }
-                withContext(Dispatchers.Main) { _graphBitmap.value = bitmap }
-            }
         } catch (e: OutOfMemoryError) {
             outOfMem = true
             throw e

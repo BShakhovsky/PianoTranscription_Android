@@ -23,8 +23,10 @@ abstract class Shader(assets: AssetManager, name: String) {
                     shader, InputStreamReader(assets.open("Shader/$glslName.glsl")).readText()
                 )
                 GLES32.glCompileShader(shader)
-                if (DebugMode.debug) GLES32.glGetShaderInfoLog(shader).run {
-                    if (isNotEmpty()) throw GLException(0, "Shader compile: $this")
+                if (DebugMode.debug) IntArray(1).let { status ->
+                    GLES32.glGetShaderiv(shader, GLES32.GL_COMPILE_STATUS, status, 0)
+                    if (status[0] != GLES32.GL_TRUE)
+                        throw GLException(0, "Shader compile: ${GLES32.glGetShaderInfoLog(shader)}")
                 }
             })
 

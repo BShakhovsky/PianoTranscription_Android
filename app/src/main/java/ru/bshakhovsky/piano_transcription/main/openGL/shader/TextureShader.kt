@@ -19,7 +19,7 @@ class TextureShader(assets: AssetManager) : Shader(assets, "2D") {
             GLES32.glUniform1i(frameBuff, buffNo)
             GLES32.glVertexAttribPointer(
                 texPos, 2, GLES32.GL_FLOAT, false, 0, Utils.allocFloat(
-                    @Suppress("LongLine", "Reformat", "SpellCheckingInspection")
+                    @Suppress("LongLine", "Reformat")
                     (if (toReflect) floatArrayOf(1f, 0f,  0f, 0f,  1f, 1f,    1f, 1f,  0f, 0f,  0f, 1f)
                     else            floatArrayOf(0f, 0f,  1f, 0f,  0f, 1f,    0f, 1f,  1f, 0f,  1f, 1f))
                         /* Texture array must have the same number of elements

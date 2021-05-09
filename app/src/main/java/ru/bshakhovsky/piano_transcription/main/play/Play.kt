@@ -80,7 +80,7 @@ class Play : Runnable, ViewModel(), LifecycleObserver {
     New Midi-tracks are reset only from MainActivity UI-thread:
         seek bar _duration          newMidi()
 
-    isRecognizing is reset and also observed from MainActivity, here it is just read
+    isRecognizing is reset and also observed from MainActivity only, here it is just read
     from background thread (to know whether to play sound or to set velocity = 0):
                                     nextChord(), prevChord() */
     private var schedule: ScheduledExecutorService? = null

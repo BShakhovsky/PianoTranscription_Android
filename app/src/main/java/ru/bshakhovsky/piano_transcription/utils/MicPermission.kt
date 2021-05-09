@@ -2,10 +2,8 @@ package ru.bshakhovsky.piano_transcription.utils
 
 import android.Manifest
 import android.app.Activity
-
 import android.content.Intent
 import android.content.pm.PackageManager
-
 import android.net.Uri
 import android.provider.Settings
 import android.view.View
@@ -39,9 +37,9 @@ object MicPermission {
     fun onRequestResult(
         settingsCode: Int, grantResults: IntArray, view: View,
         activity: Activity?, fragment: DialogFragment? = null, action: () -> Unit
-    ): Unit = if ((grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED)
-    ) action() else settings(settingsCode, view, activity, fragment)
+    ): Unit =
+        if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED))
+            action() else settings(settingsCode, view, activity, fragment)
 
     fun onSettingsResult(
         resultCode: Int, settingsCode: Int, view: View,

@@ -1,6 +1,6 @@
 # Description
 
-Android app which may help you to learn the MIDI chords on your real piano, there is the real-time transcription feature.  The app will recognize the notes you play and highlight them.  Ones you correctly play all the notes of the chord simultaneously, it will proceed to the next MIDI chord, and so on.
+Android app which may help you to learn the MIDI chords on your real piano, there is the real-time transcription feature.  The app will recognize the notes you play and highlight them.  Once you correctly play all the notes of the chord simultaneously, it will proceed to the next MIDI chord, and so on.
 
 Not only MIDI-files are supported, but also MP3, MP4, etc.  If you do not have a MIDI, you can open any audio file (the app can also extract audio-stream of some video formats).  Polyphonic piano transcription feature will generate MIDI from audio/video.
 
@@ -67,16 +67,17 @@ Correctly played notes will be highlighted with green color, mistakes - with red
 
 [![](app/src/main/res/drawable-nodpi/user_guide_08.webp 'Realtime Transcription')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
-6. If somebody talks near your phone, or if you sit it in a loud environment, it will incorrectly recognize too many notes which you actually do not play.  Too many keys will be red in this case and it will be annoying.
+6. If somebody talks near your phone, or if you sit in a loud environment, it will incorrectly recognize too many notes which you actually do not play.  Too many keys will be red in this case and it will be annoying.
    So, if you want better recognition accuracy, ideally there should be no other sounds than your piano.
-   If you have convenient headphones which you can connect to your electric piano, there is a life-hack - you can “put on headphones on mobile device” like on the following photo:
+
+If you have convenient headphones which you can plug into your electric piano, there is a life-hack - you can “put on the headphones on your mobile device” like on the following photo:
 
 [![](app/src/main/res/drawable-nodpi/user_guide_09.webp 'Headphones on mobile')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
-   Turn the volume louder.
+Turn the volume louder
 
 [![](app/src/main/res/drawable-nodpi/user_guide_10.webp 'Volume louder')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
-7. Ones you correctly play all the notes of the chord simultaneously (all of the pressed keys are green), it will automatically proceed to the next MIDI chord, and so on.
+7. Once you correctly play all the notes of the chord simultaneously (all the pressed keys are green), it will automatically proceed to the next MIDI chord, and so on.
 
 8. Enjoy :smile:

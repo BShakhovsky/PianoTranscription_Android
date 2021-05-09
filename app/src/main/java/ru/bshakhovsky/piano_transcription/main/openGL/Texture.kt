@@ -70,7 +70,6 @@ class Texture(resources: Resources, lights: Array<Light>) {
         )
     }
 
-    @Suppress("SpellCheckingInspection")
     private fun parameteri() = GLES32.glTexParameteri(
         GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_LINEAR // or NEAREST
     )/* GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR // or NEAREST

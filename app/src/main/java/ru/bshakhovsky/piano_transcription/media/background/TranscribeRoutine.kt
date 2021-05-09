@@ -149,7 +149,6 @@ class TranscribeRoutine : ViewModel() {
         }
     }
 
-    @Suppress("SpellCheckingInspection")
     private suspend fun nextSecond(
         curStep: Int, outStepSecs: Int, model: TfLiteModel, paddedSong: FloatArray
     ) {
@@ -246,7 +245,7 @@ class TranscribeRoutine : ViewModel() {
             insertEvent(InstrumentName(0, 0, "Acoustic Grand Piano"))
             insertEvent(Tempo(0, 0, 60_000_000 / 120))
 
-            @Suppress("SpellCheckingInspection") /* Based on
+            /* Based on
             https://github.com/tensorflow/magenta/blob/master/magenta/music/sequences_lib.py#L1844
             magenta.music.midi_ionote_sequence_to_midi_file(
             magenta.music.sequences_libpianoroll_to_note_sequence(

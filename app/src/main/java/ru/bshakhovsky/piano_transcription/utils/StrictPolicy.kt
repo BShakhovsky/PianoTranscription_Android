@@ -31,7 +31,13 @@ class StrictPolicy(lifecycle: Lifecycle, a: Activity) {
                         detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
                 }
             } //.detectAll().detectCleartextNetwork()
-                .detectActivityLeaks().detectFileUriExposure().detectLeakedClosableObjects()
+                .detectActivityLeaks().detectFileUriExposure()
+                .detectLeakedClosableObjects() /* API 30 devices seem to be affected,
+                https://stackoverflow.com/questions/65011420/
+                strictmode-policy-violation-android-os-strictmode-leakedclosableviolation-in-my
+                -
+                Probably, something has to do with the layout inspector
+                https://issuetracker.google.com/issues/167533582 */
                 .detectLeakedRegistrationObjects().detectLeakedSqlLiteObjects()
                 .penaltyLog().build())
 

@@ -41,7 +41,6 @@ class TfLiteModel : Closeable {
         )
         DebugMode.assertState(!::model.isInitialized)
         model = OnsetsFramesWavinput.newInstance(context, Model.Options.Builder().apply {
-            @Suppress("SpellCheckingInspection")
             /* https://stackoverflow.com/questions/59968239/
             performance-of-gpu-delegate-nnapi-of-tensorflow-lite-are-almost-the-same-on-and
 
@@ -84,8 +83,7 @@ class TfLiteModel : Closeable {
             ffmpegLog.value += "\n${
                 with(context) {
                     getString(
-                        string.gpuCompat,
-                        getString(
+                        string.gpuCompat, getString(
                             if (CompatibilityList().isDelegateSupportedOnThisDevice)
                                 string.compat else string.inCompat
                         )
@@ -106,9 +104,7 @@ class TfLiteModel : Closeable {
 
     @WorkerThread
     @CheckResult
-            /**
-             * @return frames, onsets, volumes
-             */
+            /** @return frames, onsets, volumes */
     fun process(input: FloatArray): Triple<FloatArray, FloatArray, FloatArray> {
         DebugMode.assertState(
             Looper.myLooper() != Looper.getMainLooper(),
@@ -120,13 +116,13 @@ class TfLiteModel : Closeable {
                 outputFeature0AsTensorBuffer, outputFeature1AsTensorBuffer,
                 outputFeature2AsTensorBuffer, outputFeature3AsTensorBuffer
             )
-            DebugMode.assertArgument(
-                frames.shape.contentEquals(intArrayOf(1, outStepNotes, 88))
-                        and onsets.shape.contentEquals(intArrayOf(1, outStepNotes, 88))
-                        and offsets.shape.contentEquals(intArrayOf(1, outStepNotes, 88))
-                        and volumes.shape.contentEquals(intArrayOf(1, outStepNotes, 88))
-            )
-            return Triple(frames.floatArray.mapIndexed { i, f -> maxOf(onsets.floatArray[i], f) }
+            intArrayOf(1, outStepNotes, 88).let {
+                DebugMode.assertArgument(
+                    frames.shape.contentEquals(it) and onsets.shape.contentEquals(it)
+                            and offsets.shape.contentEquals(it) and volumes.shape.contentEquals(it)
+                )
+            }
+            return Triple(frames.floatArray.mapIndexed { i, f -> maxOf(f, onsets.floatArray[i]) }
                 .toFloatArray(), onsets.floatArray, volumes.floatArray)
         }
     }

@@ -232,49 +232,48 @@ class DecodeRoutine : ViewModel() {
 
     @WorkerThread
     @ExperimentalPathApi
-    private suspend fun ffmpeg(inPath: Path) =
-        withContext(Dispatchers.IO) {
-            @Suppress("BlockingMethodInNonBlockingContext")
-            createTempFile(inPath.parent, "DecodedRawFloatArray_", ".pcm")
-        }.let {
-            DebugMode.assertState(
-                Looper.myLooper() != Looper.getMainLooper(),
-                "FFmpeg should be called from background thread"
-            )
-            with(data) {
-                // Raw audio float array of more than 10 minutes causes Out of Memory,
-                // so, save to temp file instead of byte array
-                DebugMode.assertState(rawData.file == null, "Unnecessary second FFmpeg call")
-                pipeThread = PipeTransfer(it).apply {
-                    pipeOut().use { outPipe ->
-                        FFmpeg.cancel()
-                        start()
+    private suspend fun ffmpeg(inPath: Path) = withContext(Dispatchers.IO) {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        createTempFile(inPath.parent, "DecodedRawFloatArray_", ".pcm")
+    }.let {
+        DebugMode.assertState(
+            Looper.myLooper() != Looper.getMainLooper(),
+            "FFmpeg should be called from background thread"
+        )
+        with(data) {
+            // Raw audio float array of more than 10 minutes causes Out of Memory,
+            // so, save to temp file instead of byte array
+            DebugMode.assertState(rawData.file == null, "Unnecessary second FFmpeg call")
+            pipeThread = PipeTransfer(it).apply {
+                pipeOut().use { outPipe ->
+                    FFmpeg.cancel()
+                    start()
 
-                        when (FFmpeg.execute(
-                            "-i $inPath -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
-                        )) {
-                            Config.RETURN_CODE_SUCCESS -> {
-                                decodeSuccess(it.toFile())
-                                withContext(Dispatchers.IO) {
-                                    @Suppress("BlockingMethodInNonBlockingContext")
-                                    inPath.deleteExisting()
-                                }
+                    when (FFmpeg.execute(
+                        "-i $inPath -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
+                    )) {
+                        Config.RETURN_CODE_SUCCESS -> {
+                            decodeSuccess(it.toFile())
+                            withContext(Dispatchers.IO) {
+                                @Suppress("BlockingMethodInNonBlockingContext")
+                                inPath.deleteExisting()
                             }
-                            Config.RETURN_CODE_CANCEL -> {
-                                decodeCancelled()
-                                clearCache()
-                            }
-                            else -> {
-                                decodeFail()
-                                clearCache()
-                            }
+                        }
+                        Config.RETURN_CODE_CANCEL -> {
+                            decodeCancelled()
+                            clearCache()
+                        }
+                        else -> {
+                            decodeFail()
+                            clearCache()
                         }
                     }
                 }
-                DebugMode.assertState(!ffmpegLog.value.isNullOrEmpty())
-                withContext(Dispatchers.Main) { _logVis.value = View.GONE }
             }
+            DebugMode.assertState(!ffmpegLog.value.isNullOrEmpty())
+            withContext(Dispatchers.Main) { _logVis.value = View.GONE }
         }
+    }
 
     @WorkerThread
     private suspend fun decodeSuccess(outArray: File) = with(data) {
