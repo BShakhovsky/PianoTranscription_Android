@@ -1,8 +1,8 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.content.res.AssetManager
-import android.opengl.GLES32
 
+import ru.bshakhovsky.piano_transcription.main.openGL.GLES
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 
@@ -24,7 +24,7 @@ class MainShader(assets: AssetManager) : Shader(assets, "Main") {
     private val shadow = uniform("shadow")
 
     init {
-        intArrayOf(norm, texPos, withTex).forEach { GLES32.glEnableVertexAttribArray(it) }
+        intArrayOf(norm, texPos, withTex).forEach { GLES.glEnableVertexAttribArray(it) }
     }
 
     fun initReflectBuff(textures: Texture, lights: Array<Light>) {
@@ -34,36 +34,45 @@ class MainShader(assets: AssetManager) : Shader(assets, "Main") {
                 bindTexture(id)
             }
         }
-        GLES32.glClearColor(0f, 0f, 0f, 1f)
-        GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT or GLES32.GL_DEPTH_BUFFER_BIT)
+        GLES.glClearColor(0f, 0f, 0f, 1f)
+        GLES.glClear(GLES.GL_COLOR_BUFFER_BIT or GLES.GL_DEPTH_BUFFER_BIT)
         prepare(textures, lights)
+
+        @Suppress("SpellCheckingInspection")
+        /* This was the reason of native OpenGL crashes on Qualcomm Adreno GPUs
+            drawCotton -> glDrawArrays --> libESXGLESv2_adreno.so
+            --> EsxVertexArrayObject::UpdateInternalVbos(
+                EsxDrawDescriptor const*, unsigned int, EsxAttributeDesc const*)
+            --> memcpy
+        Even though cotton and keyboard do not use texture, its buffer should be allocated: */
+        TextureShader.sendTexture(textures, lights.size + 1, deskTex, texPos)
     }
 
     fun initMainScreen(textures: Texture, lights: Array<Light>, transparent: Boolean = false) {
-        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, 0)
+        GLES.glBindFramebuffer(GLES.GL_FRAMEBUFFER, 0)
         if (!transparent) {
-            GLES32.glClearColor(70 / 255f, 130 / 255f, 180 / 255f, 1f) // Steel blue
-            GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT)
+            GLES.glClearColor(70 / 255f, 130 / 255f, 180 / 255f, 1f) // Steel blue
+            GLES.glClear(GLES.GL_COLOR_BUFFER_BIT)
         }
-        GLES32.glClear(GLES32.GL_DEPTH_BUFFER_BIT)
-        GLES32.glDisable(GLES32.GL_STENCIL_TEST)
+        GLES.glClear(GLES.GL_DEPTH_BUFFER_BIT)
+        GLES.glDisable(GLES.GL_STENCIL_TEST)
         prepare(textures, lights)
     }
 
     private fun prepare(textures: Texture, lights: Array<Light>) {
         use()
-        GLES32.glUniform1i(shadow, GLES32.GL_TRUE)
+        GLES.glUniform1i(shadow, GLES.GL_TRUE)
         intArrayOf(pixel0, pixel1, pixel2).forEachIndexed { i, handle ->
             with(lights[i]) {
-                GLES32.glUniform2fv(handle, 1, floatArrayOf(1f / orthoWidth, 1f / orthoHeight), 0)
+                GLES.glUniform2fv(handle, 1, floatArrayOf(1f / orthoWidth, 1f / orthoHeight), 0)
             }
         }
         lights.forEachIndexed { lightNo, shadow ->
             with(shadow) {
-                GLES32.glUniform3fv(light, 1, lightDir, 0)
-                GLES32.glActiveTexture(GLES32.GL_TEXTURE0 + lightNo)
+                GLES.glUniform3fv(light, 1, lightDir, 0)
+                GLES.glActiveTexture(GLES.GL_TEXTURE0 + lightNo)
                 textures.bindTexture(lightNo)
-                GLES32.glUniform1i(depthBuff, lightNo)
+                GLES.glUniform1i(depthBuff, lightNo)
             }
         }
     }
@@ -72,15 +81,15 @@ class MainShader(assets: AssetManager) : Shader(assets, "Main") {
         desk: Primitive, view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray,
         textures: Texture, texInd: Int
     ) {
-        GLES32.glEnable(GLES32.GL_BLEND)
+        GLES.glEnable(GLES.GL_BLEND)
         // Only light#2 produces shadow on desk, and I do not like this shadow
-        GLES32.glUniform1i(shadow, GLES32.GL_FALSE)
+        GLES.glUniform1i(shadow, GLES.GL_FALSE)
 
         TextureShader.sendTexture(textures, texInd, deskTex, texPos)
         drawCommon(desk, floatArrayOf(.15f, .15f, .15f, .9f), view, viewProjection, invTransView)
 
-        GLES32.glDisable(GLES32.GL_BLEND)
-        GLES32.glUniform1i(shadow, GLES32.GL_TRUE)
+        GLES.glDisable(GLES.GL_BLEND)
+        GLES.glUniform1i(shadow, GLES.GL_TRUE)
     }
 
     fun drawCotton(
@@ -101,8 +110,8 @@ class MainShader(assets: AssetManager) : Shader(assets, "Main") {
         view: FloatArray, viewProjection: FloatArray, invTransView: FloatArray,
         lights: Array<Light>? = null, offset: Float = 0f, angle: Float = 0f
     ) {
-        GLES32.glVertexAttribPointer(withTex, 1, GLES32.GL_FLOAT, false, 0, shape.withTex)
-        GLES32.glUniform4fv(color, 1, col, 0)
+        GLES.glVertexAttribPointer(withTex, 1, GLES.GL_FLOAT, false, 0, shape.withTex)
+        GLES.glUniform4fv(color, 1, col, 0)
         shiftRotate(view, mv, offset, angle)
         shiftRotate(viewProjection, mvp, offset, angle)
         shiftRotate(invTransView, inTrV, offset, angle)

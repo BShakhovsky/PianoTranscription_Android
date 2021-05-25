@@ -49,32 +49,34 @@
             <ImageView style="@style/Image" android:src="@drawable/user_guide_01" />
             <TextView  style="@style/Text"  android:text="@string/userGuide1"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_02" />
-
             <TextView  style="@style/Text"  android:text="@string/userGuide2"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_03" />
-            <TextView  style="@style/Text"  android:text="@string/userGuide3"/>
 
-            <TextView  style="@style/Text"  android:text="@string/userGuide4"/>
+            <TextView  style="@style/Text"  android:text="@string/userGuide3"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_04" />
+            <TextView  style="@style/Text"  android:text="@string/userGuide4"/>
+
             <TextView  style="@style/Text"  android:text="@string/userGuide5"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_05" />
-
             <TextView  style="@style/Text"  android:text="@string/userGuide6"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_06" />
 
             <TextView  style="@style/Text"  android:text="@string/userGuide7"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_07" />
+
             <TextView  style="@style/Text"  android:text="@string/userGuide8"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_08" />
-
-            <TextView  style="@style/Text"  android:text="@string/userGuide9_1"/>
-            <TextView  style="@style/Text"  android:text="@string/userGuide9_2"/>
+            <TextView  style="@style/Text"  android:text="@string/userGuide9"/>
             <ImageView style="@style/Image" android:src="@drawable/user_guide_09" />
-            <TextView  style="@style/Text"  android:text="@string/userGuide10"/>
-            <ImageView style="@style/Image" android:src="@drawable/user_guide_10" />
 
+            <TextView  style="@style/Text"  android:text="@string/userGuide10_1"/>
+            <TextView  style="@style/Text"  android:text="@string/userGuide10_2"/>
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_10" />
             <TextView  style="@style/Text"  android:text="@string/userGuide11"/>
+            <ImageView style="@style/Image" android:src="@drawable/user_guide_11" />
+
             <TextView  style="@style/Text"  android:text="@string/userGuide12"/>
+            <TextView  style="@style/Text"  android:text="@string/userGuide13"/>
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

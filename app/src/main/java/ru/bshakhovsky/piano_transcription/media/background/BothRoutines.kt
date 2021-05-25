@@ -53,5 +53,5 @@ class BothRoutines(application: Application) :
     // Both threads
     fun clearCache(cachePref: String): Unit? =
         appContext().cacheDir.listFiles { _, name -> name.startsWith(cachePref) }
-            ?.forEach { it.deleteRecursively() }
+            ?.forEach { it.delete/*Recursively*/() }
 }

@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.view.View
 
@@ -27,9 +28,11 @@ object MicPermission {
     ): Unit? = Manifest.permission.RECORD_AUDIO.let {
         DebugMode.assertState(activity != null)
         activity?.run {
-            if (checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED)
-                fragment?.requestPermissions(arrayOf(it), requestCode)
-                    ?: requestPermissions(arrayOf(it), requestCode)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                if (checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED)
+                    fragment?.requestPermissions(arrayOf(it), requestCode)
+                        ?: requestPermissions(arrayOf(it), requestCode)
+                else action()
             else action()
         }
     }
@@ -48,9 +51,11 @@ object MicPermission {
         DebugMode.assertState(
             (resultCode != /*Fragment*/Activity.RESULT_OK) and (activity != null)
         )
-        if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-            == PackageManager.PERMISSION_GRANTED
-        ) action() else settings(settingsCode, view, activity, fragment)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            if (activity?.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED
+            ) action() else settings(settingsCode, view, activity, fragment)
+        else action()
     }
 
     private fun settings(
@@ -63,9 +68,9 @@ object MicPermission {
         DebugMode.assertState(activity != null)
         activity?.run {
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
-                .let {
-                    fragment?.startActivityForResult(it, settingsCode)
-                        ?: startActivityForResult(it, settingsCode)
+                .let { intent ->
+                    fragment?.startActivityForResult(intent, settingsCode)
+                        ?: startActivityForResult(intent, settingsCode)
                 }
             InfoMessage.toast(applicationContext, string.grantRec)
         }

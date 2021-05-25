@@ -32,8 +32,6 @@ import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MinSec
 import ru.bshakhovsky.piano_transcription.utils.Share
 
-import kotlin.io.path.ExperimentalPathApi
-
 class MediaActivity : AppCompatActivity(), View.OnClickListener {
 
     private enum class RequestCode(val id: Int) { WRITE_MIDI(50) }
@@ -44,7 +42,6 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var decodeRoutine: DecodeRoutine
     private lateinit var transRoutine: TranscribeRoutine
 
-    @ExperimentalPathApi
     override fun onCreate(savedInstanceState: Bundle?): Unit =
         super.onCreate(savedInstanceState).also {
             with(ViewModelProvider(this)) {
@@ -98,7 +95,6 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    @ExperimentalPathApi
     private fun decodeObserve() = with(decodeRoutine) {
         with(waveGraph) {
             graphBitmap.observe(this@MediaActivity) { bitmap ->
@@ -154,7 +150,6 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
         { setResult(Activity.RESULT_OK, Intent().apply { data = it }) }
     }
 
-    @ExperimentalPathApi
     override fun onActivityResult(requestCode: Int, resultCode: Int, d: Intent?) {
         super.onActivityResult(requestCode, resultCode, d)
         when (requestCode) {

@@ -29,12 +29,6 @@ import java.io.IOException
 import java.io.InterruptedIOException
 import java.io.RandomAccessFile
 
-import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.createTempFile
-import kotlin.io.path.deleteExisting
-
 import kotlin.math.roundToLong
 
 class DecodeRoutine : ViewModel() {
@@ -58,7 +52,6 @@ class DecodeRoutine : ViewModel() {
     private var pipeThread: PipeTransfer? = null
 
     @MainThread
-    @ExperimentalPathApi
     fun initialize(d: BothRoutines) {
         DebugMode.assertState(
             Looper.myLooper() == Looper.getMainLooper(),
@@ -85,7 +78,6 @@ class DecodeRoutine : ViewModel() {
     }
 
     @WorkerThread
-    @ExperimentalPathApi
     private suspend fun startDecode() = with(data) {
         DebugMode.assertState(
             Looper.myLooper() != Looper.getMainLooper(),
@@ -115,7 +107,6 @@ class DecodeRoutine : ViewModel() {
     }
 
     @WorkerThread
-    @ExperimentalPathApi
     private suspend fun decode() = with(data) {
         DebugMode.assertState(
             Looper.myLooper() != Looper.getMainLooper(),
@@ -155,9 +146,9 @@ class DecodeRoutine : ViewModel() {
                     so have to temporarily copy it, so that we know its path */
                     withContext(Dispatchers.IO) {
                         @Suppress("BlockingMethodInNonBlockingContext")
-                        createTempFile(createTempDirectory(cachePrefDecode), "InputMedia_")
+                        File.createTempFile(cachePrefDecode + "InputMedia_", null, cacheDir)
                     }.let { copiedMedia ->
-                        PipeTransfer.streamToPath(withContext(Dispatchers.IO) {
+                        PipeTransfer.streamToFile(withContext(Dispatchers.IO) {
                             @Suppress("BlockingMethodInNonBlockingContext")
                             openInputStream(mediaFile)
                         }, copiedMedia)
@@ -231,41 +222,38 @@ class DecodeRoutine : ViewModel() {
     }
 
     @WorkerThread
-    @ExperimentalPathApi
-    private suspend fun ffmpeg(inPath: Path) = withContext(Dispatchers.IO) {
-        @Suppress("BlockingMethodInNonBlockingContext")
-        createTempFile(inPath.parent, "DecodedRawFloatArray_", ".pcm")
-    }.let {
-        DebugMode.assertState(
-            Looper.myLooper() != Looper.getMainLooper(),
-            "FFmpeg should be called from background thread"
-        )
-        with(data) {
+    private suspend fun ffmpeg(inFile: File) = with(data) {
+        withContext(Dispatchers.IO) {
+            @Suppress("BlockingMethodInNonBlockingContext") File.createTempFile(
+                cachePrefDecode + "DecodedRawFloatArray_", ".pcm", appContext().cacheDir
+            )
+        }.let { decodedMedia ->
+            DebugMode.assertState(
+                Looper.myLooper() != Looper.getMainLooper(),
+                "FFmpeg should be called from background thread"
+            )
             // Raw audio float array of more than 10 minutes causes Out of Memory,
             // so, save to temp file instead of byte array
             DebugMode.assertState(rawData.file == null, "Unnecessary second FFmpeg call")
-            pipeThread = PipeTransfer(it).apply {
+            pipeThread = PipeTransfer(decodedMedia).apply {
                 pipeOut().use { outPipe ->
                     FFmpeg.cancel()
                     start()
 
                     when (FFmpeg.execute(
-                        "-i $inPath -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
+                        "-i $inFile -f f32le -ac 1 -ar $sampleRate pipe:${outPipe.fd}"
                     )) {
                         Config.RETURN_CODE_SUCCESS -> {
-                            decodeSuccess(it.toFile())
-                            withContext(Dispatchers.IO) {
-                                @Suppress("BlockingMethodInNonBlockingContext")
-                                inPath.deleteExisting()
-                            }
+                            decodeSuccess(decodedMedia)
+                            inFile.delete()
                         }
                         Config.RETURN_CODE_CANCEL -> {
                             decodeCancelled()
-                            clearCache()
+                            arrayOf(inFile, decodedMedia).forEach { it.delete() }
                         }
                         else -> {
                             decodeFail()
-                            clearCache()
+                            arrayOf(inFile, decodedMedia).forEach { it.delete() }
                         }
                     }
                 }

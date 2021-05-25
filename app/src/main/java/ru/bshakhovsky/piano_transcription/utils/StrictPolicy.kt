@@ -15,22 +15,28 @@ class StrictPolicy(lifecycle: Lifecycle, a: Activity) {
             StrictMode.enableDefaults()
 
             StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().apply {
-                detectContentUriWithoutPermission()//.detectUntaggedSockets()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { //detectNonSdkApiUsage().
-                    penaltyListener(Executors.newSingleThreadExecutor()) {
-                        with(activity.get()) {
-                            runOnUiThread {
-                                InfoMessage.toast(
-                                    applicationContext,
-                                    it.localizedMessage ?: "Unknown Vm policy violation"
-                                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    //detectCleartextNetwork()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        detectContentUriWithoutPermission()//.detectUntaggedSockets()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            //detectNonSdkApiUsage().
+                            penaltyListener(Executors.newSingleThreadExecutor()) {
+                                with(activity.get()) {
+                                    runOnUiThread {
+                                        InfoMessage.toast(
+                                            applicationContext,
+                                            it.localizedMessage ?: "Unknown Vm policy violation"
+                                        )
+                                    }
+                                }
                             }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                                detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
                         }
                     }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                        detectCredentialProtectedWhileLocked().detectImplicitDirectBoot()
                 }
-            } //.detectAll().detectCleartextNetwork()
+            } //.detectAll()
                 .detectActivityLeaks().detectFileUriExposure()
                 .detectLeakedClosableObjects() /* API 30 devices seem to be affected,
                 https://stackoverflow.com/questions/65011420/
@@ -42,20 +48,25 @@ class StrictPolicy(lifecycle: Lifecycle, a: Activity) {
                 .penaltyLog().build())
 
             StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().apply {
-                detectUnbufferedIo()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                    penaltyListener(Executors.newSingleThreadExecutor()) {
-                        with(activity.get()) {
-                            runOnUiThread {
-                                InfoMessage.toast(
-                                    applicationContext,
-                                    it.localizedMessage ?: "Unknown Thread policy violation"
-                                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    detectResourceMismatches()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        detectUnbufferedIo()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                            penaltyListener(Executors.newSingleThreadExecutor()) {
+                                with(activity.get()) {
+                                    runOnUiThread {
+                                        InfoMessage.toast(
+                                            applicationContext,
+                                            it.localizedMessage ?: "Unknown Thread policy violation"
+                                        )
+                                    }
+                                }
                             }
-                        }
                     }
+                }
             } //.detectAll().detectCustomSlowCalls().detectDiskReads().detectDiskWrites()
-                .detectNetwork().detectResourceMismatches().penaltyDialog().penaltyLog().build())
+                .detectNetwork().penaltyDialog().penaltyLog().build())
         }
     }
 }

@@ -4,8 +4,10 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewGroup
 
 import androidx.annotation.CheckResult
 import androidx.annotation.StringRes
@@ -20,6 +22,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 
+import ru.bshakhovsky.piano_transcription.R.dimen
 import ru.bshakhovsky.piano_transcription.R.drawable
 import ru.bshakhovsky.piano_transcription.R.id
 import ru.bshakhovsky.piano_transcription.R.layout.activity_main
@@ -64,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var realTime: TranscribeRT
     private lateinit var render: Render
 
+    private var micClickTime = SystemClock.uptimeMillis()
     private var mainMenu: Menu? = null
     private lateinit var drawerListener: DrawerMenu
 
@@ -115,7 +119,13 @@ class MainActivity : AppCompatActivity() {
             MobileAds.initialize(applicationContext)
             if (DebugMode.debug) MobileAds.setRequestConfiguration(
                 RequestConfiguration.Builder().setTestDeviceIds(
-                    listOf(AdRequest.DEVICE_ID_EMULATOR, "87FD000F52337DF09DBB9E6684B0B878")
+                    listOf(
+                        AdRequest.DEVICE_ID_EMULATOR,
+                        "87FD000F52337DF09DBB9E6684B0B878",
+                        "9AA370206113A6039BC7B5BB02F0F7E8",
+                        @Suppress("SpellCheckingInspection")
+                        "921547C5AAEF85EB72E17DFAE23DD8BA"
+                    )
                 ).build()
             )
             AdBanner(lifecycle, applicationContext, adMain, string.bannerMain)
@@ -162,7 +172,10 @@ class MainActivity : AppCompatActivity() {
                             and with(dataString!!.lowercase(Locale.getDefault())) {
                         startsWith("http://bshakhovsky.github.io") or
                                 startsWith("https://bshakhovsky.github.io")
-                    } and (extras == null) and (clipData == null)
+                    } and (clipData == null)
+                    // Null when opened from Google Play
+                    // Non null when opened from Samsung Internet or Google Chrome
+                    // and (extras == null)
                 )
 
                 Intent.ACTION_SEND -> {
@@ -196,8 +209,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onConfigurationChanged(newConfig: Configuration): Unit =
-        super.onConfigurationChanged(newConfig)
-            .also { interstitial = AdInterstitial(lifecycle, this) }
+        super.onConfigurationChanged(newConfig).also {
+            interstitial = AdInterstitial(lifecycle, this)
+            with(binding.fabMain.layoutParams as ViewGroup.MarginLayoutParams) {
+                with(resources) {
+                    when (newConfig.orientation) {
+                        // marginEnd does not work on Samsung Galaxy A7, Android 6.0.1 API 23
+                        Configuration.ORIENTATION_PORTRAIT, Configuration.ORIENTATION_LANDSCAPE ->
+                            rightMargin = getDimension(dimen.fabMargin).toInt()
+                        @Suppress("DEPRECATION")
+                        Configuration.ORIENTATION_SQUARE, Configuration.ORIENTATION_UNDEFINED ->
+                            DebugMode.assertArgument(false)
+                        else -> DebugMode.assertArgument(false)
+                    }
+                }
+            }
+        }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
         DebugMode.assertArgument(menu != null)
@@ -209,6 +236,9 @@ class MainActivity : AppCompatActivity() {
         super.onOptionsItemSelected(item).also {
             when (item.itemId) {
                 id.menuMic -> {
+                    if (SystemClock.uptimeMillis() - micClickTime < 1_000) return it
+                    micClickTime = SystemClock.uptimeMillis()
+
                     realTime.toggle()
                     if (play.isPlaying.value == true) play.playPause()
                 }

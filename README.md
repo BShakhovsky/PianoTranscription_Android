@@ -12,7 +12,7 @@ Want to transcribe some piano piece from YouTube?  You can google for websites/a
 
 [![](https://GitHub.com/BShakhovsky/PianoTranscription3D/raw/master/Keyboard.png 'Windows 7')](https://GitHub.com/BShakhovsky/PianoTranscription3D/blob/master/README.md)
 
-# For Android 8.0 (API level 26) or higher:
+# For Android 4.4 KitKat (API level 19) or higher:
 
 [![](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png 'Get it on Google Play')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
@@ -41,42 +41,46 @@ For complete __*Privacy Policy*__ see [Privacy Policy](https://BShakhovsky.GitHu
 
 [![](app/src/main/res/drawable-nodpi/user_guide_02.webp 'Attach new audio')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
+If you do not see the files you need, they can be on another storage directory.  To see it, tap menu --> "Show SD card" or "Show internal storage".
+
+[![](app/src/main/res/drawable-nodpi/user_guide_03.webp 'Browse files')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+
 2. The program will automatically transcribe audio and save as a MIDI-file.
 
-[![](app/src/main/res/drawable-nodpi/user_guide_03.webp 'Generate MIDI from audio/video')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_04.webp 'Generate MIDI from audio/video')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 However, no instrument information is extracted, and all transcribed notes get combined into one part.  The accuracy depends on the complexity of the song, and is obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.
 
 3. If you opened an existing MIDI-file, select tracks.  Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.) will be disabled.
 
-[![](app/src/main/res/drawable-nodpi/user_guide_04.webp 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_05.webp 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 For some MIDI-files downloaded from Internet, there can be dozens of tracks.
 
-[![](app/src/main/res/drawable-nodpi/user_guide_05.webp 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_06.webp 'Select tracks & MIDI-file info')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 4. If you want just to play the song in real time, tap in the upper-middle area of the screen.  Or if you want to go forward or backwards chord-by-chord, you can pause and tap in the upper-left or upper-right areas of the screen.
 
-[![](app/src/main/res/drawable-nodpi/user_guide_06.webp 'Play/pause/seek/prev/next')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_07.webp 'Play/pause/seek/prev/next')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 5. If you want to learn the MIDI chords on your real piano, you can use the real-time transcription feature.
 
-[![](app/src/main/res/drawable-nodpi/user_guide_07.webp 'Realtime Microphone')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_08.webp 'Realtime Microphone')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 Correctly played notes will be highlighted with green color, mistakes - with red.
 
-[![](app/src/main/res/drawable-nodpi/user_guide_08.webp 'Realtime Transcription')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_09.webp 'Realtime Transcription')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 6. If somebody talks near your phone, or if you sit in a loud environment, it will incorrectly recognize too many notes which you actually do not play.  Too many keys will be red in this case and it will be annoying.
    So, if you want better recognition accuracy, ideally there should be no other sounds than your piano.
 
 If you have convenient headphones which you can plug into your electric piano, there is a life-hack - you can “put on the headphones on your mobile device” like on the following photo:
 
-[![](app/src/main/res/drawable-nodpi/user_guide_09.webp 'Headphones on mobile')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_10.webp 'Headphones on mobile')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 Turn the volume louder
 
-[![](app/src/main/res/drawable-nodpi/user_guide_10.webp 'Volume louder')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
+[![](app/src/main/res/drawable-nodpi/user_guide_11.webp 'Volume louder')](https://play.google.com/store/apps/details?id=ru.BShakhovsky.Piano_Transcription)
 
 7. Once you correctly play all the notes of the chord simultaneously (all the pressed keys are green), it will automatically proceed to the next MIDI chord, and so on.
 

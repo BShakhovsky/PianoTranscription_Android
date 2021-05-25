@@ -1,7 +1,9 @@
 package ru.bshakhovsky.piano_transcription.main.play
 
 import android.content.Context
+import android.media.AudioManager
 import android.media.SoundPool
+import android.os.Build
 import android.view.View
 
 import androidx.lifecycle.LiveData
@@ -22,8 +24,9 @@ class Sound : SoundPool.OnLoadCompleteListener, ViewModel() {
     val count: LiveData<Int> = Transformations.map(_loaded) { it.size }
 
     private lateinit var notes: IntArray
-    private val sound = SoundPool.Builder().setMaxStreams(10).build()
-        .apply { setOnLoadCompleteListener(this@Sound) }
+    private val sound = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        SoundPool.Builder().setMaxStreams(10).build() else @Suppress("DEPRECATION")
+    SoundPool(10, AudioManager.STREAM_MUSIC, 0)).apply { setOnLoadCompleteListener(this@Sound) }
 
     override fun onCleared() {
         _visibility.value = View.GONE

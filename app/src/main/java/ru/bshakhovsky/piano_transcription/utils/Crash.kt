@@ -1,11 +1,10 @@
 package ru.bshakhovsky.piano_transcription.utils
 
-import android.icu.util.Calendar
-
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.util.Calendar
 
 import kotlin.system.exitProcess
 

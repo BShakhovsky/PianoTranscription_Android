@@ -36,11 +36,8 @@ import ru.bshakhovsky.piano_transcription.media.utils.SingleLiveEvent
 import ru.bshakhovsky.piano_transcription.media.utils.TfLiteModel
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
+import java.io.File
 import java.io.OutputStream
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.createTempFile
-import kotlin.io.path.readBytes
 
 class TranscribeRoutine : ViewModel() {
 
@@ -89,7 +86,6 @@ class TranscribeRoutine : ViewModel() {
     }
 
     @MainThread
-    @ExperimentalPathApi
     fun startTranscribe() {
         DebugMode.assertState(
             Looper.myLooper() == Looper.getMainLooper(),
@@ -102,7 +98,6 @@ class TranscribeRoutine : ViewModel() {
     }
 
     @WorkerThread
-    @ExperimentalPathApi
     private suspend fun transcribe() {
         DebugMode.assertState(
             Looper.myLooper() != Looper.getMainLooper(),
@@ -140,7 +135,6 @@ class TranscribeRoutine : ViewModel() {
                                 ffmpegLog.value += "\n$msg"
                             }
                         }
-                        clearCache()
                         makeMidi()
                         withContext(Dispatchers.Main) { _midiSaveStart.call() }
                     }
@@ -191,7 +185,6 @@ class TranscribeRoutine : ViewModel() {
     }
 
     @MainThread
-    @ExperimentalPathApi
     fun saveMidi(uri: Uri, outStream: OutputStream) {
         DebugMode.assertState(
             Looper.myLooper() == Looper.getMainLooper(),
@@ -209,10 +202,12 @@ class TranscribeRoutine : ViewModel() {
             clearCache()
             // There is no API to write to OutputStream, so have to write to temp File,
             // then copy File to OutputStream, then delete File
-            createTempFile(createTempDirectory(cachePrefTrans), cachePrefTrans).let { copiedMidi ->
-                midi.writeToFile(copiedMidi.toFile())
-                outStream.write(copiedMidi.readBytes())
-                clearCache()
+            File.createTempFile(
+                cachePrefTrans + "TranscribedMidi_", ".mid", data.appContext().cacheDir
+            ).run {
+                midi.writeToFile(this)
+                outStream.write(readBytes())
+                delete()
             }
             withContext(Dispatchers.Main) { savedMidi.value = uri }
         }

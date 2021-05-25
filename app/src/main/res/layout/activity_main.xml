@@ -32,7 +32,9 @@
             <RelativeLayout android:id="@+id/mainLayout"
                 style="@style/MatchParent"
 
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+
+                xmlns:tools="http://schemas.android.com/tools">
 
                 <android.opengl.GLSurfaceView
                     android:id="@+id/surfaceView"
@@ -69,7 +71,8 @@
                             android:id="@+id/prev"
                             style="@style/WrapContent"
                             android:background="@android:drawable/ic_media_previous"
-                            android:foreground="?android:selectableItemBackgroundBorderless"
+                            android:foreground="?android:selectableItemBackground"
+                            tools:ignore="UnusedAttribute"
 
                             android:onClick="@{() -> playModel.prev()}"
                             android:visibility="@{playModel.prevVis}"
@@ -93,7 +96,8 @@
                             android:id="@+id/next"
                             style="@style/WrapContent"
                             android:background="@android:drawable/ic_media_next"
-                            android:foreground="?android:selectableItemBackgroundBorderless"
+                            android:foreground="?android:selectableItemBackground"
+                            tools:ignore="UnusedAttribute"
 
                             android:onClick="@{() -> playModel.next()}"
                             android:visibility="@{playModel.nextVis}"
@@ -106,7 +110,8 @@
                         <androidx.appcompat.widget.AppCompatImageButton
                             android:id="@+id/playPause"
                             style="@style/WrapContent"
-                            android:foreground="?android:selectableItemBackgroundBorderless"
+                            android:foreground="?android:selectableItemBackground"
+                            tools:ignore="UnusedAttribute"
 
                             android:background="@{playModel.isPlaying ? @android:drawable/ic_media_pause : @android:drawable/ic_media_play}"
                             android:onClick="@{() -> playModel.playPause()}"
@@ -147,15 +152,14 @@
                     android:layout_alignParentBottom="true" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabMain"
                     style="@style/WrapContent"
-                    android:layout_margin="16dp"
                     android:layout_alignParentBottom="true" android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="@dimen/fabMargin" android:layout_marginBottom="16dp"
+                    android:src="@drawable/add"
 
                     android:onClick="@{() -> mainModel.dialogAdd()}"
 
-                    app:srcCompat="@drawable/add"
-
-                    xmlns:tools="http://schemas.android.com/tools"
                     tools:ignore="ContentDescription" />
 
             </RelativeLayout>

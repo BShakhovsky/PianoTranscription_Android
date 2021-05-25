@@ -4,14 +4,15 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '31.0.0 rc3'
+    compileSdk 30
+    buildToolsVersion '31.0.0 rc4'
     defaultConfig {
         applicationId 'ru.BShakhovsky.Piano_Transcription'
-        minSdkVersion 26
-        targetSdkVersion 30
-        versionCode 7
-        versionName '2.0'
+        minSdk 19 // TensorFlow Lite
+        targetSdk 30
+        versionCode 8
+        versionName '2.1'
+        multiDexEnabled true
     }
     buildTypes.release {
         minifyEnabled false // Just in case, not sure it will not cause crashes
@@ -26,8 +27,6 @@ android {
 }
 
 dependencies {
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVer"
-
     api 'androidx.constraintlayout:constraintlayout:2.0.4'
     api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
 
@@ -35,9 +34,9 @@ dependencies {
     api 'com.google.android.gms:play-services-ads:20.1.0'
     api 'com.google.android.play:core:1.10.0'
 
-    api 'org.tensorflow:tensorflow-lite-gpu:2.4.0'
-    api 'org.tensorflow:tensorflow-lite-metadata:0.2.0-rc2'
-    api 'org.tensorflow:tensorflow-lite-support:0.2.0-rc2'
+    api 'org.tensorflow:tensorflow-lite-gpu:2.5.0'
+    api 'org.tensorflow:tensorflow-lite-metadata:0.2.0'
+    api 'org.tensorflow:tensorflow-lite-support:0.2.0'
 
     api 'com.github.pdrogfer:MidiDroid:v1.1'
     api 'com.arthenica:mobile-ffmpeg-min:4.4.LTS'

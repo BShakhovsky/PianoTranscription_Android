@@ -5,23 +5,19 @@ import androidx.annotation.CheckResult
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
+import java.io.File
 import java.io.InputStream
 import java.io.InterruptedIOException
 
-import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.appendBytes
-
 import kotlin.math.pow
 
-class PipeTransfer(private val outPath: Path) : Thread() {
+class PipeTransfer(private val outFile: File) : Thread() {
 
     companion object {
         var error: Throwable? = null
             private set
 
-        @ExperimentalPathApi
-        fun streamToPath(inStream: InputStream?, outPath: Path) {
+        fun streamToFile(inStream: InputStream?, outFile: File) {
             DebugMode.assertState(inStream != null)
             inStream?.use { inS ->
                 try {
@@ -29,7 +25,7 @@ class PipeTransfer(private val outPath: Path) : Thread() {
                         var len: Int
                         while (inS.read(buf).also { len = it } > 0)
                             if (interrupted()) throw InterruptedIOException()
-                            else outPath.appendBytes(buf.sliceArray(0 until len))
+                            else outFile.appendBytes(buf.sliceArray(0 until len))
                         DebugMode.assertState(len in arrayOf(0, -1))
                     }
                 } catch (e: Throwable) {
@@ -49,7 +45,6 @@ class PipeTransfer(private val outPath: Path) : Thread() {
         pipe[1]
     }
 
-    @ExperimentalPathApi
-    override fun run(): Unit = streamToPath(inStream, outPath)
+    override fun run(): Unit = streamToFile(inStream, outFile)
         .also { DebugMode.assertState(inStream != null, "Did you call pipeOut() before start() ?") }
 }

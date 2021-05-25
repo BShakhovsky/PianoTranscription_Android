@@ -1,7 +1,6 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
-import android.opengl.GLES32
-
+import ru.bshakhovsky.piano_transcription.main.openGL.GLES
 import ru.bshakhovsky.piano_transcription.main.openGL.Utils
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
@@ -68,12 +67,12 @@ class Primitive(cords: FloatArray, order: IntArray, texArray: FloatArray? = null
     }
 
     fun draw(pos: Int, norm: Int? = null) {
-        GLES32.glVertexAttribPointer(pos, 3, GLES32.GL_FLOAT, false, 3 * 4, vertices)
-        norm?.let { GLES32.glVertexAttribPointer(it, 3, GLES32.GL_FLOAT, false, 3 * 4, normals) }
+        GLES.glVertexAttribPointer(pos, 3, GLES.GL_FLOAT, false, 3 * 4, vertices)
+        norm?.let { GLES.glVertexAttribPointer(it, 3, GLES.GL_FLOAT, false, 3 * 4, normals) }
         /* count +1...+3 does not change anything, -1 removes one vertex,
             +4 added black artifacts when all buffer sizes were different.
         Now Utils.allocFloat() creates all buffers of the same size,
             and grey artifacts appear only after count + 17 */
-        GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, count)
+        GLES.glDrawArrays(GLES.GL_TRIANGLES, 0, count)
     }
 }

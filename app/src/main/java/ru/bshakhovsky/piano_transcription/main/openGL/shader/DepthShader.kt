@@ -1,8 +1,8 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.content.res.AssetManager
-import android.opengl.GLES32
 
+import ru.bshakhovsky.piano_transcription.main.openGL.GLES
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 import ru.bshakhovsky.piano_transcription.main.openGL.geometry.Primitive
 
@@ -15,9 +15,9 @@ class DepthShader(assets: AssetManager) : Shader(assets, "Shadow") {
             bindBuff(lightNo)
             bindTexture(lightNo)
         }
-        with(lights[lightNo]) { GLES32.glViewport(0, 0, orthoWidth, orthoHeight) }
-        GLES32.glClearColor(1f, 1f, 1f, 1f)
-        GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT or GLES32.GL_DEPTH_BUFFER_BIT)
+        with(lights[lightNo]) { GLES.glViewport(0, 0, orthoWidth, orthoHeight) }
+        GLES.glClearColor(1f, 1f, 1f, 1f)
+        GLES.glClear(GLES.GL_COLOR_BUFFER_BIT or GLES.GL_DEPTH_BUFFER_BIT)
         use()
     }
 

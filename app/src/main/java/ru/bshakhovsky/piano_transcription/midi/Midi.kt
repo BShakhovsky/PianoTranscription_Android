@@ -169,10 +169,10 @@ class Midi(inStream: InputStream, untitled: String) {
                 ticks[key] = (value / 1_000.0 / midi.resolution).roundToLong()
             }
 
-            summary.tempos.forEach { with(it) { milSec = ticks.getOrDefault(milSec, 0) } }
-            summary.keys.forEach { with(it) { milSec = ticks.getOrDefault(milSec, 0) } }
+            summary.tempos.forEach { with(it) { milSec = ticks[milSec] ?: 0 } }
+            summary.keys.forEach { with(it) { milSec = ticks[milSec] ?: 0 } }
             tracks.forEach { track ->
-                track.chords.forEach { chord -> with(chord) { mSec = ticks.getOrDefault(mSec, 0) } }
+                track.chords.forEach { chord -> with(chord) { mSec = ticks[mSec] ?: 0 } }
             }
         }
         dur = if (tracks.isEmpty()) 0L else tracks.maxByOrNull {

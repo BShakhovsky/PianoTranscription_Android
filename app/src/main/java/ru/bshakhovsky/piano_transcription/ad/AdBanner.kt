@@ -14,6 +14,8 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 
+import ru.bshakhovsky.piano_transcription.R.string.bannerDebug
+
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
@@ -34,7 +36,7 @@ class AdBanner(
     However, Interstitial-AdView may still leak */
     private val adView = AdView(c).apply {
         adSize = AdSize.BANNER
-        adUnitId = context.getString(bannerId)
+        adUnitId = context.getString(if (DebugMode.debug) bannerDebug else bannerId)
         adListener = this@AdBanner
 
         adContainer.addView(this)

@@ -1,12 +1,12 @@
 package ru.bshakhovsky.piano_transcription.main.openGL.shader
 
 import android.content.res.AssetManager
-import android.opengl.GLES32
 import android.opengl.GLException
 import android.opengl.Matrix
 
 import androidx.annotation.CheckResult
 
+import ru.bshakhovsky.piano_transcription.main.openGL.GLES
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
 import java.io.InputStreamReader
@@ -14,42 +14,42 @@ import java.io.InputStreamReader
 abstract class Shader(assets: AssetManager, name: String) {
 
     protected val pos: Int
-    private val program = GLES32.glCreateProgram()
+    private val program = GLES.glCreateProgram()
 
     init {
-        fun attachShader(type: Int, glslName: String) = GLES32.glAttachShader(program,
-            GLES32.glCreateShader(type).also { shader ->
-                GLES32.glShaderSource(
+        fun attachShader(type: Int, glslName: String) = GLES.glAttachShader(program,
+            GLES.glCreateShader(type).also { shader ->
+                GLES.glShaderSource(
                     shader, InputStreamReader(assets.open("Shader/$glslName.glsl")).readText()
                 )
-                GLES32.glCompileShader(shader)
+                GLES.glCompileShader(shader)
                 if (DebugMode.debug) IntArray(1).let { status ->
-                    GLES32.glGetShaderiv(shader, GLES32.GL_COMPILE_STATUS, status, 0)
-                    if (status[0] != GLES32.GL_TRUE)
-                        throw GLException(0, "Shader compile: ${GLES32.glGetShaderInfoLog(shader)}")
+                    GLES.glGetShaderiv(shader, GLES.GL_COMPILE_STATUS, status, 0)
+                    if (status[0] != GLES.GL_TRUE)
+                        throw GLException(0, "Shader compile: ${GLES.glGetShaderInfoLog(shader)}")
                 }
             })
 
-        attachShader(GLES32.GL_VERTEX_SHADER, "Vertex$name")
-        attachShader(GLES32.GL_FRAGMENT_SHADER, "Pixel$name")
-        GLES32.glLinkProgram(program)
+        attachShader(GLES.GL_VERTEX_SHADER, "Vertex$name")
+        attachShader(GLES.GL_FRAGMENT_SHADER, "Pixel$name")
+        GLES.glLinkProgram(program)
         pos = attribute("pos")
-        GLES32.glEnableVertexAttribArray(pos)
+        GLES.glEnableVertexAttribArray(pos)
     }
 
     @CheckResult
-    fun uniform(name: String): Int = GLES32.glGetUniformLocation(program, name)
+    fun uniform(name: String): Int = GLES.glGetUniformLocation(program, name)
 
     @CheckResult
-    protected fun attribute(name: String): Int = GLES32.glGetAttribLocation(program, name)
+    protected fun attribute(name: String): Int = GLES.glGetAttribLocation(program, name)
 
-    protected fun use(): Unit = GLES32.glUseProgram(program)
+    protected fun use(): Unit = GLES.glUseProgram(program)
 
     protected fun shiftRotate(
         matrix: FloatArray, matHandle: Int, offset: Float = 0f, angle: Float = 0f
     ): Unit = matrix.copyOf().let { mat ->
         if (angle != 0f) Matrix.rotateM(mat, 0, angle, 1f, 0f, 0f)
         if (offset != 0f) Matrix.translateM(mat, 0, offset, 0f, 0f)
-        GLES32.glUniformMatrix4fv(matHandle, 1, false, mat, 0)
+        GLES.glUniformMatrix4fv(matHandle, 1, false, mat, 0)
     }
 }

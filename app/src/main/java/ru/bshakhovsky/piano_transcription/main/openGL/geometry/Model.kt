@@ -2,8 +2,8 @@ package ru.bshakhovsky.piano_transcription.main.openGL.geometry
 
 import android.content.res.AssetManager
 import android.content.res.Resources
-import android.opengl.GLES32
 
+import ru.bshakhovsky.piano_transcription.main.openGL.GLES
 import ru.bshakhovsky.piano_transcription.main.openGL.Texture
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.DepthShader
 import ru.bshakhovsky.piano_transcription.main.openGL.shader.Light
@@ -33,15 +33,15 @@ class Model(assets: AssetManager, resources: Resources) {
         for (lightNo in 0..2) with(depthShader) {
             prepare(textures, lights, lightNo)
             /*// I do not like horizontal shadow-line from desk
-            GLES32.glDisable(GLES32.GL_CULL_FACE)
+            GLES.glDisable(GLES.GL_CULL_FACE)
             depthShader.draw(geom.desk, 0f, 0f, lights[lightNo].lightOrtho)
-            GLES32.glEnable(GLES32.GL_CULL_FACE)*/
+            GLES.glEnable(GLES.GL_CULL_FACE)*/
             drawKeyboard { key, offset, angle, _ ->
                 draw(key, offset, angle, lights[lightNo].lightOrtho)
             }
         }
 
-        GLES32.glViewport(0, 0, width, height)
+        GLES.glViewport(0, 0, width, height)
 
         with(mainShader) {
             initReflectBuff(textures, lights)

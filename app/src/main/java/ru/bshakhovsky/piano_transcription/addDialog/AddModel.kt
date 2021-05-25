@@ -1,9 +1,12 @@
 package ru.bshakhovsky.piano_transcription.addDialog
 
+import android.content.Context
 import android.content.Intent
-import android.icu.util.Calendar
+import android.media.AudioManager
 import android.media.MediaRecorder
 import android.net.Uri
+
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 
@@ -19,11 +22,13 @@ import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.FileName
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MicPermission
+import ru.bshakhovsky.piano_transcription.utils.MicSource
 import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.util.Calendar
 
 class AddModel : ViewModel(), LifecycleObserver {
 
@@ -41,16 +46,26 @@ class AddModel : ViewModel(), LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun stopRecording() {
-        recorder?.run {
-            stop()
-            release()
-        }
-        recorder = null
-
-        DebugMode.assertState(if (recMsg == null) recDlg == null else recDlg != null)
-        recMsg = null
-
         with(fragment.get()) {
+            recorder?.run {
+                try {
+                    stop()
+                } catch (e: RuntimeException) { /* https://developer.android.com/reference/android
+                                                    /media/MediaRecorder.html#stop()
+                    Intentionally thrown to the application if no valid audio data has been received
+                    (e.g. emulator does not have audio source) */
+                    InfoMessage.dialog(
+                        activity, string.micError,
+                        getString(string.prepError, getString(string.noMic))
+                    )
+                }
+                release()
+            }
+            recorder = null
+
+            DebugMode.assertState(if (recMsg == null) recDlg == null else recDlg != null)
+            recMsg = null
+
             if (recDlg != null) {
                 DebugMode.assertState(dialog != null)
                 dialog?.dismiss()
@@ -112,23 +127,53 @@ class AddModel : ViewModel(), LifecycleObserver {
     }
 
     private fun startRecNonNull(outFile: FileDescriptor) = with(fragment.get()) {
+        DebugMode.assertState(context != null)
+        context?.run {
+            when ((getSystemService(Context.AUDIO_SERVICE) as AudioManager).mode) {
+                AudioManager.MODE_NORMAL -> {
+                }
+                AudioManager.MODE_RINGTONE -> {
+                    InfoMessage.dialog(this, string.micError, string.phoneRinging)
+                    return
+                }
+                AudioManager.MODE_IN_CALL -> {
+                    InfoMessage.dialog(this, string.micError, string.phoneCall)
+                    return
+                }
+                AudioManager.MODE_IN_COMMUNICATION -> {
+                    InfoMessage.dialog(this, string.micError, string.voIpCall)
+                    return
+                }
+                AudioManager.MODE_CALL_SCREENING -> { // Call is connected and audio is accessible
+                } // to call screening applications but other audio use cases are still possible
+                else -> DebugMode.assertState(false)
+            }
+        }
         recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
+            setAudioSource(MicSource.micSource)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
             setOutputFile(outFile)
 
+            fun notStarted(e: Exception, @StringRes msgId: Int) {
+                InfoMessage.dialog(context, string.micError, getString(msgId, e.localizedMessage))
+                reset()
+                release()
+                recFile = null
+            }
+
             try {
                 prepare()
             } catch (e: IOException) {
-                InfoMessage.dialog(
-                    context, string.micError, getString(string.prepError, e.localizedMessage)
-                )
-                release()
-                recFile = null
+                notStarted(e, string.prepError)
                 return
             }
-            start()
+            try {
+                start()
+            } catch (e: IllegalStateException) {
+                notStarted(e, string.micInUse)
+                return
+            }
 
             DebugMode.assertState((recDlg == null) and (recMsg == null) and (recFile != null))
             recMsg = RecordMsg(lifecycle,

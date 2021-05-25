@@ -3,6 +3,7 @@ package ru.bshakhovsky.piano_transcription.main.mainUI
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Typeface
+import android.os.Build
 
 import android.view.Gravity
 import android.view.Menu
@@ -75,7 +76,7 @@ class DrawerMenu(
             intArrayOf(id.drawerMidi, id.drawerAll).forEach {
                 with(findItem(it).actionView as TextView) {
                     gravity = Gravity.CENTER_VERTICAL
-                    setTextColor(a.getColor(colorAccent))
+                    setTextColor(ContextCompat.getColor(context, colorAccent))
                 }
             }
             with(findItem(id.drawerAll).actionView as Switch) {
@@ -122,7 +123,8 @@ class DrawerMenu(
                             // activity would keep it pink as the main Switch for all tracks:
                             actionView = Switch(applicationContext).apply {
                                 id = i
-                                showText = true
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                                    showText = true
                                 textOn = "+"
                                 textOff = ""
                                 setOnCheckedChangeListener(this@DrawerMenu)

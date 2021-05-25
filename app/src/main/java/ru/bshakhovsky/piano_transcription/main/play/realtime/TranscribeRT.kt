@@ -39,7 +39,7 @@ class TranscribeRT(application: Application) : RealTime(application) {
         super.initialize(lifecycle, activity)
         next = WeakPtr(lifecycle, nxt)
         render = r
-        record = RecordRT(application).apply { initialize(lifecycle, activity) }
+        record = RecordRT(application).apply { initRecord(lifecycle, activity) }
     }
 
     @MainThread
@@ -109,6 +109,7 @@ class TranscribeRT(application: Application) : RealTime(application) {
                     }
                 }
             }
+            stopRecognizing()
         }
     }
 }

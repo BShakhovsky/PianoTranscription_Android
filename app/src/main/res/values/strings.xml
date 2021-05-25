@@ -3,12 +3,17 @@
                      <!ENTITY memory      "Insufficient storage space, the SD card is full.\n">
                      <!ENTITY permissions "Open Permissions and allow ">]>
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="app_name" translatable="false">Piano Transcription</string>
+
+    <string name="adMobDebug"  translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="bannerDebug" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="interDebug"  translatable="false">ca-app-pub-3940256099942544/1033173712</string>
+
     <string name="ok" translatable="false">OK</string>
     <string name="stop">Stop</string>
-    <string name="error">Error</string>
+    <string name="error" tools:ignore="DuplicateStrings">Error</string>
     <string name="loadSound">Loaded %1$d of 88 note sound samples</string>
 
     DIALOG ADD
@@ -80,24 +85,41 @@
     Permission
     <string name="settings">Settings</string>
     <string name="grantRec">&permissions;Microphone</string>
-    <string name="micError">Could not record audio</string>
-    <string name="prepError">Could not prepare recorder:\n%1$s</string>
     <string name="record">Record</string>
 
-    Error
+    File errors
     <string name="warning">Warning</string>
     <string name="notSaved">Output %1$s-file was not specified&tryAgain;</string>
     <string name="existsTryAgain">&exists;\n%1$s&tryAgain;</string>
     <string name="save">Choose a location, type %1$s-file name and click save</string>
 
+    Other errors
+    <string name="micError">Could not record audio</string>
+    <string name="prepError">Could not prepare recorder:\n%1$s</string>
+    <string name="noMic">Your device probably does not have microphone</string>
+    <string name="no16kHz">Sorry, your device does not support recording
+        with the required sample rate of 16kHz</string>
+    <string name="notStarted">Could not start recorder</string>
+
+    Mic is busy
+    <string name="micInUse">Probably, the microphone is already in use by another app
+        or service in background:\n%1$s</string>
+    <string name="phoneRinging">The phone is ringing, an incoming is being signaled</string>
+    <string name="phoneCall">A telephony call is established</string>
+    <string name="voIpCall">An audio/video chat or VoIP call is established</string>
+
     Recording
     <string name="recording">Recording…</string>
-    <string name="tapStop">Tap stop when finished to save the record file</string>
-    <string name="recFormat">%1$s kHz, %2$s, encoding “%3$s” into “AMR-NB”</string>
+    <string name="tapStop">Tap stop when finished to save the record file.</string>
+    <string name="recFormat">%1$s kHz, %2$s, encoding “%3$s” into “AMR-NB”.</string>
     <string name="mono">Mono</string>
     <string name="stereo">Stereo</string>
     <string name="invalidChannels">Invalid number of channels</string>
     <string name="invalid">Invalid</string>
+
+    <string name="voiceRec">Noise suppression and echo cancellation are %1$s.</string>
+    <string name="applied">applied</string>
+    <string name="notSupported">not supported</string>
 
 
     TRANSCRIPTION
@@ -110,7 +132,7 @@
 
     FFmpeg
     <string name="probeFail">Could not understand what kind of media file it is</string>
-    <string name="probeFmt">
+    <string name="probeFmt" tools:ignore="PluralsCandidate">
         Duration %1$d min : %2$d sec\nFormat %3$s\n\nMeta data:\n%4$s\n\nStreams:\n%5$s</string>
     <string name="cancel">Cancel</string>
     <string name="cancelled">Cancelled by user</string>
@@ -131,7 +153,7 @@
 
     TfLite
     <string name="rollTitle">Piano-roll of predicted note probabilities</string>
-    <string name="duration">%1$d min : %2$d sec</string>
+    <string name="duration" tools:ignore="PluralsCandidate">%1$d min : %2$d sec</string>
 
     <string name="compat">compatible</string>
     <string name="inCompat">incompatible</string>
@@ -156,44 +178,47 @@
 
     <string name="userGuide1">Open any MIDI- or Karaoke-file or any other audio/video-file
         (such as MP3, MP4, etc.) or record a piano piece with microphone</string>
+    <string name="userGuide2"><![CDATA[If you do not see the files you need,
+        they can be on another storage directory.
+        \nTo see it, tap menu —> “Show SD card” or “Show internal storage”.]]></string>
 
-    <string name="userGuide2">The program will automatically transcribe audio
+    <string name="userGuide3">The program will automatically transcribe audio
         and save as a MIDI-file</string>
-    <string name="userGuide3">However, no instrument information is extracted,
+    <string name="userGuide4">However, no instrument information is extracted,
         and all transcribed notes get combined into one part.
         The accuracy depends on the complexity of the song, and is
         obviously higher for solo piano pieces.  Accuracy for piano pieces is around 75%.</string>
 
-    <string name="userGuide4">If you opened an existing MIDI-file, select tracks.
+    <string name="userGuide5">If you opened an existing MIDI-file, select tracks.
         Percussion-tracks (like “Drums”, “Rhythms”, “Hit”, “Blow”, “Strike”, “Clash”, etc.)
         will be disabled.</string>
-    <string name="userGuide5">For some MIDI-files downloaded from Internet,
+    <string name="userGuide6">For some MIDI-files downloaded from Internet,
         there can be dozens of tracks</string>
 
-    <string name="userGuide6">If you want just to play the song in real time,
+    <string name="userGuide7">If you want just to play the song in real time,
         tap in the upper-middle area of the screen.
         Or if you want to go forward or backwards chord-by-chord,
         you can pause and tap in the upper-left or upper-right areas of the screen</string>
 
-    <string name="userGuide7">If you want to learn the MIDI chords on your real piano,
+    <string name="userGuide8">If you want to learn the MIDI chords on your real piano,
         you can use the real-time transcription feature</string>
-    <string name="userGuide8">Correctly played notes will be highlighted with green color,
+    <string name="userGuide9">Correctly played notes will be highlighted with green color,
         mistakes - with red</string>
 
-    <string name="userGuide9_1">If somebody talks near your phone,
+    <string name="userGuide10_1">If somebody talks near your phone,
         or if you sit in a loud environment, it will incorrectly recognize too many notes
         which you actually do not play.
         Too many keys will be red in this case and it will be annoying.
         \nSo, if you want better recognition accuracy,
         ideally there should be no other sounds than your piano.</string>
-    <string name="userGuide9_2">If you have convenient headphones which you can
+    <string name="userGuide10_2">If you have convenient headphones which you can
         plug into your electric piano, there is a life-hack - you can
         “put on the headphones on your mobile device” like on the following photo:</string>
-    <string name="userGuide10">Turn the volume louder</string>
+    <string name="userGuide11">Turn the volume louder</string>
 
-    <string name="userGuide11">Once you correctly play all the notes of the chord simultaneously
+    <string name="userGuide12">Once you correctly play all the notes of the chord simultaneously
         (all the pressed keys are green), it will automatically proceed to the next MIDI chord,
         and so on</string>
-    <string name="userGuide12">Enjoy!</string>
+    <string name="userGuide13">Enjoy!</string>
 
 </resources>

@@ -1,11 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.bshakhovsky.piano_transcription">
 
-    <uses-permission-sdk-23 android:name="android.permission.RECORD_AUDIO"
-        android:required="false" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <uses-feature android:glEsVersion="0x00030001"
-        android:required="true" />
+    <uses-feature android:glEsVersion="0x00030000" />
     <supports-gl-texture android:name="GL_OES_compressed_ETC1_RGB8_texture" />
     <supports-gl-texture android:name="GL_OES_compressed_paletted_texture" />
 
@@ -15,7 +13,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         tools:replace="android:allowBackup"
 
-        android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round"
 
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -44,7 +42,7 @@
             <!-- Android - Lint - Correctness - App Links Auto Verification Failure
             http://bshakhovsky.github.io/.well-known/assetlinks.json
             has incorrect JSON syntax -->
-            <intent-filter android:autoVerify="true">
+            <intent-filter android:autoVerify="true" tools:targetApi="m">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
