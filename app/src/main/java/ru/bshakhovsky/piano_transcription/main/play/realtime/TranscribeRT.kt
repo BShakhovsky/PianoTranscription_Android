@@ -1,10 +1,10 @@
 package ru.bshakhovsky.piano_transcription.main.play.realtime
 
-import android.app.Activity
 import android.app.Application
 import android.os.Looper
 import android.widget.ImageButton
 
+import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 
@@ -29,17 +29,23 @@ class TranscribeRT(application: Application) : RealTime(application) {
     private lateinit var render: Render
     private lateinit var record: RecordRT
 
+    private lateinit var realTimePermission: MicPermission
+
     private val _isRecognizing = MutableLiveData(false)
     val isRecognizing: LiveData<Boolean> get() = _isRecognizing
 
     fun initialize(
-        application: Application, lifecycle: Lifecycle, activity: Activity,
+        application: Application, lifecycle: Lifecycle, activity: ComponentActivity,
         nxt: ImageButton, r: Render
     ) {
         super.initialize(lifecycle, activity)
         next = WeakPtr(lifecycle, nxt)
         render = r
         record = RecordRT(application).apply { initRecord(lifecycle, activity) }
+
+        // TODO: Turning the mic on takes a long time
+        realTimePermission = MicPermission(lifecycle, nxt, activity)
+        { if (isRecognizing.value == false) startRecognizing() else stopRecognizing() }
     }
 
     @MainThread
@@ -48,8 +54,7 @@ class TranscribeRT(application: Application) : RealTime(application) {
             Looper.myLooper() == Looper.getMainLooper(),
             "Realtime recognition should be toggled from MainActivity UI-thread"
         )
-        MicPermission.requestPermission(MicPermission.RecPermission.RECOGNIZE.id, activity.get())
-        { if (isRecognizing.value == false) startRecognizing() else stopRecognizing() }
+        realTimePermission.requestPermission()
     }
 
     @MainThread

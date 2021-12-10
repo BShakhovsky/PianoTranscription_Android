@@ -70,8 +70,7 @@ class TfLiteModel : Closeable {
                 I guess 4 is there just as a convenient hack.
                 On most modern cell phones, 4 should work pretty well, except ... */
 
-//            if (CompatibilityList().isDelegateSupportedOnThisDevice)
-//                setDevice(Model.Device.GPU) else
+//            if (isGpuCompat()) setDevice(Model.Device.GPU) else
             setNumThreads(4)
         }.build())
     }
@@ -83,10 +82,8 @@ class TfLiteModel : Closeable {
             ffmpegLog.value += "\n${
                 with(context) {
                     getString(
-                        string.gpuCompat, getString(
-                            if (CompatibilityList().isDelegateSupportedOnThisDevice)
-                                string.compat else string.inCompat
-                        )
+                        string.gpuCompat,
+                        getString(if (isGpuCompat()) string.compat else string.inCompat)
                     )
                 }
             }"
@@ -125,5 +122,13 @@ class TfLiteModel : Closeable {
             return Triple(frames.floatArray.mapIndexed { i, f -> maxOf(f, onsets.floatArray[i]) }
                 .toFloatArray(), onsets.floatArray, volumes.floatArray)
         }
+    }
+
+    private fun isGpuCompat() = @Suppress("SpellCheckingInspection") try {
+        CompatibilityList().isDelegateSupportedOnThisDevice
+    } catch (_: UnsatisfiedLinkError) {
+        false /* HTC Desire 610, Android 4.4 API 19
+        dlopen failed: cannot locate symbol "wcsnrtombs"
+        referenced by "libtensorflowlite_gpu_jni.so"... */
     }
 }

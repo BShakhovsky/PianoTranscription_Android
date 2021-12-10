@@ -1,8 +1,6 @@
 package ru.bshakhovsky.piano_transcription.midi
 
 import android.content.Context
-
-import androidx.annotation.CheckResult
 import androidx.annotation.StringRes
 
 import com.pdrogfer.mididroid.MidiFile
@@ -41,6 +39,7 @@ import ru.bshakhovsky.piano_transcription.utils.MinSec
 import java.io.InputStream
 import kotlin.math.roundToLong
 
+@Suppress("SpellCheckingInspection")
 class Midi(inStream: InputStream, untitled: String) {
 
     companion object {
@@ -61,6 +60,11 @@ class Midi(inStream: InputStream, untitled: String) {
     val dur: Long
 
     init {
+        /* TODO: Samsung Galaxy Tab A Kids Edition
+            java.lang.OutOfMemoryError at com.pdrogfer.mididroid
+                MidiFile:                   <init> (line 79)
+                MidiTrack:                  <init> (line 87) --> readTrackData (line 98)
+                util.VariableLengthInt:     <init> (line 35) --> parseBytes (line 88) */
         val midi = MidiFile(inStream)
         DebugMode.assertState(
             (midi.resolution and 0x80_00) == 0,
@@ -180,7 +184,6 @@ class Midi(inStream: InputStream, untitled: String) {
         }!!.chords.last().mSec
     }
 
-    @CheckResult
     private fun addNote(event: MidiEvent, curTrack: Track, curTick: Long) =
         (if (curTrack.chords.isEmpty()) true
         else curTrack.chords.last().mSec != curTick).let { newChord ->

@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
 
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -34,13 +35,29 @@ import ru.bshakhovsky.piano_transcription.utils.Share
 
 class MediaActivity : AppCompatActivity(), View.OnClickListener {
 
-    private enum class RequestCode(val id: Int) { WRITE_MIDI(50) }
-
     private lateinit var binding: ActivityMediaBinding
 
     private lateinit var bothRoutines: BothRoutines
     private lateinit var decodeRoutine: DecodeRoutine
     private lateinit var transRoutine: TranscribeRoutine
+
+    private val writeMidi =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            with(result) {
+                if (resultCode != RESULT_OK) Snackbar.make(
+                    binding.root,
+                    getString(string.notSaved, getString(string.justMidi)), Snackbar.LENGTH_LONG
+                ).setAction(string.saveMidi) { midiOutFile() }.show() else {
+                    DebugMode.assertState((data != null) and (data?.data != null))
+                    data?.data?.let { uri ->
+                        contentResolver.openOutputStream(uri).let { outStream ->
+                            DebugMode.assertState(outStream != null)
+                            outStream?.let { transRoutine.saveMidi(uri, it) }
+                        }
+                    }
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?): Unit =
         super.onCreate(savedInstanceState).also {
@@ -150,25 +167,6 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
         { setResult(Activity.RESULT_OK, Intent().apply { data = it }) }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, d: Intent?) {
-        super.onActivityResult(requestCode, resultCode, d)
-        when (requestCode) {
-            RequestCode.WRITE_MIDI.id -> if (resultCode != RESULT_OK) Snackbar.make(
-                binding.root,
-                getString(string.notSaved, getString(string.justMidi)), Snackbar.LENGTH_LONG
-            ).setAction(string.saveMidi) { midiOutFile() }.show() else {
-                DebugMode.assertState((d != null) and (d?.data != null))
-                d?.data?.let { uri ->
-                    contentResolver.openOutputStream(uri).let { outStream ->
-                        DebugMode.assertState(outStream != null)
-                        outStream?.let { transRoutine.saveMidi(uri, it) }
-                    }
-                }
-            }
-            else -> DebugMode.assertArgument(false)
-        }
-    }
-
     override fun onBackPressed(): Unit = with(transRoutine) {
         rollGraph.isTranscribed.value.let {
             when {
@@ -186,15 +184,13 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun midiOutFile() = startActivityForResult(
-        Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            type = "audio/midi"
-            addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-            putExtra(Intent.EXTRA_TITLE, "${bothRoutines.fileName}.mid")
-            InfoMessage // For Toasts can use applicationContext, no Theme.AppCompat error
-                .toast(applicationContext, getString(string.save, getString(string.justMidi)))
-        }, RequestCode.WRITE_MIDI.id
-    )
+    private fun midiOutFile(): Unit = writeMidi.launch(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+        type = "audio/midi"
+        addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
+        putExtra(Intent.EXTRA_TITLE, "${bothRoutines.fileName}.mid")
+        InfoMessage // For Toasts can use applicationContext, no Theme.AppCompat error
+            .toast(applicationContext, getString(string.save, getString(string.justMidi)))
+    })
 
     override fun onClick(view: View?) {
         DebugMode.assertArgument(view != null)
@@ -204,10 +200,9 @@ class MediaActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
-        DebugMode.assertArgument(menu != null)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean = super.onCreateOptionsMenu(menu).also {
         menuInflater.inflate(menu_main, menu)
-        menu?.findItem(id.menuMic)?.isVisible = false
+        menu.findItem(id.menuMic).isVisible = false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =

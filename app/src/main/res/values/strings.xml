@@ -54,6 +54,8 @@
 
     Error
     <string name="noFile">File not found</string>
+    <string name="securityFile">Sorry, could not open that file.
+        \nTry to copy it to another storage directory or SD-card.</string>
     <string name="badFile">File not supported</string>
     <string name="notMidi">This is not a MIDI-file</string>
     <string name="emptyMidi">Empty Midi</string>
@@ -148,6 +150,7 @@
     <string name="memoryDecode">&memory;Could not decode media file:\n\n%1$s</string>
     <string name="memoryRawGraph">&memory;Could not draw audio wave graph:\n\n%1$s</string>
 
+    <string name="memoryZeroPad">&memory;Could not transcribe the audio:\n\n%1$s</string>
     <string name="memoryRollGraph">&memory;Could not draw piano-roll:\n\n%1$s</string>
     <string name="waveTitle">Audio wave for the 1st second</string>
 

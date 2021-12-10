@@ -1,5 +1,6 @@
 package ru.bshakhovsky.piano_transcription.main
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -9,6 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CheckResult
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -32,7 +34,6 @@ import ru.bshakhovsky.piano_transcription.databinding.ActivityMainBinding
 
 import ru.bshakhovsky.piano_transcription.ad.AdBanner
 import ru.bshakhovsky.piano_transcription.ad.AdInterstitial
-import ru.bshakhovsky.piano_transcription.addDialog.AddDialog
 import ru.bshakhovsky.piano_transcription.main.mainUI.DrawerMenu
 import ru.bshakhovsky.piano_transcription.main.mainUI.PlaySeekBar
 import ru.bshakhovsky.piano_transcription.main.openGL.Render
@@ -45,7 +46,6 @@ import ru.bshakhovsky.piano_transcription.midi.Midi
 import ru.bshakhovsky.piano_transcription.utils.Crash
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
-import ru.bshakhovsky.piano_transcription.utils.MicPermission
 import ru.bshakhovsky.piano_transcription.utils.Share
 import ru.bshakhovsky.piano_transcription.utils.StrictPolicy
 
@@ -53,8 +53,6 @@ import java.io.FileNotFoundException
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
-
-    private enum class RequestCode(val id: Int) { SPECTRUM(10) }
 
     private lateinit var policy: StrictPolicy
 
@@ -73,6 +71,35 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var interstitial: AdInterstitial
 
+    @SuppressLint("CheckResult")
+    private val getMidi =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            with(result) {
+                if (resultCode != RESULT_OK) return@with
+                DebugMode.assertState((data != null) and (data?.data != null))
+                data?.data?.let { if (!openMidi(it)) showError(string.badFile, string.notMidi) }
+            }
+        }
+    private val getMedia =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            with(result) {
+                if (resultCode != RESULT_OK) return@with
+                DebugMode.assertState(data != null)
+                data?.let { intent ->
+                    DebugMode.assertState(intent.data != null)
+                    intent.data?.let { openMedia(it, intent.getStringExtra("YouTube Link")) }
+                }
+            }
+        }
+    private val getTranscription =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            with(result) {
+                if (resultCode != RESULT_OK) return@with
+                DebugMode.assertState((data != null) and (data?.data != null))
+                data?.data?.let { uri -> openMidi(uri).let { ok -> DebugMode.assertState(ok) } }
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (DebugMode.debug) {
             Thread.setDefaultUncaughtExceptionHandler(Crash(getExternalFilesDir("Errors")))
@@ -83,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
         with(ViewModelProvider(this)) {
             model = get(MainModel::class.java)
-                .apply { initialize(lifecycle, supportFragmentManager) }
+                .apply { initialize(lifecycle, supportFragmentManager, getMidi, getMedia) }
             sound = get(Sound::class.java).apply { load(applicationContext) }
             with(
                 DataBindingUtil
@@ -121,10 +148,11 @@ class MainActivity : AppCompatActivity() {
                 RequestConfiguration.Builder().setTestDeviceIds(
                     listOf(
                         AdRequest.DEVICE_ID_EMULATOR,
-                        "87FD000F52337DF09DBB9E6684B0B878",
-                        "9AA370206113A6039BC7B5BB02F0F7E8",
+                        "87FD000F52337DF09DBB9E6684B0B878", // Samsung Galaxy S9+, Android 10
+                        "9AA370206113A6039BC7B5BB02F0F7E8", // Samsung Galaxy A7, Android 6
                         @Suppress("SpellCheckingInspection")
-                        "921547C5AAEF85EB72E17DFAE23DD8BA"
+                        "921547C5AAEF85EB72E17DFAE23DD8BA", // Huawei MediaPad X2, Android 5
+                        "CA07E6A50A0CCC9296341E801663E998" // HTC Desire 610, Android 4.4
                     )
                 ).build()
             )
@@ -150,9 +178,16 @@ class MainActivity : AppCompatActivity() {
         DebugMode.assertArgument(intent != null)
         intent?.run {
             when (action) {
-                Intent.ACTION_MAIN -> DebugMode.assertState(
-                    (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
-                            and (type == null) and (data == null) and (dataString == null)
+                Intent.ACTION_MAIN -> {
+                    if (categories != null)
+                        @Suppress("SpellCheckingInspection")
+                        /* Samsung Galaxy A11, Tecno CAMON 17, Tecno TECNO SPARK 5 Pro
+                        java.lang.NullPointerException */
+                        DebugMode.assertState(
+                            (categories.size == 1) and hasCategory(Intent.CATEGORY_LAUNCHER)
+                        )
+                    @Suppress("Reformat") DebugMode.assertState(
+                        (type == null) and (data == null) and (dataString == null)
                             // and (extras == null)
                             /* Not null when launched on Emulator 2.7 Q VGA API 24 from main menu:
                             extras != null = dalvik.system.PathClassLoader[DexPathList[
@@ -161,8 +196,9 @@ class MainActivity : AppCompatActivity() {
                             [/data/app/ru.BShakhovsky.Piano_Transcription-2/lib/x86,
                             /data/app/ru.BShakhovsky.Piano_Transcription-2/base.apk!/lib/x86,
                             /system/lib, /vendor/lib]]] */
-                            and (clipData == null)
-                )
+                                and (clipData == null)
+                    )
+                }
 
                 Intent.ACTION_VIEW -> DebugMode.assertState(
                     // (categories.size in arrayOf(1, 2)) and (hasCategory(Intent.CATEGORY_DEFAULT)
@@ -226,8 +262,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean = super.onCreateOptionsMenu(menu).also {
-        DebugMode.assertArgument(menu != null)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean = super.onCreateOptionsMenu(menu).also {
         menuInflater.inflate(menu_main, menu.also { mainMenu = it })
         mainMenu?.findItem(id.menuGuide)?.isVisible = false
     }
@@ -239,7 +274,7 @@ class MainActivity : AppCompatActivity() {
                     if (SystemClock.uptimeMillis() - micClickTime < 1_000) return it
                     micClickTime = SystemClock.uptimeMillis()
 
-                    realTime.toggle()
+                    realTime.toggle() // TODO: Turning the mic on takes a long time
                     if (play.isPlaying.value == true) play.playPause()
                 }
                 id.menuShare -> Share.share(this)
@@ -251,55 +286,11 @@ class MainActivity : AppCompatActivity() {
         GravityCompat.START.let { if (isDrawerOpen(it)) closeDrawer(it) else super.onBackPressed() }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ): Unit = when (requestCode) {
-        MicPermission.RecPermission.RECOGNIZE.id -> MicPermission.onRequestResult(
-            MicPermission.RecPermission.RECOGNIZE_SETTINGS.id, grantResults, binding.root, this
-        ) { realTime.toggle() }
-
-        // DialogFragment on super() will receive it:
-        else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode.toShort().toInt()) { // Dialog fragment on super() will receive it
-            RequestCode.SPECTRUM.id -> {
-                if (resultCode != RESULT_OK) return
-                DebugMode.assertState((data != null) and (data?.data != null))
-                data?.data?.let { uri -> openMidi(uri).let { ok -> DebugMode.assertState(ok) } }
-            }
-            // AddDialog.RequestCode.SURF.id,
-            AddDialog.RequestCode.OPEN_MEDIA.id -> {
-                if (resultCode != RESULT_OK) return
-                DebugMode.assertState(data != null)
-                data?.let { intent ->
-                    DebugMode.assertState(intent.data != null)
-                    intent.data?.let { openMedia(it, intent.getStringExtra("YouTube Link")) }
-                }
-            }
-            AddDialog.RequestCode.OPEN_MIDI.id -> {
-                if (resultCode != RESULT_OK) return
-                DebugMode.assertState((data != null) and (data?.data != null))
-                data?.data?.let { if (!openMidi(it)) showError(string.badFile, string.notMidi) }
-            }
-
-            MicPermission.RecPermission.RECOGNIZE_SETTINGS.id -> MicPermission.onSettingsResult(
-                resultCode, MicPermission.RecPermission.RECOGNIZE_SETTINGS.id, binding.root, this
-            ) { realTime.toggle() }
-            AddDialog.RequestCode.WRITE_3GP.id, MicPermission.RecPermission.RECORD_SETTINGS.id ->
-                super.onActivityResult(requestCode, resultCode, data)
-            else -> DebugMode.assertArgument(false)
-        }
-    }
-
     fun openMedia(file: Uri, youTubeLink: String? = null) {
-        if (!openMidi(file)) startActivityForResult(
-            Intent(this, MediaActivity::class.java).apply {
-                data = file
-                youTubeLink?.let { putExtra("YouTube Link", it) }
-            }, RequestCode.SPECTRUM.id
-        )
+        if (!openMidi(file)) getTranscription.launch(Intent(this, MediaActivity::class.java).apply {
+            data = file
+            youTubeLink?.let { putExtra("YouTube Link", it) }
+        })
     }
 
     @CheckResult
@@ -335,6 +326,11 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: FileNotFoundException) {
             InfoMessage.dialog(this, string.noFile, "${e.localizedMessage ?: e}\n\n$uri")
+        } catch (e: SecurityException) {
+            InfoMessage.dialog(
+                this, string.noFile,
+                "${getString(string.securityFile)}\n\n${e.localizedMessage ?: e}\n\n$uri"
+            )
         }
         return true
     }

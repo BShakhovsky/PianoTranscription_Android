@@ -59,6 +59,8 @@ class DrawerMenu(
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float): Unit = with(content.get()) {
         translationX = drawerView.width * slideOffset / 2
+        /* TODO: Samsung Galaxy A11, Samsung Galaxy A51
+            java.lang.IllegalArgumentException at android.view.View.sanitizeFloatPropertyValue */
         scaleX = 1 - slideOffset * drawerView.width / width
         scaleY = 1 - slideOffset * drawerView.width / width
     }

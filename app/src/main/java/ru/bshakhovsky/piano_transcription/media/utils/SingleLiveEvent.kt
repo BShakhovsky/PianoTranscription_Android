@@ -9,7 +9,7 @@ import androidx.lifecycle.Observer
 
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 
-class SingleLiveEvent : MutableLiveData<Unit>() {
+class SingleLiveEvent : MutableLiveData<Unit?>() {
 
     /* https://medium.com/androiddevelopers/
     livedata-with-snackbar-navigation-and-other-events-the-singleliveevent-case-ac2622673150
@@ -24,7 +24,7 @@ class SingleLiveEvent : MutableLiveData<Unit>() {
     private var pending = false
 
     @MainThread
-    override fun observe(owner: LifecycleOwner, observer: Observer<in Unit>) {
+    override fun observe(owner: LifecycleOwner, observer: Observer<in Unit?>) {
         DebugMode.assertState(
             Looper.myLooper() == Looper.getMainLooper(),
             "SingleLiveEvent should be observed from MediaActivity UI-thread"

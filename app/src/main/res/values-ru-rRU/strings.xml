@@ -47,6 +47,8 @@
 
     Ошибки
     <string name="noFile">Файл не найден</string>
+    <string name="securityFile">Увы, не получается открыть этот файл.
+        \nПопробуйте скопировать его в другую папку или на другую карту памяти.</string>
     <string name="badFile">Файл не поддерживается</string>
     <string name="notMidi">Это не Миди-файл</string>
     <string name="emptyMidi">Пустой Миди</string>
@@ -143,6 +145,7 @@
     <string name="memoryDecode">&memory;Не получилось декодировать медиа-файл:\n\n%1$s</string>
     <string name="memoryRawGraph">&memory;Не получилось нарисовать звуковую волну:\n\n%1$s</string>
 
+    <string name="memoryZeroPad">&memory;Не получилось сконвертировать аудио:\n\n%1$s</string>
     <string name="memoryRollGraph">&memory;Не получилось нарисовать piano-roll:\n\n%1$s</string>
     <string name="waveTitle">Звуковая волна первой секунды</string>
 

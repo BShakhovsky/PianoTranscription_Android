@@ -1,5 +1,5 @@
 package ru.bshakhovsky.piano_transcription.main.openGL
 
-import android.opengl.GLES30
+import android.opengl.GLES32
 
-typealias GLES = GLES30
+typealias GLES = GLES32

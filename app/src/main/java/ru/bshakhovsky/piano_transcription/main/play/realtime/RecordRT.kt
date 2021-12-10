@@ -1,7 +1,9 @@
 package ru.bshakhovsky.piano_transcription.main.play.realtime
 
+import android.Manifest
 import android.app.Activity
 import android.app.Application
+import android.content.pm.PackageManager
 
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -10,7 +12,7 @@ import android.os.Looper
 
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
-
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.OnLifecycleEvent
 
@@ -42,27 +44,42 @@ class RecordRT(application: Application) : RealTime(application) {
             Looper.myLooper() == Looper.getMainLooper(),
             "Realtime recording should be started from MainActivity UI-thread"
         )
-        DebugMode.assertState(record == null, "Realtime recording started twice")
-        if (record == null)
-            for (format in arrayOf(AudioFormat.ENCODING_PCM_16BIT, AudioFormat.ENCODING_PCM_8BIT)) {
-                val bufSize = AudioRecord
-                    .getMinBufferSize(DecodeRoutine.sampleRate, AudioFormat.CHANNEL_IN_MONO, format)
-                if (!arrayOf(AudioRecord.ERROR, AudioRecord.ERROR_BAD_VALUE).contains(bufSize)) {
-                    record = AudioRecord(
-                        MicSource.micSource, DecodeRoutine.sampleRate,
-                        AudioFormat.CHANNEL_IN_MONO, format, bufSize
-                    )
-                    when (format) {
-                        AudioFormat.ENCODING_PCM_8BIT -> byteBuf = ByteArray(bufSize)
-                        AudioFormat.ENCODING_PCM_16BIT -> shortBuf = ShortArray(bufSize / 2)
-                    }
-                    break
-                }
-            }
-
         with(activity.get()) {
+            DebugMode.assertState(record == null, "Realtime recording started twice")
+            if (record == null)
+                for (format in arrayOf(
+                    AudioFormat.ENCODING_PCM_16BIT, AudioFormat.ENCODING_PCM_8BIT
+                )) {
+                    val bufSize = AudioRecord.getMinBufferSize(
+                        DecodeRoutine.sampleRate, AudioFormat.CHANNEL_IN_MONO, format
+                    )
+                    if (!arrayOf(AudioRecord.ERROR, AudioRecord.ERROR_BAD_VALUE)
+                            .contains(bufSize)
+                    ) {
+                        if (ActivityCompat.checkSelfPermission(
+                                applicationContext, Manifest.permission.RECORD_AUDIO
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            DebugMode.assertState(false)
+                            InfoMessage.dialog(this, string.micError, string.grantRec)
+                            recStop()
+                            return false
+                        }
+                        record = AudioRecord(
+                            MicSource.micSource, DecodeRoutine.sampleRate,
+                            AudioFormat.CHANNEL_IN_MONO, format, bufSize
+                        )
+                        when (format) {
+                            AudioFormat.ENCODING_PCM_8BIT -> byteBuf = ByteArray(bufSize)
+                            AudioFormat.ENCODING_PCM_16BIT -> shortBuf = ShortArray(bufSize / 2)
+                        }
+                        break
+                    }
+                }
+
             if ((record == null) or (record?.state != AudioRecord.STATE_INITIALIZED)
-                or (byteBuf.isEmpty() and shortBuf.isEmpty())) {
+                or (byteBuf.isEmpty() and shortBuf.isEmpty())
+            ) {
                 InfoMessage.dialog(
                     this, string.micError, getString(string.prepError, getString(string.noMic))
                 )

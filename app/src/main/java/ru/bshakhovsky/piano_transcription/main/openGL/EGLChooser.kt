@@ -15,6 +15,7 @@ typealias EGL = EGL14
 
 class EGLChooser : GLSurfaceView.EGLConfigChooser {
 
+    @Suppress("SpellCheckingInspection")
     override fun chooseConfig(egl: EGL10?, display: EGLDisplay?): EGLConfig {
         val attributes = intArrayOf( /* https://developer.qualcomm.com/qfile/28557/
                                         80-nu141-1_b_adreno_opengl_es_developer_guide.pdf,
@@ -59,6 +60,6 @@ class EGLChooser : GLSurfaceView.EGLConfigChooser {
                 }
             }
         }
-        throw GLException(0, "EGL config is NULL")
+        throw GLException(0, "EGL config is NULL") // TODO: Null for Infinix SMART 5
     }
 }

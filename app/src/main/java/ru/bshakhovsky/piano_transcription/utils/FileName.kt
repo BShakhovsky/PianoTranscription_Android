@@ -13,8 +13,10 @@ import ru.bshakhovsky.piano_transcription.R.string
 object FileName {
 
     @CheckResult
-    fun getName(context: Context, uri: Uri?): String =
-        DocumentFile.fromSingleUri(context, uri!!)!!.name!!
+    fun getName(context: Context, uri: Uri?): String = with(context) {
+        @Suppress("SpellCheckingInspection") // java.lang.NullPointerException for Itel itel A14
+        uri?.let { DocumentFile.fromSingleUri(this, it)?.name } ?: getString(string.app_name)
+    }
 
     @CheckResult
     fun addExtension(context: Context?, uri: Uri?, ext: String): Uri? =

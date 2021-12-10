@@ -50,6 +50,24 @@ class BothRoutines(application: Application) :
         youTube?.let { youTubeLink = it }
     }
 
+/* TODO
+    // Both threads
+    suspend fun showAndPrintError(
+        @StringRes errTitleId: Int, errMsgStr: String?, @StringRes errMsgId: Int?,
+        ffmpegOutput: Boolean = false
+    ): Unit = with(appContext()) {
+        withContext(Dispatchers.Main) {
+            ffmpegLog.value += "\n\n${
+                errMsgStr ?: getString(errMsgId ?: string.error
+                    .also { DebugMode.assertArgument(false) })
+            }"
+            alertMsg.value = Triple(errTitleId, errMsgStr, errMsgId)
+            if (ffmpegOutput) ffmpegLog.value +=
+                "\n\n${getString(string.ffmpegOut)}\n\n${Config.getLastCommandOutput()}"
+        }
+    }
+*/
+
     // Both threads
     fun clearCache(cachePref: String): Unit? =
         appContext().cacheDir.listFiles { _, name -> name.startsWith(cachePref) }

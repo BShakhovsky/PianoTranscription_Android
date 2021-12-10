@@ -60,7 +60,7 @@ class TranscribeRoutine : ViewModel() {
 
     // Otherwise can be saved many times due to orientation change
     private val _midiSaveStart = SingleLiveEvent()
-    val midiSaveStart: LiveData<Unit> get() = _midiSaveStart
+    val midiSaveStart: LiveData<Unit?> get() = _midiSaveStart
 
     val savedMidi: MutableLiveData<Uri> = MutableLiveData()
     private val midi = MidiFile().apply { addTrack(MidiTrack()) }
@@ -117,10 +117,21 @@ class TranscribeRoutine : ViewModel() {
         with(data) {
             (TfLiteModel.outStepNotes * hopSize).let { outStepSamples ->
                 with(rawData) {
-                    getZeroPadded(
-                        floatLen() + outStepSamples -
-                                (floatLen() - TfLiteModel.inNumSamples) % outStepSamples
-                    )
+                    try {
+                        getZeroPadded(
+                            floatLen() + outStepSamples -
+                                    (floatLen() - TfLiteModel.inNumSamples) % outStepSamples
+                        )
+                    } catch (e: OutOfMemoryError) {
+                        appContext().getString(string.memoryZeroPad, e.localizedMessage ?: e)
+                            .let { errMsg ->
+                                withContext(Dispatchers.Main) {
+                                    ffmpegLog.value += "\n\n$errMsg"
+                                    alertMsg.value = Triple(string.error, errMsg, null)
+                                }
+                            }
+                        return@let
+                    }
                 }.let { paddedSong ->
                     DebugMode.assertState(
                         (paddedSong.size - TfLiteModel.inNumSamples) % outStepSamples == 0

@@ -5,10 +5,12 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaRecorder
 import android.net.Uri
+import android.os.Build
 
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AppCompatDialogFragment
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -28,20 +30,32 @@ import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.util.Calendar
 
 class AddModel : ViewModel(), LifecycleObserver {
 
-    private lateinit var fragment: WeakPtr<DialogFragment>
+    private lateinit var fragment: WeakPtr<AppCompatDialogFragment>
+
+    private lateinit var getMidi: WeakPtr<ActivityResultLauncher<Intent>>
+    private lateinit var getMedia: WeakPtr<ActivityResultLauncher<Intent>>
+    private lateinit var recPermission: MicPermission
 
     private var recFile: Uri? = null
     private var recorder: MediaRecorder? = null
     private var recDlg: AlertDialog? = null
     private var recMsg: RecordMsg? = null
 
-    fun initialize(lifecycle: Lifecycle, f: DialogFragment) {
+    fun initialize(
+        lifecycle: Lifecycle, f: AppCompatDialogFragment,
+        midi: WeakPtr<ActivityResultLauncher<Intent>>,
+        media: WeakPtr<ActivityResultLauncher<Intent>>,
+        recPerm: MicPermission
+    ) {
         lifecycle.addObserver(this)
         fragment = WeakPtr(lifecycle, f)
+
+        getMidi = midi
+        getMedia = media
+        recPermission = recPerm
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -77,39 +91,28 @@ class AddModel : ViewModel(), LifecycleObserver {
         }
     }
 
-    fun media(): Unit = with(fragment.get()) {
-        startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "*/*"
-            addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
-        }, AddDialog.RequestCode.OPEN_MEDIA.id)
-        DebugMode.assertState(dialog != null)
-        dialog?.dismiss()
+    fun media(): Unit = getMedia.get().launch(Intent(Intent.ACTION_GET_CONTENT).apply {
+        type = "*/*"
+        addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
+        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
+    }).also {
+        with(fragment.get()) {
+            DebugMode.assertState(dialog != null)
+            dialog?.dismiss()
+        }
     }
 
-    fun midi(): Unit = with(fragment.get()) {
-        startActivityForResult(Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "audio/midi"
-            addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-        }, AddDialog.RequestCode.OPEN_MIDI.id)
-        DebugMode.assertState(dialog != null)
-        dialog?.dismiss()
+    fun midi(): Unit = getMidi.get().launch(Intent(Intent.ACTION_GET_CONTENT).apply {
+        type = "audio/midi"
+        addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
+    }).also {
+        with(fragment.get()) {
+            DebugMode.assertState(dialog != null)
+            dialog?.dismiss()
+        }
     }
 
-    fun record(): Unit? = MicPermission.requestPermission(
-        MicPermission.RecPermission.RECORD.id, fragment.get().activity, fragment.get()
-    ) { writeWav() }
-
-    fun writeWav(): Unit = with(fragment.get()) {
-        startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            type = "audio/3gp"
-            addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
-            putExtra(
-                Intent.EXTRA_TITLE, "${getString(string.record)} ${Calendar.getInstance().time}.3gp"
-            )
-            InfoMessage.toast(context, getString(string.save, getString(string.record)))
-        }, AddDialog.RequestCode.WRITE_3GP.id)
-    }
+    fun record(): Unit = recPermission.requestPermission()
 
     fun startRec(uri: Uri?): Unit = with(fragment.get()) {
         FileName.addExtension(context, uri, "3gp")?.let { newUri -> // null if file exists
@@ -149,7 +152,11 @@ class AddModel : ViewModel(), LifecycleObserver {
                 else -> DebugMode.assertState(false)
             }
         }
-        recorder = MediaRecorder().apply {
+        recorder = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            MediaRecorder(requireContext()) else @Suppress("DEPRECATION") MediaRecorder()).apply {
+
+            /* TODO: Samsung Galaxy S10, java.lang.RuntimeException
+                at android.media.MediaRecorder.setAudioSource */
             setAudioSource(MicSource.micSource)
             setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)

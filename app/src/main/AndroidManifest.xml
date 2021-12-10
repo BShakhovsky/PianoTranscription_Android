@@ -21,7 +21,7 @@
         <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="@string/adMobAppId" />
 
-        <activity android:name=".main.MainActivity" android:label="@string/app_name"
+        <activity android:name=".main.MainActivity"
             android:launchMode="singleTask" android:configChanges="orientation|screenSize|uiMode"
             android:theme="@style/AppTheme"
             android:exported="true">

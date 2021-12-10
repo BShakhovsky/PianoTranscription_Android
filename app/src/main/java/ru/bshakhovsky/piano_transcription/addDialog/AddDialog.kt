@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
-import androidx.fragment.app.DialogFragment
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 
@@ -18,20 +20,42 @@ import ru.bshakhovsky.piano_transcription.databinding.DialogAddBinding
 import ru.bshakhovsky.piano_transcription.utils.DebugMode
 import ru.bshakhovsky.piano_transcription.utils.InfoMessage
 import ru.bshakhovsky.piano_transcription.utils.MicPermission
+import ru.bshakhovsky.piano_transcription.utils.WeakPtr
 
-class AddDialog : DialogFragment() {
+import java.util.Calendar
 
-    enum class RequestCode(val id: Int) { /*SURF(20)*/OPEN_MEDIA(21), OPEN_MIDI(22), WRITE_3GP(23) }
+class AddDialog(
+    private val getMidi: WeakPtr<ActivityResultLauncher<Intent>>,
+    private val getMedia: WeakPtr<ActivityResultLauncher<Intent>>
+) : AppCompatDialogFragment() {
 
     private lateinit var binding: DialogAddBinding
     private lateinit var model: AddModel
 
+    private val fileName3GP =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            with(it) {
+                if (resultCode != FragmentActivity.RESULT_OK) {
+                    InfoMessage.dialog(
+                        context, string.warning,
+                        getString(string.notSaved, getString(string.record))
+                    )
+                    DebugMode.assertState(dialog != null)
+                    dialog?.dismiss() /* TODO: The loaded MIDI unpauses and is recorded
+                                          DebugMode.assertState(play.isPlaying.value)
+                                          if (play.isPlaying.value == true) play.playPause() */
+                } else {
+                    DebugMode.assertArgument(data != null)
+                    model.startRec(data?.data)
+                }
+            }
+        }
+    private lateinit var recPermission: MicPermission
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         DebugMode.assertState(context != null)
         return Dialog((context ?: return super.onCreateDialog(savedInstanceState))).apply {
-            model = ViewModelProvider(this@AddDialog).get(AddModel::class.java)
-                .apply { initialize(lifecycle, this@AddDialog) }
-
+            model = ViewModelProvider(this@AddDialog)[AddModel::class.java]
             DebugMode.assertState(window != null)
             window?.run {
                 setGravity(Gravity.BOTTOM or Gravity.END)
@@ -44,43 +68,18 @@ class AddDialog : DialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View = DialogAddBinding.inflate(inflater).apply {
         binding = this
+        recPermission = MicPermission(lifecycle, root, requireActivity(), this@AddDialog) {
+            fileName3GP.launch(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                type = "audio/3gp"
+                addCategory(Intent.CATEGORY_OPENABLE) // don't show list of contacts or timezones
+                putExtra(
+                    Intent.EXTRA_TITLE,
+                    "${getString(string.record)} ${Calendar.getInstance().time}.3gp"
+                )
+                InfoMessage.toast(context, getString(string.save, getString(string.record)))
+            })
+        }
         addModel = model
+            .apply { initialize(lifecycle, this@AddDialog, getMidi, getMedia, recPermission) }
     }.root
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ): Unit = super.onRequestPermissionsResult(requestCode, permissions, grantResults).also {
-        when (requestCode) {
-            MicPermission.RecPermission.RECORD.id -> MicPermission.onRequestResult(
-                MicPermission.RecPermission.RECORD_SETTINGS.id, grantResults,
-                binding.root, activity, this
-            ) { model.writeWav() }
-            else -> DebugMode.assertArgument(false)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Unit =
-        super.onActivityResult(requestCode, resultCode, data).also {
-            when (requestCode) {
-                MicPermission.RecPermission.RECORD_SETTINGS.id -> MicPermission.onSettingsResult(
-                    resultCode, MicPermission.RecPermission.RECORD_SETTINGS.id,
-                    binding.root, activity, this
-                ) { model.writeWav() }
-
-                RequestCode.WRITE_3GP.id ->
-                    if (resultCode != FragmentActivity.RESULT_OK) {
-                        InfoMessage.dialog(
-                            context, string.warning,
-                            getString(string.notSaved, getString(string.record))
-                        )
-                        DebugMode.assertState(dialog != null)
-                        dialog?.dismiss()
-                    } else {
-                        DebugMode.assertArgument(data != null)
-                        model.startRec(data?.data)
-                    }
-
-                else -> DebugMode.assertArgument(false)
-            }
-        }
 }

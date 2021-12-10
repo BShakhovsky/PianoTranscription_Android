@@ -1,5 +1,6 @@
 package ru.bshakhovsky.piano_transcription.main.openGL
 
+import android.annotation.SuppressLint
 import android.content.res.AssetManager
 import android.content.res.Resources
 import android.graphics.PointF
@@ -64,7 +65,6 @@ class Render(
             and background would be black (and keys would be mixed up if depth size = 0): */
             setEGLConfigChooser(EGLChooser())
             setRenderer(this@Render)
-            setOnTouchListener(Touch(this@Render))
         }
     }
 
@@ -74,11 +74,13 @@ class Render(
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun resume() = surfaceView.get().onResume()
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onSurfaceCreated(glUnused: GL10?, config: EGLConfig?) {
         GLES.glEnable(GLES.GL_DEPTH_TEST)
         GLES.glEnable(GLES.GL_CULL_FACE)
         GLES.glBlendFunc(GLES.GL_SRC_ALPHA, GLES.GL_ONE_MINUS_SRC_ALPHA)
         model = Model(assets.get(), resources.get())
+        surfaceView.get().setOnTouchListener(Touch(this@Render))
     }
 
     override fun onSurfaceChanged(glUnused: GL10?, newWidth: Int, newHeight: Int) {
@@ -159,10 +161,12 @@ class Render(
 
     @CheckResult
     private fun winX(worldX: Float) = floatArrayOf(0f, 0f, 0f).let {
-        GLU.gluProject(
-            worldX, Geometry.whiteWid, Geometry.whiteLen, model.mats.view,
-            0, model.mats.projection, 0, intArrayOf(0, 0, width, height), 0, it, 0
-        )
+        with(model.mats) {
+            GLU.gluProject(
+                worldX, Geometry.whiteWid, Geometry.whiteLen, view, 0, projection, 0,
+                intArrayOf(0, 0, width, height), 0, it, 0
+            )
+        }
         PointF(it[0], it[1])
     }
 
@@ -268,11 +272,9 @@ class Render(
         }
     }
 
-    fun highLightKey(note: Int, isGood: Boolean) {
-        if (check(note)) with(model.geom.keys[note]) {
-            isCorrect = isGood
-            isWrong = !isGood
-        }
+    fun highLightKey(note: Int, isGood: Boolean): Unit = with(model.geom.keys[boundNote(note)]) {
+        isCorrect = isGood
+        isWrong = !isGood
     }
 
     fun unHighLightAll() {
@@ -285,20 +287,16 @@ class Render(
         }
     }
 
-    fun pressKey(note: Int, velocity: Float) {
-        if (check(note)) {
-            model.geom.keys[note].isPressed = true
-            trueChord += note
-            sound.play(note, velocity)
-        }
+    fun pressKey(note: Int, velocity: Float): Unit = boundNote(note).let {
+        model.geom.keys[it].isPressed = true
+        trueChord += it
+        sound.play(it, velocity)
     }
 
-    fun releaseKey(note: Int) {
-        if (check(note)) {
-            model.geom.keys[note].isPressed = false
-            trueChord -= note
-            sound.stop(note)
-        }
+    fun releaseKey(note: Int): Unit = boundNote(note).let {
+        model.geom.keys[it].isPressed = false
+        trueChord -= it
+        sound.stop(it)
     }
 
     fun releaseAllKeys() {
@@ -317,7 +315,13 @@ class Render(
     }
 
     @CheckResult
-    private fun check(note: Int) =
-        // For some reason, not yet initialized if MIDI is received from another App through Intent
-        ::model.isInitialized.also { DebugMode.assertArgument(note in 0..87) }
+    private fun boundNote(note: Int) = run {
+        DebugMode.assertState(::model.isInitialized)
+        DebugMode.assertArgument(note in 0..87)
+        when {
+            note < 0 -> 0
+            note > 87 -> 87
+            else -> note
+        }
+    }
 }
