@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    compileSdkPreview 'Sv2'
-    buildToolsVersion '32.0.0 rc1'
+    compileSdk 32
+    buildToolsVersion '32.0.0'
     defaultConfig {
         applicationId 'ru.BShakhovsky.Piano_Transcription'
         minSdk 19 // TensorFlow Lite
         targetSdk 30
-        versionCode 9
-        versionName '2.2'
+        versionCode 10
+        versionName '2.3'
         multiDexEnabled true
     }
     buildTypes.release {
