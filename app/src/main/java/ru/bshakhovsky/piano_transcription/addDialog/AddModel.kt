@@ -186,7 +186,9 @@ class AddModel : ViewModel(), LifecycleObserver {
             recMsg = RecordMsg(lifecycle,
                 InfoMessage.dialog(context, string.recording, "", string.stop)
                 { dialog?.dismiss() }.apply { recDlg = this }, this, context
-            ).apply { start() }
+            ).apply { start() } /* TODO: The loaded MIDI unpauses and is also loudly recorded
+                                    DebugMode.assertState(play.isPlaying.value)
+                                    if (play.isPlaying.value == true) play.playPause() */
         }
     }
 }

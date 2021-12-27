@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment.InstantiationException
 import androidx.lifecycle.ViewModelProvider
 
 import com.google.android.gms.ads.AdRequest
@@ -100,12 +101,35 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    @SuppressLint("MissingSuperCall") // Calling super.onCreate more than once can lead to crashes
     override fun onCreate(savedInstanceState: Bundle?) {
         if (DebugMode.debug) {
             Thread.setDefaultUncaughtExceptionHandler(Crash(getExternalFilesDir("Errors")))
             policy = StrictPolicy(lifecycle, this@MainActivity)
         }
-        super.onCreate(savedInstanceState)
+        @Suppress("SpellCheckingInspection") try {
+            super.onCreate(savedInstanceState) /* Samsung Galaxy J3 Pro	Android 8.0 (SDK 26)
+            androidx.fragment.app.Fragment$InstantiationException -> java.lang.NoSuchMethodException
+
+            https://stackoverflow.com/a/48149345
+            https://stackoverflow.com/questions/48057871/
+            android-4-2-activity-oncreate-fragment/48149345#48149345
+
+            Looks like system can put incorrect Bundle savedInstanceState on some android devices */
+        } catch (_: InstantiationException) {
+            super.onCreate(null) /* https://github.com/software-mansion/
+            react-native-screens/issues/114#issuecomment-934342627
+
+            Be warned that this can break application functionality.
+            This includes the navigation stack which will now be wiped-out.
+            In our case, this has an unacceptable side-effect of not being able
+            to use the document picker to upload pictures and other media
+                    as it would return them to the incorrect state after picking media.
+
+            This fix resolves the crash but as the activity is crashed in background,
+            the app looses its state and gets stuck at the first screen.
+            Navigation to further screens is blocked with this fix. */
+        }
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
         with(ViewModelProvider(this)) {
@@ -168,6 +192,8 @@ class MainActivity : AppCompatActivity() {
             }
             play.isPlaying.observe(this@MainActivity)
             { if (it and (isRecognizing.value == true)) toggle() }
+            /* TODO: Also pause the loaded MIDI while recording the audio
+                Add LiveData<Boolean> isRecording */
         }
 
         onNewIntent(intent)

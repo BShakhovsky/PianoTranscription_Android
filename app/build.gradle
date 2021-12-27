@@ -10,8 +10,8 @@ android {
         applicationId 'ru.BShakhovsky.Piano_Transcription'
         minSdk 19 // TensorFlow Lite
         targetSdk 30
-        versionCode 10
-        versionName '2.3'
+        versionCode 11
+        versionName '2.4'
         multiDexEnabled true
     }
     buildTypes.release {

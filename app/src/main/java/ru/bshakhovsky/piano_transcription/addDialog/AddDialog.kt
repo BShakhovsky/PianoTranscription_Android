@@ -41,9 +41,7 @@ class AddDialog(
                         getString(string.notSaved, getString(string.record))
                     )
                     DebugMode.assertState(dialog != null)
-                    dialog?.dismiss() /* TODO: The loaded MIDI unpauses and is recorded
-                                          DebugMode.assertState(play.isPlaying.value)
-                                          if (play.isPlaying.value == true) play.playPause() */
+                    dialog?.dismiss()
                 } else {
                     DebugMode.assertArgument(data != null)
                     model.startRec(data?.data)
